@@ -20,8 +20,8 @@ class DataChannel extends Bundle {
 // HOST :read/Write(Dmem)
 class HostIf extends Bundle {
     // IO definition
-    val insts_addr = new AddressChannel
-    val insts_data = Flipped(new DataChannel) // reverse I/O
+    val ach = new AddressChannel
+    val dch = Flipped(new DataChannel) // reverse I/O
 }
 
 // Memory-Mapped Slave IF
@@ -30,10 +30,10 @@ class HostIf extends Bundle {
 class SlaveIf extends Bundle {
     // IO definition
     // read operation
-    val r_insts_addr = Flipped(new AddressChannel) // reverse I/O
-    val r_insts_data = new DataChannel	
+    val r_ach = Flipped(new AddressChannel) // reverse I/O
+    val r_dch = new DataChannel	
     
-    //val w_insts_addr = Flipped(new AddressChannel) // reverse I/O
-    //val w_insts_data = Flipped(new DataChannel)	
+    //val w_ach = Flipped(new AddressChannel) // reverse I/O
+    //val w_dch = Flipped(new DataChannel)	
 
 }

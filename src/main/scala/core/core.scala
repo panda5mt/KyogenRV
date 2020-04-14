@@ -19,19 +19,19 @@ class Cpu extends Module {
     val i_ena   = RegInit(true.B)       // fetch signal
     //val i_rw    = RegInit(false.B)      // Read-Only=false.B
 
-    when(io.insts_data.ack){
+    when(io.dch.ack){
         i_addr := i_addr + 4.U(32.W)    // program counter
-        i_data := io.insts_data.data 
+        i_data := io.dch.data 
     }
 
-    //io.insts_addr.rw    := i_rw  
-    io.insts_addr.addr  := i_addr
-    io.insts_addr.req   := i_ena
+    //io.ach.rw    := i_rw  
+    io.ach.addr  := i_addr
+    io.ach.req   := i_ena
 
 
-    memory.io.r_insts_addr.req  := io.insts_addr.req
-    memory.io.r_insts_addr.addr := io.insts_addr.addr
-    // memory.io.r_insts_data.ack  <> io.insts_data.ack
+    memory.io.r_ach.req  := io.ach.req
+    memory.io.r_ach.addr := io.ach.addr
+    // memory.io.r_dch.ack  <> io.dch.ack
      
 
 }

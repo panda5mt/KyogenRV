@@ -15,15 +15,15 @@ class IMem extends Module {
 
     
     // read operation
-    io.r_insts_data.data  := memory(io.r_insts_addr.addr)
-    io.r_insts_data.ack   := i_ack
+    io.r_dch.data  := memory(io.r_ach.addr)
+    io.r_dch.ack   := i_ack
 
     // write operation
-//     when(io.w_insts_addr.req) {
-//         memory(io.w_insts_addr.addr) := io.w_insts_data.data
-//         io.w_insts_data.ack := true.B
+//     when(io.w_ach.req) {
+//         memory(io.w_ach.addr) := io.w_dch.data
+//         io.w_dch.ack := true.B
 //     }.otherwise {
-//         io.w_insts_data.ack := false.B
+//         io.w_dch.ack := false.B
 //     }
 }
 
