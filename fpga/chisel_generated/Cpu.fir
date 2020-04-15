@@ -15,7 +15,7 @@ circuit Cpu :
   module Cpu : 
     input clock : Clock
     input reset : UInt<1>
-    output io : {ach : {req : UInt<1>, addr : UInt<32>}, flip dch : {ack : UInt<1>, data : UInt<32>}, sw : {flip halt : UInt<1>, rw : UInt<1>}}
+    output io : {ach : {req : UInt<1>, addr : UInt<32>}, flip dch : {ack : UInt<1>, data : UInt<32>}, sw : {flip halt : UInt<1>, rw : UInt<1>, data : UInt<32>}}
     
     inst memory of IMem @[core.scala 30:24]
     memory.clock <= clock
@@ -30,10 +30,11 @@ circuit Cpu :
       node _T_2 = tail(_T_1, 1) @[core.scala 42:30]
       i_addr <= _T_2 @[core.scala 42:20]
       skip @[core.scala 40:34]
-    io.sw.rw <= i_rw @[core.scala 45:17]
-    io.ach.addr <= i_addr @[core.scala 46:17]
-    io.ach.req <= i_ena @[core.scala 47:17]
-    i_data <= memory.io.r_dch.data @[core.scala 48:12]
-    memory.io.r_ach.req <= io.ach.req @[core.scala 50:26]
-    memory.io.r_ach.addr <= io.ach.addr @[core.scala 51:26]
+    io.sw.data <= i_data @[core.scala 46:17]
+    io.sw.rw <= i_rw @[core.scala 47:17]
+    io.ach.addr <= i_addr @[core.scala 48:17]
+    io.ach.req <= i_ena @[core.scala 49:17]
+    i_data <= memory.io.r_dch.data @[core.scala 50:12]
+    memory.io.r_ach.req <= io.ach.req @[core.scala 52:26]
+    memory.io.r_ach.addr <= io.ach.addr @[core.scala 53:26]
     

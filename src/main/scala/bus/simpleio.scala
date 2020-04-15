@@ -27,8 +27,8 @@ class DataChannel extends Bundle {
 // HOST :read/Write(Dmem)
 class HostIf extends Bundle {
     // IO definition
-    val ach = new AddressChannel
-    val dch = Flipped(new DataChannel) // reverse I/O
+    val r_ach = new AddressChannel
+    val r_dch = Flipped(new DataChannel) // reverse I/O
     val sw  = new CtrlSwChannel
 }
 

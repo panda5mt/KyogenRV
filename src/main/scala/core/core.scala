@@ -18,8 +18,9 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new Cpu()){
         c => new PeekPokeTester(c) {
             poke(c.io.sw.halt, false.B)
+            //poke(c.io.r_dch.ack, true.B)
             step(10)
-            println(s"addr = ${peek(c.io.ach.addr)},data = ${peek(c.io.sw.data)} ")
+            println(s"addr = ${peek(c.io.r_ach.addr)},data = ${peek(c.io.sw.data)} ")
         }
     }
 }
@@ -36,21 +37,23 @@ class Cpu extends Module {
     val i_data  = RegInit(0.U(32.W))    
     val i_ena   = RegInit(true.B)       // fetch signal
     val i_rw    = RegInit(false.B)
-    
+    val i_ack   = RegInit(false.B)
     when (io.sw.halt === false.B){    
-       // when(io.dch.ack){
+        when(i_ack === true.B){
             i_addr := i_addr + 4.U(32.W)    // program counter
-        //}
+        }
     }
     // for test
     io.sw.data  := i_data
     io.sw.rw    := i_rw  
-    io.ach.addr := i_addr
-    io.ach.req  := i_ena
+    io.r_ach.addr := i_addr
+    io.r_ach.req  := i_ena
+
+    i_ack  := memory.io.r_dch.ack
     i_data := memory.io.r_dch.data 
     
-    memory.io.r_ach.req  := io.ach.req
-    memory.io.r_ach.addr := io.ach.addr
+    memory.io.r_ach.req  := io.r_ach.req
+    memory.io.r_ach.addr := io.r_ach.addr
      
 
 }
