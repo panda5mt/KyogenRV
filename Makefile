@@ -8,8 +8,8 @@ TARGET = fpga/chisel_generated
 hdl:
 	$(SBT) 'runMain core.kyogenrv --target-dir $(TARGET)'
 
-hello:
-	$(SBT) 'runMain Hello'
+test:
+	$(SBT) 'runMain core.Test'
 
 clean:
 	rm -rf $(TARGET)/*.json $(TARGET)/*.fir $(TARGET)/*.v

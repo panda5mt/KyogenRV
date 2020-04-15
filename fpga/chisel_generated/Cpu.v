@@ -4,14 +4,19 @@ module Cpu(
   output        io_ach_req,
   output [31:0] io_ach_addr,
   input         io_dch_ack,
-  input  [31:0] io_dch_data
+  input  [31:0] io_dch_data,
+  input         io_sw_halt,
+  output        io_sw_rw
 );
-  reg [31:0] i_addr; // @[core.scala 16:26]
+  reg [31:0] i_addr; // @[core.scala 35:26]
   reg [31:0] _RAND_0;
-  wire [31:0] _T_1; // @[core.scala 22:26]
-  assign _T_1 = i_addr + 32'h4; // @[core.scala 22:26]
-  assign io_ach_req = 1'h1; // @[core.scala 28:18]
-  assign io_ach_addr = i_addr; // @[core.scala 27:18]
+  wire  _T; // @[core.scala 40:22]
+  wire [31:0] _T_2; // @[core.scala 42:30]
+  assign _T = ~io_sw_halt; // @[core.scala 40:22]
+  assign _T_2 = i_addr + 32'h4; // @[core.scala 42:30]
+  assign io_ach_req = 1'h1; // @[core.scala 47:17]
+  assign io_ach_addr = i_addr; // @[core.scala 46:17]
+  assign io_sw_rw = 1'h0; // @[core.scala 45:17]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
@@ -53,8 +58,8 @@ end // initial
   always @(posedge clock) begin
     if (reset) begin
       i_addr <= 32'h0;
-    end else if (io_dch_ack) begin
-      i_addr <= _T_1;
+    end else if (_T) begin
+      i_addr <= _T_2;
     end
   end
 endmodule

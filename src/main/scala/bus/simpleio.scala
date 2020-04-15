@@ -4,6 +4,13 @@ import chisel3._
 import chisel3.util._
 import chisel3.Bool
 
+// bus ctrl
+class CtrlSwChannel extends Bundle {
+    val halt = Input(Bool())    // CPU or TraceMaster halt
+    val rw   = Output(Bool())   // indicate Memory-Mapped read(false)/Write(true) SW 
+    val data = Output(UInt(32.W)) // for test: memory dump
+}
+
 // address channel bundle
 class AddressChannel extends Bundle {
     val req     = Output(Bool())        // request signal
@@ -22,6 +29,7 @@ class HostIf extends Bundle {
     // IO definition
     val ach = new AddressChannel
     val dch = Flipped(new DataChannel) // reverse I/O
+    val sw  = new CtrlSwChannel
 }
 
 // Memory-Mapped Slave IF
