@@ -51,7 +51,8 @@ par_usage_statistics.html
 usage_statistics_webtalk.html
 webtalk.log
 webtalk_pn.xml
-
+/project/
+/target/
 # generated folders
 iseconfig/
 xlnx_auto_0_xdb/

@@ -11,7 +11,6 @@ import mem.IMem
 
 class Cpu extends Module {
     val io = IO(new HostIf)
-    val memory = Module(new IMem)
 
     // initialization
     val i_addr  = RegInit(0.U(32.W))
@@ -28,6 +27,8 @@ class Cpu extends Module {
     io.ach.addr  := i_addr
     io.ach.req   := i_ena
 
+
+    val memory = Module(new IMem)
 
     memory.io.r_ach.req  := io.ach.req
     memory.io.r_ach.addr := io.ach.addr

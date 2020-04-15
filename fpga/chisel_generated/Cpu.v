@@ -6,12 +6,12 @@ module Cpu(
   input         io_dch_ack,
   input  [31:0] io_dch_data
 );
-  reg [31:0] i_addr; // @[core.scala 17:26]
+  reg [31:0] i_addr; // @[core.scala 16:26]
   reg [31:0] _RAND_0;
-  wire [31:0] _T_1; // @[core.scala 23:26]
-  assign _T_1 = i_addr + 32'h4; // @[core.scala 23:26]
-  assign io_ach_req = 1'h1; // @[core.scala 29:18]
-  assign io_ach_addr = i_addr; // @[core.scala 28:18]
+  wire [31:0] _T_1; // @[core.scala 22:26]
+  assign _T_1 = i_addr + 32'h4; // @[core.scala 22:26]
+  assign io_ach_req = 1'h1; // @[core.scala 28:18]
+  assign io_ach_addr = i_addr; // @[core.scala 27:18]
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
 `define RANDOMIZE
 `endif
