@@ -11,18 +11,25 @@ class IMem extends Module {
 
     // initialization
     val mem     = SyncReadMem(256, UInt(32.W))
-    val i_ack   = RegInit(true.B)
 
+    val i_ack   = RegInit(true.B)
+    val i_req   = RegInit(false.B)
+    //val i_data  = RegInit(0.U(32.W))
+    
+    val w_ack   = RegInit(false.B)
     
     // read operation
-    io.r_dch.data  := mem.read(io.r_ach.addr)
-    io.r_dch.ack   := i_ack
-
+    i_req           :=io.r_ach.req 
+    io.r_dch.data   := mem.read(io.r_ach.addr)
+    i_ack           := i_req   
+    io.r_dch.ack    := i_ack
 
     // write operation
-    // when(io.w_ach.req) {
-    //     mem.write(io.w_ach.addr,io.w_dch.data)
-    //     //io.w_dch.ack := true.B
-    // }
+    when(io.w_ach.req === true.B) {
+        mem.write(io.w_ach.addr,io.w_dch.data)
+        w_ack := true.B    
+    }
+
+    io.w_dch.ack    := w_ack
 }
 
