@@ -39,7 +39,8 @@ object Test extends App {
             step(1)
             poke(c.io.sw.halt, true.B)
             step(1)
-            poke(c.io.sw.rw, true.B)
+            //poke(c.io.sw.rw, true.B)
+            //step(1)
             for (addr <- 0 to (memarray.length * 4 - 1) by 4){    
                 poke(c.io.sw.wAddr, addr)
                 poke(c.io.sw.wData, memarray(addr/4))
@@ -128,7 +129,7 @@ class CpuBus extends Module {
     sw_halt     := io.sw.halt  //:= io.sw.halt
     sw_data     := memory.io.r_dch.data//cpu.io.sw.data
     sw_addr     := memory.io.r_ach.addr//cpu.io.sw.addr
-    sw_rw       := io.sw.rw
+    //sw_rw       := io.sw.rw
     sw_wdata    := io.sw.wData //:= io.sw.wData  // data to write memory
     sw_waddr    := io.sw.wAddr //:= io.sw.wAddr
 
@@ -136,22 +137,22 @@ class CpuBus extends Module {
     io.sw.addr  := sw_addr
     
     cpu.io.sw.halt  := sw_halt
-    cpu.io.sw.rw    := sw_rw
+    //cpu.io.sw.rw    := sw_rw
     cpu.io.sw.wData := sw_wdata
     cpu.io.sw.wAddr := sw_waddr
 
 
     // Read memory
-    memory.io.r_ach.req  := cpu.io.r_ach.req
-    memory.io.r_ach.addr := cpu.io.r_ach.addr
-    cpu.io.r_dch.data   := memory.io.r_dch.data 
-    cpu.io.r_dch.ack    := memory.io.r_dch.ack
+    memory.io.r_ach.req     <> cpu.io.r_ach.req
+    memory.io.r_ach.addr    <> cpu.io.r_ach.addr
+    cpu.io.r_dch.data       <> memory.io.r_dch.data 
+    cpu.io.r_dch.ack        <> memory.io.r_dch.ack
 
     // write memory
-    memory.io.w_ach.req     := cpu.io.w_ach.req
-    memory.io.w_ach.addr    := cpu.io.w_ach.addr
-    memory.io.w_dch.data    := cpu.io.w_dch.data
-    cpu.io.w_dch.ack        := memory.io.w_dch.ack
+    memory.io.w_ach.req     <> cpu.io.w_ach.req
+    memory.io.w_ach.addr    <> cpu.io.w_ach.addr
+    memory.io.w_dch.data    <> cpu.io.w_dch.data
+    cpu.io.w_dch.ack        <> memory.io.w_dch.ack
 
 }
 
