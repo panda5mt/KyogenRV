@@ -6,6 +6,7 @@ import chisel3.Bool
 
 import bus.HostIf
 import bus.SlaveIf
+import bus.TestIf
 
 import mem._
 import mem.IMem
@@ -15,33 +16,52 @@ import chisel3.iotesters
 import chisel3.iotesters.PeekPokeTester
 ///////////////////////
 object Test extends App {
-    iotesters.Driver.execute(args, () => new Cpu()){
+    iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
+            var memarray = Array(
+                0x11000000L,
+                0x11000001L,
+                0x11000002L,
+                0x11000003L,
+                0x11000004L,
+                0x11000005L,
+                0x11000006L,
+                0x11000007L,
+                0x11000008L,
+                0x11000009L,
+                0x1100000AL,
+                0x1100000BL,
+                0x1100000CL,
+                0x1100000DL,
+                0x1100000EL,
+                0x1100000FL
+            )
+            step(1)
             poke(c.io.sw.halt, true.B)
+            step(1)
             poke(c.io.sw.rw, true.B)
-            for (addr <- 0 to 24){    
+            for (addr <- 0 to (memarray.length * 4 - 1) by 4){    
                 poke(c.io.sw.wAddr, addr)
-                poke(c.io.sw.wData, addr)
+                poke(c.io.sw.wData, memarray(addr/4))
+                
                 step(1)
             }
-            poke(c.io.sw.rw, false.B)
+            step(1)
             poke(c.io.sw.halt, false.B)
-            for (addr <- 0 to 50){
-                step(1)
-                println(s"addr = ${peek(c.io.r_ach.addr)},data = ${peek(c.io.sw.data)} ")
+            for (addr <- 0 to 70 by 1){
+                val a = peek(c.io.sw.addr)
+                val d = peek(c.io.sw.data)
                 
+                println(s"addr = ${a} ,data = ${d}") //peek(c.io.sw.data)
+                step(1)
             }
         }
     }
 }
 
-
 class Cpu extends Module {
     val io = IO(new HostIf)
-    val memory = Module(new IMem)
     
-
-
     // initialization    
     val r_addr  = RegInit(0.U(32.W))
     val r_data  = RegInit(0.U(32.W))    
@@ -49,7 +69,7 @@ class Cpu extends Module {
     val r_rw    = RegInit(false.B)
     val r_ack   = RegInit(false.B)
 
-    val w_req   = RegInit(false.B)
+    val w_req   = RegInit(true.B)
     val w_ack   = RegInit(false.B)
     val w_addr  = RegInit(0.U(32.W))
     val w_data  = RegInit(0.U(32.W)) 
@@ -57,47 +77,85 @@ class Cpu extends Module {
     when (io.sw.halt === false.B){     
         when(r_ack === true.B){
             r_addr := r_addr + 4.U(32.W)    // increase program counter
-        }/*.otherwise {               // r_ack == false
-            r_addr := r_addr        // stop program counter
-            r_req := true.B
-        }*/
+        }
     }.otherwise { // halt mode
-        when(io.sw.rw === true.B){          // external Controller
+        //when(io.sw.rw === true.B){          // external Controller
                 // enable Write Operation
-                w_addr := io.sw.wData //w_addr + 4.U(32.W)
+                w_addr := io.sw.wAddr //w_addr + 4.U(32.W)
                 w_data := io.sw.wData
                 w_req  := true.B
-        }
+                r_addr := 0.U(32.W)
+        //}
     }
     // for test
-    io.sw.data  := r_data
-    io.r_ach.addr := r_addr
-    io.r_ach.req  := r_req
+    io.sw.data      := r_data
+    io.sw.addr      := r_addr
 
-    // read process
-    r_ack  := memory.io.r_dch.ack
-    r_data := memory.io.r_dch.data 
-    
-    memory.io.r_ach.req  := io.r_ach.req
-    //memory.io.r_ach.addr := io.r_ach.addr
-    memory.io.r_ach.addr := r_addr
-    
+    io.r_ach.addr   := r_addr
+    io.r_ach.req    := r_req
     
     // write process
-    io.w_ach.addr := w_addr
-    io.w_dch.data := w_data
-    io.w_ach.req := w_req
+    io.w_ach.addr   := w_addr
+    io.w_dch.data   := w_data
+    io.w_ach.req    := w_req
     //io.w_dch.ack := w_ack
+    
+    // read process
+    r_ack  := io.r_dch.ack
+    r_data := io.r_dch.data 
+    
 
-    w_ack := memory.io.w_dch.ack
+}
+
+class CpuBus extends Module {
+    val io      = IO(new TestIf)
+    // val io2     = IO(new Bundle {
+    //     val r_addr = Output(UInt(32.W))
+    // })
+
+    val sw_halt     = RegInit(true.B)       // input
+    val sw_data     = RegInit(0.U(32.W))    // output
+    val sw_addr     = RegInit(0.U(32.W))    // output
+    val sw_rw       = RegInit(false.B)      // input
+    val sw_wdata    = RegInit(0.U(32.W))    // input
+    val sw_waddr    = RegInit(0.U(32.W))    // input
+
+   
+    val cpu     = Module(new Cpu)
+    val memory  = Module(new IMem)
     
-    memory.io.w_ach.req := io.w_ach.req
-    memory.io.w_ach.addr := io.w_ach.addr
-    memory.io.w_dch.data := io.w_dch.data
+    // Connect Test Module
+    sw_halt     := io.sw.halt  //:= io.sw.halt
+    sw_data     := memory.io.r_dch.data//cpu.io.sw.data
+    sw_addr     := memory.io.r_ach.addr//cpu.io.sw.addr
+    sw_rw       := io.sw.rw
+    sw_wdata    := io.sw.wData //:= io.sw.wData  // data to write memory
+    sw_waddr    := io.sw.wAddr //:= io.sw.wAddr
+
+    io.sw.data  := sw_data
+    io.sw.addr  := sw_addr
     
+    cpu.io.sw.halt  := sw_halt
+    cpu.io.sw.rw    := sw_rw
+    cpu.io.sw.wData := sw_wdata
+    cpu.io.sw.wAddr := sw_waddr
+
+
+    // Read memory
+    memory.io.r_ach.req  := cpu.io.r_ach.req
+    memory.io.r_ach.addr := cpu.io.r_ach.addr
+    cpu.io.r_dch.data   := memory.io.r_dch.data 
+    cpu.io.r_dch.ack    := memory.io.r_dch.ack
+
+    // write memory
+    memory.io.w_ach.req     := cpu.io.w_ach.req
+    memory.io.w_ach.addr    := cpu.io.w_ach.addr
+    memory.io.w_dch.data    := cpu.io.w_dch.data
+    cpu.io.w_dch.ack        := memory.io.w_dch.ack
+
 }
 
 object kyogenrv extends App {
-    chisel3.Driver.execute(args, () => new Cpu())
+    chisel3.Driver.execute(args, () => new CpuBus())
 }
 

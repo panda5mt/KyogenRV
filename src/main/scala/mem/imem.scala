@@ -10,13 +10,14 @@ class IMem extends Module {
     val io = IO(new SlaveIf)
 
     // initialization
-    val mem     = SyncReadMem(256, UInt(32.W))
+    //val mem     = SyncReadMem(1024, UInt(32.W))
+    val mem     = Mem(1024, UInt(32.W))
 
     val i_ack   = RegInit(true.B)
     val i_req   = RegInit(false.B)
     //val i_data  = RegInit(0.U(32.W))
     
-    val w_ack   = RegInit(false.B)
+    val w_ack   = RegInit(true.B)
     
     // read operation
     i_req           :=io.r_ach.req 
@@ -27,7 +28,7 @@ class IMem extends Module {
     // write operation
     when(io.w_ach.req === true.B) {
         mem.write(io.w_ach.addr,io.w_dch.data)
-        w_ack := true.B    
+        //w_ack := true.B    
     }
 
     io.w_dch.ack    := w_ack
