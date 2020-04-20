@@ -3,6 +3,7 @@ package core
 import chisel3._
 import chisel3.util._
 import chisel3.Bool
+import chisel3.Printable
 
 import bus.HostIf
 import bus.SlaveIf
@@ -34,13 +35,27 @@ object Test extends App {
                 0x1100000CL,
                 0x1100000DL,
                 0x1100000EL,
-                0x1100000FL
+                0x1100000FL,
+                0x11000010L,
+                0x11000011L,
+                0x11000012L,
+                0x11000013L,
+                0x11000014L,
+                0x11000015L,
+                0x11000016L,
+                0x11000017L,
+                0x11000018L,
+                0x11000019L,
+                0x1100001AL,
+                0x1100001BL,
+                0x1100001CL,
+                0x1100001DL,
+                0x1100001EL,
+                0x1100001FL
             )
             step(1)
             poke(c.io.sw.halt, true.B)
             step(1)
-            //poke(c.io.sw.rw, true.B)
-            //step(1)
             for (addr <- 0 to (memarray.length * 4 - 1) by 4){    
                 poke(c.io.sw.wAddr, addr)
                 poke(c.io.sw.wData, memarray(addr/4))
@@ -49,11 +64,13 @@ object Test extends App {
             }
             step(1)
             poke(c.io.sw.halt, false.B)
-            for (addr <- 0 to 70 by 1){
+            step(1)
+            step(1)
+            for (lp <- 0 to (memarray.length - 1) by 1){
                 val a = peek(c.io.sw.addr)
                 val d = peek(c.io.sw.data)
-                
-                println(s"addr = ${a} ,data = ${d}") //peek(c.io.sw.data)
+
+                println(f"addr =  0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
                 step(1)
             }
         }
