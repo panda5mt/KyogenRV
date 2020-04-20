@@ -70,7 +70,7 @@ object Test extends App {
                 val a = peek(c.io.sw.addr)
                 val d = peek(c.io.sw.data)
 
-                println(f"addr =  0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
+                println(f"addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
                 step(1)
             }
         }
@@ -97,13 +97,11 @@ class Cpu extends Module {
             r_addr := r_addr + 4.U(32.W)    // increase program counter
         }
     }.otherwise { // halt mode
-        //when(io.sw.rw === true.B){          // external Controller
-                // enable Write Operation
-                w_addr := io.sw.wAddr //w_addr + 4.U(32.W)
-                w_data := io.sw.wData
-                w_req  := true.B
-                r_addr := 0.U(32.W)
-        //}
+        // enable Write Operation
+        w_addr := io.sw.wAddr //w_addr + 4.U(32.W)
+        w_data := io.sw.wData
+        w_req  := true.B
+
     }
     // for test
     io.sw.data      := r_data
@@ -127,10 +125,7 @@ class Cpu extends Module {
 
 class CpuBus extends Module {
     val io      = IO(new TestIf)
-    // val io2     = IO(new Bundle {
-    //     val r_addr = Output(UInt(32.W))
-    // })
-
+  
     val sw_halt     = RegInit(true.B)       // input
     val sw_data     = RegInit(0.U(32.W))    // output
     val sw_addr     = RegInit(0.U(32.W))    // output
