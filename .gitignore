@@ -44,6 +44,7 @@ test_run_dir/*
 *_summary.xml
 *_usage.xml
 *_xst.xrpt
+/fpga/chisel_generated/
 
 # project-wide generated files
 *.gise

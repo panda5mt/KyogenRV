@@ -51,7 +51,8 @@ object Test extends App {
                 0x1100001CL,
                 0x1100001DL,
                 0x1100001EL,
-                0x1100001FL
+                0x1100001FL,
+                
             )
             step(1)
             poke(c.io.sw.halt, true.B)
@@ -66,6 +67,7 @@ object Test extends App {
             poke(c.io.sw.halt, false.B)
             step(1)
             step(1)
+            
             for (lp <- 0 to (memarray.length - 1) by 1){
                 val a = peek(c.io.sw.addr)
                 val d = peek(c.io.sw.data)
@@ -101,6 +103,7 @@ class Cpu extends Module {
         w_addr := io.sw.wAddr //w_addr + 4.U(32.W)
         w_data := io.sw.wData
         w_req  := true.B
+        r_addr := 0.U(32.W)
 
     }
     // for test
