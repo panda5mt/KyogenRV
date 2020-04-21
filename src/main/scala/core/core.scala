@@ -60,10 +60,11 @@ object Test extends App {
             for (addr <- 0 to (memarray.length * 4 - 1) by 4){    
                 poke(c.io.sw.wAddr, addr)
                 poke(c.io.sw.wData, memarray(addr/4))
-                
+                println(f"write: addr = 0x${addr}%08X, data = 0x${memarray(addr/4)}%08X")
                 step(1)
             }
             step(1)
+            println("---------------------------------------------------------")
             poke(c.io.sw.halt, false.B)
             step(1)
             step(1)
@@ -72,7 +73,7 @@ object Test extends App {
                 val a = peek(c.io.sw.addr)
                 val d = peek(c.io.sw.data)
 
-                println(f"addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
+                println(f"read : addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
                 step(1)
             }
         }
