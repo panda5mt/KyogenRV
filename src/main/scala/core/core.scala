@@ -95,6 +95,8 @@ class Cpu extends Module {
     val w_addr  = RegInit(0.U(32.W))
     val w_data  = RegInit(0.U(32.W)) 
     
+    val rv32i_reg   = RegInit(VecInit(Seq.fill(32)(0.U(32.W)))) // x0 - x31:All zero initialized
+   
     when (io.sw.halt === false.B){     
         when(r_ack === true.B){
             r_addr := r_addr + 4.U(32.W)    // increase program counter
@@ -106,6 +108,10 @@ class Cpu extends Module {
         w_req  := true.B
         r_addr := 0.U(32.W)
 
+    }
+
+    when (r_data === BitPat("b????????????1111")){
+        rv32i_reg(1) := "h0000_ffff".U(32.W)
     }
     // for test
     io.sw.data      := r_data
@@ -137,7 +143,6 @@ class CpuBus extends Module {
     val sw_wdata    = RegInit(0.U(32.W))    // input
     val sw_waddr    = RegInit(0.U(32.W))    // input
 
-   
     val cpu     = Module(new Cpu)
     val memory  = Module(new IMem)
     
