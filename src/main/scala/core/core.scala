@@ -20,14 +20,40 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
             var memarray = Array(
-               0x00000000L,
-               0x00000093L,
-               0x00100113L,
-               0x00200193L,
-               0x00300213L,
-               0x00400293L,
-               0x00500313L,
-               0x00000000L
+               
+               0x00000093L, // addi x1,x0,0 (x1 = x0 + 0 = 0)
+               0x00100113L, // addi x2,x0,1 (x2 = x0 + 1 = 1)
+               0x00200193L, // addi x3,x0,2 (x3 = x0 + 2 = 2)
+               0x00300213L, // addi x4,x0,3 (x4 = x0 + 3 = 3)
+               0x00400293L, // addi x5,x0,4
+               0x00500313L, // addi x6,x0,5
+               0x00600393L, // addi x7,x0,6
+               0x00700413L, // addi x8,x0,7
+               0x00800493L, // addi x9,x0,8
+               0x00900513L, // addi x10,x0,9
+               0x00A00593L, // addi x11,x0,10
+               0x00B00613L, // addi x12,x0,11
+               0x00C00693L, // addi x13,x0,12
+               0x00D00713L, // addi x14,x0,13
+               0x00E00793L, // addi x15,x0,14
+               0x00F00813L, // addi x16,x0,15
+               0x01000893L, // addi x17,x0,16
+               0x01100913L, // addi x18,x0,17
+               0x01200993L, // addi x19,x0,18
+               0x01300A13L, // addi x20,x0,19
+               0x01400A93L, // addi x21,x0,20
+               0x01500B13L, // addi x22,x0,21
+               0x01600B93L, // addi x23,x0,22
+               0x01700C13L, // addi x24,x0,23
+               0x01800C93L, // addi x25,x0,24
+               0x01900D13L, // addi x26,x0,25
+               0x01A00D93L, // addi x27,x0,26
+               0x01B00E13L, // addi x28,x0,27
+               0x01C00E93L, // addi x29,x0,28
+               0x01D00F13L, // addi x30,x0,29
+               0x01E00F93L  // addi x31,x0,30
+            
+
                 
             )
             step(1)
@@ -104,19 +130,19 @@ class Cpu extends Module {
         w_req  := true.B
         r_addr := io.sw.w_pc//0.U(32.W)
     }
-    //addi    rd rs1 imm12           14..12=0 6..2=0x04 1..0=3
-    when (r_data === BitPat("b????_????_????_????_?000_????_?001_0011")){   //ADDI
-        //ex: x1 = x1 + 1 : "b0000_0000_0001_0000_1000_0000_1001_0011"= h00108093
-        // ADDI = imm12=[31:20], src=[19:15], funct3=[14:12], rd=[11:7], opcode=[6:0]
-        //rv32i_reg(r_data(11,7)) = rv32i_reg(r_data(19,15) + rv32i_reg(r_data(31,20)))
 
+    //(ID)
+    when (r_data === BitPat("b????_????_????_????_?000_????_?001_0011")){   //ADDI
+        // ADDI = imm12=[31:20], src=[19:15], funct3=[14:12], rd=[11:7], opcode=[6:0]
         val dest = r_data(11,7)
         val imm  = r_data(31,20)
         val src  = r_data(19,15)
         val dsrc = rv32i_reg(src)
-        val sum  = dsrc + imm
-        rv32i_reg(dest) :=  sum
+        when (0.U < dest && dest < 32.U){
+            rv32i_reg(dest) :=  dsrc + imm
+        }
     }
+
     // for test
     io.sw.data      := r_data
     io.sw.addr      := r_addr
