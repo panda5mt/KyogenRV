@@ -20,38 +20,14 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
             var memarray = Array(
-                0x11000000L,
-                0x11000001L,
-                0x11000002L,
-                0x11000003L,
-                0x11000004L,
-                0x11000005L,
-                0x11000006L,
-                0x11000007L,
-                0x11000008L,
-                0x11000009L,
-                0x1100000AL,
-                0x1100000BL,
-                0x1100000CL,
-                0x1100000DL,
-                0x1100000EL,
-                0x1100000FL,
-                0x11000010L,
-                0x11000011L,
-                0x11000012L,
-                0x11000013L,
-                0x11000014L,
-                0x11000015L,
-                0x11000016L,
-                0x11000017L,
-                0x11000018L,
-                0x11000019L,
-                0x1100001AL,
-                0x1100001BL,
-                0x1100001CL,
-                0x1100001DL,
-                0x1100001EL,
-                0x1100001FL,
+               0x00000000L,
+               0x00000093L,
+               0x00100113L,
+               0x00200193L,
+               0x00300213L,
+               0x00400293L,
+               0x00500313L,
+               0x00000000L
                 
             )
             step(1)
@@ -66,8 +42,7 @@ object Test extends App {
             step(1)
             println("---------------------------------------------------------")
             poke(c.io.sw.w_pc, 0)   // restart pc address
-            step(1)                 // fetch pc 
-             
+            step(1)                 // fetch pc  
             poke(c.io.sw.halt, false.B)
             step(1)
             step(1)
@@ -129,40 +104,18 @@ class Cpu extends Module {
         w_req  := true.B
         r_addr := io.sw.w_pc//0.U(32.W)
     }
+    //addi    rd rs1 imm12           14..12=0 6..2=0x04 1..0=3
+    when (r_data === BitPat("b????_????_????_????_?000_????_?001_0011")){   //ADDI
+        //ex: x1 = x1 + 1 : "b0000_0000_0001_0000_1000_0000_1001_0011"= h00108093
+        // ADDI = imm12=[31:20], src=[19:15], funct3=[14:12], rd=[11:7], opcode=[6:0]
+        //rv32i_reg(r_data(11,7)) = rv32i_reg(r_data(19,15) + rv32i_reg(r_data(31,20)))
 
-    when (r_data === BitPat("b????????????1111")){
-        rv32i_reg(1) := "hABAD_BABE".U(32.W)
-        rv32i_reg(2) := "hBAAD_F00D".U(32.W)
-        rv32i_reg(3) := "hBADD_CAFE".U(32.W)
-        rv32i_reg(4) := "hCAFE_BABE".U(32.W)
-        rv32i_reg(5) := "hDEAD_BEEF".U(32.W)
-        rv32i_reg(6) := "hDEFE_C8ED".U(32.W)
-        rv32i_reg(7) := "hFACE_FEED".U(32.W)
-        rv32i_reg(8) := "hFEE1_DEAD".U(32.W)
-        rv32i_reg(9) := "hBADC_AB1E".U(32.W)
-        rv32i_reg(10) := "hFEED_FACE".U(32.W)
-        rv32i_reg(11) := "h1111_1111".U(32.W)
-        rv32i_reg(12) := "hABAD_BABE".U(32.W)
-        rv32i_reg(13) := "hBAAD_F00D".U(32.W)
-        rv32i_reg(14) := "hBADD_CAFE".U(32.W)
-        rv32i_reg(15) := "hCAFE_BABE".U(32.W)
-        rv32i_reg(16) := "hDEAD_BEEF".U(32.W)
-        rv32i_reg(17) := "hDEFE_C8ED".U(32.W)
-        rv32i_reg(18) := "hFACE_FEED".U(32.W)
-        rv32i_reg(19) := "hFEE1_DEAD".U(32.W)
-        rv32i_reg(20) := "hBADC_AB1E".U(32.W)
-        rv32i_reg(21) := "hFEED_FACE".U(32.W)
-        rv32i_reg(22) := "h2222_2222".U(32.W)
-        rv32i_reg(23) := "hABAD_BABE".U(32.W)
-        rv32i_reg(24) := "hBAAD_F00D".U(32.W)
-        rv32i_reg(25) := "hBADD_CAFE".U(32.W)
-        rv32i_reg(26) := "hCAFE_BABE".U(32.W)
-        rv32i_reg(27) := "hDEAD_BEEF".U(32.W)
-        rv32i_reg(28) := "hDEFE_C8ED".U(32.W)
-        rv32i_reg(29) := "hFACE_FEED".U(32.W)
-        rv32i_reg(30) := "hFEE1_DEAD".U(32.W)
-        rv32i_reg(31) := "h3333_3333".U(32.W)
-        
+        val dest = r_data(11,7)
+        val imm  = r_data(31,20)
+        val src  = r_data(19,15)
+        val dsrc = rv32i_reg(src)
+        val sum  = dsrc + imm
+        rv32i_reg(dest) :=  sum
     }
     // for test
     io.sw.data      := r_data
