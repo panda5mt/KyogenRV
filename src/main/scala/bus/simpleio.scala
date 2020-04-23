@@ -6,13 +6,21 @@ import chisel3.Bool
 
 // bus ctrl
 class CtrlSwChannel extends Bundle {
-    val halt = Input(Bool())    // CPU or TraceMaster halt
-    //val rw   = Input(Bool())   // indicate Memory-Mapped read(false)/Write(true) SW
-    val addr = Output(UInt(32.W))   // for debug: address dump 
-    val data = Output(UInt(32.W)) // for test: memory dump
-    val wData = Input(UInt(32.W)) // for test: write data
-    val wAddr = Input(UInt(32.W)) // for test: write address
+    val halt    = Input(Bool())         // CPU or TraceMaster halt
+
+    val addr    = Output(UInt(32.W))    // for debug: address dump 
+    val data    = Output(UInt(32.W))    // for test: memory dump
+    
+    val wData   = Input(UInt(32.W))     // for test: write data
+    val wAddr   = Input(UInt(32.W))     // for test: write address
+
+    val gAddr   = Input(UInt(32.W))     // General register address (0 to 31)
+    val gData   = Output(UInt(32.W))    // General register data 
+
+    val r_pc    = Output(UInt(32.W))    // Program Counter Read register
+    val w_pc    = Input(UInt(32.W))     // Program Counter Write register
 }
+
 
 // address channel bundle
 class AddressChannel extends Bundle {
