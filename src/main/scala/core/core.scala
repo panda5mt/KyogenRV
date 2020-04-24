@@ -16,6 +16,7 @@ import mem.IMem
 import chisel3.iotesters 
 import chisel3.iotesters.PeekPokeTester
 ///////////////////////
+
 object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
@@ -98,6 +99,52 @@ object Test extends App {
     }
 }
 
+// ID-Stage
+class ElementOfInstruction extends Bundle{
+    //val inst    = UInt(32.W)        // instruction code
+    val op      = UInt(7.W)         // opcode
+    val fct3    = UInt(3.W)         // funct3
+    val rd      = UInt(5.W)         // rd or imm[4:0] 
+    val rs1     = UInt(5.W)         // rs
+    val rs2     = UInt(5.W)         // or shamt 
+    val imm115  = UInt(7.W)         //  
+    val imm     = UInt(12.W)        // imm[11:0]
+}
+
+class CDecoder(x: UInt){
+
+    def inst(
+        //inst:   UInt,
+        op:     UInt = x(6, 0),
+        fct3:   UInt = x(14, 12),
+        rd:     UInt = x(11, 7),
+        rs1:    UInt = x(19, 15),
+        rs2:    UInt = x(24, 20),
+        imm115: UInt = x(31, 25),
+        imm:    UInt = x(31, 20)) = 
+        {
+            val res = Wire(new ElementOfInstruction)
+            res.op      := op
+            res.fct3    := fct3
+            res.rd      := rd
+            res.rs1     := rs1
+            res.rs2     := rs2
+            res.imm115  := imm115
+            res.imm     := imm
+            res
+        }
+
+}
+
+class IBModule extends Module{
+    val io = IO(new Bundle {
+        val inst = Input(UInt(32.W))
+        val dec = Output(new ElementOfInstruction)
+  })
+  io.dec := new CDecoder(io.inst).inst(io.inst)
+}
+
+
 class Cpu extends Module {
     val io = IO(new HostIf)
     
@@ -129,17 +176,11 @@ class Cpu extends Module {
         r_addr := io.sw.w_pc//0.U(32.W)
     }
 
-    //(ID)
-    when (r_data === BitPat("b????_????_????_????_?000_????_?001_0011")){   //ADDI
-        // ADDI = imm12=[31:20], src=[19:15], funct3=[14:12], rd=[11:7], opcode=[6:0]
-        val dest = r_data(11,7)
-        val imm  = r_data(31,20)
-        val src  = r_data(19,15)
-        val dsrc = rv32i_reg(src)
-        when (0.U < dest && dest < 32.U){
-            rv32i_reg(dest) :=  dsrc + imm
-        }
-    }
+    // IB Module instance
+    val ib = Module(new IBModule)
+    ib.io.inst := r_data
+    rv32i_reg(ib.io.dec.rd) := rv32i_reg(ib.io.dec.rs1) + ib.io.dec.imm
+
 
     // for test
     io.sw.data      := r_data
@@ -195,7 +236,7 @@ class CpuBus extends Module {
     io.sw.data  := sw_data
     io.sw.addr  := sw_addr
     
-    io.sw.g_da := cpu.io.sw.g_da
+    io.sw.g_da  := cpu.io.sw.g_da
     io.sw.r_pc  := cpu.io.sw.r_pc
 
     w_pc        := io.sw.w_pc
