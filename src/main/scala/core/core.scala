@@ -101,7 +101,6 @@ object Test extends App {
 
 // ID-Stage
 class ElementOfInstruction extends Bundle{
-    //val inst    = UInt(32.W)        // instruction code
     val op      = UInt(7.W)         // opcode
     val fct3    = UInt(3.W)         // funct3
     val rd      = UInt(5.W)         // rd or imm[4:0] 
@@ -114,7 +113,6 @@ class ElementOfInstruction extends Bundle{
 class CDecoder(x: UInt){
 
     def inst(
-        //inst:   UInt,
         op:     UInt = x(6, 0),
         fct3:   UInt = x(14, 12),
         rd:     UInt = x(11, 7),
@@ -122,21 +120,21 @@ class CDecoder(x: UInt){
         rs2:    UInt = x(24, 20),
         imm115: UInt = x(31, 25),
         imm:    UInt = x(31, 20)) = 
-        {
-            val res = Wire(new ElementOfInstruction)
-            res.op      := op
-            res.fct3    := fct3
-            res.rd      := rd
-            res.rs1     := rs1
-            res.rs2     := rs2
-            res.imm115  := imm115
-            res.imm     := imm
-            res
-        }
+    {
+        val res = Wire(new ElementOfInstruction)
+        res.op      := op
+        res.fct3    := fct3
+        res.rd      := rd
+        res.rs1     := rs1
+        res.rs2     := rs2
+        res.imm115  := imm115
+        res.imm     := imm
+        res // return (res)
+    }
 
 }
 
-class IBModule extends Module{
+class IDModule extends Module{
     val io = IO(new Bundle {
         val inst = Input(UInt(32.W))
         val dec = Output(new ElementOfInstruction)
@@ -176,11 +174,15 @@ class Cpu extends Module {
         r_addr := io.sw.w_pc//0.U(32.W)
     }
 
-    // IB Module instance
-    val ib = Module(new IBModule)
-    ib.io.inst := r_data
-    rv32i_reg(ib.io.dec.rd) := rv32i_reg(ib.io.dec.rs1) + ib.io.dec.imm
+    // ID Module instance
+    val ibm = Module(new IDModule)
+    ibm.io.inst := r_data
+    val inst_code = Cat(ibm.io.dec.fct3,ibm.io.dec.op)
 
+
+    when (inst_code === BitPat("b000_0010011")) {// ADDI
+        rv32i_reg(ibm.io.dec.rd) := rv32i_reg(ibm.io.dec.rs1) + ibm.io.dec.imm
+    }
 
     // for test
     io.sw.data      := r_data
