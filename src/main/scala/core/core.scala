@@ -52,16 +52,14 @@ object Test extends App {
                0x01C00E93L, // addi x29,x0,28
                0x01D00F13L, // addi x30,x0,29
                0x01E00F93L  // addi x31,x0,30
-            
-
                 
             )
             step(1)
             poke(c.io.sw.halt, true.B)
             step(1)
             for (addr <- 0 to (memarray.length * 4 - 1) by 4){    
-                poke(c.io.sw.wAddr, addr)
-                poke(c.io.sw.wData, memarray(addr/4))
+                poke(c.io.sw.w_ad, addr)
+                poke(c.io.sw.w_da, memarray(addr/4))
                 println(f"write: addr = 0x${addr}%08X, data = 0x${memarray(addr/4)}%08X")
                 step(1)
             }
@@ -88,9 +86,9 @@ object Test extends App {
             step(1)
             for (lp <- 0 to 31 by 1){
 
-                poke(c.io.sw.gAddr, lp)
+                poke(c.io.sw.g_ad, lp)
                 step(1)
-                val d = peek(c.io.sw.gData)
+                val d = peek(c.io.sw.g_da)
 
                 println(f"read : x$lp%2d = 0x$d%08X") //peek(c.io.sw.data)
                 step(1)
@@ -125,8 +123,8 @@ class Cpu extends Module {
         }
     }.otherwise { // halt mode
         // enable Write Operation
-        w_addr := io.sw.wAddr //w_addr + 4.U(32.W)
-        w_data := io.sw.wData
+        w_addr := io.sw.w_ad //w_addr + 4.U(32.W)
+        w_data := io.sw.w_da
         w_req  := true.B
         r_addr := io.sw.w_pc//0.U(32.W)
     }
@@ -163,7 +161,7 @@ class Cpu extends Module {
     r_data := io.r_dch.data 
     
     // x0 - x31
-    io.sw.gData := rv32i_reg(io.sw.gAddr)
+    io.sw.g_da := rv32i_reg(io.sw.g_ad)
 
 
 }
@@ -190,22 +188,22 @@ class CpuBus extends Module {
     sw_data     := memory.io.r_dch.data
     sw_addr     := memory.io.r_ach.addr
     
-    sw_wdata    := io.sw.wData // data to write memory
-    sw_waddr    := io.sw.wAddr
-    sw_gaddr    := io.sw.gAddr 
+    sw_wdata    := io.sw.w_da // data to write memory
+    sw_waddr    := io.sw.w_ad
+    sw_gaddr    := io.sw.g_ad 
 
     io.sw.data  := sw_data
     io.sw.addr  := sw_addr
     
-    io.sw.gData := cpu.io.sw.gData
+    io.sw.g_da := cpu.io.sw.g_da
     io.sw.r_pc  := cpu.io.sw.r_pc
 
     w_pc        := io.sw.w_pc
 
     cpu.io.sw.halt  := sw_halt
-    cpu.io.sw.wData := sw_wdata
-    cpu.io.sw.wAddr := sw_waddr
-    cpu.io.sw.gAddr := sw_gaddr
+    cpu.io.sw.w_da := sw_wdata
+    cpu.io.sw.w_ad := sw_waddr
+    cpu.io.sw.g_ad := sw_gaddr
     cpu.io.sw.w_pc  := w_pc
 
     // Read memory
