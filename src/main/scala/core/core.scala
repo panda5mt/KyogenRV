@@ -175,13 +175,13 @@ class Cpu extends Module {
     }
 
     // ID Module instance
-    val ibm = Module(new IDModule)
-    ibm.io.inst := r_data
-    val inst_code = Cat(ibm.io.dec.fct3,ibm.io.dec.op)
+    val idm = Module(new IDModule)
+    idm.io.inst := r_data
+    val inst_code = Cat(idm.io.dec.fct3,idm.io.dec.op)
 
 
     when (inst_code === BitPat("b000_0010011")) {// ADDI
-        rv32i_reg(ibm.io.dec.rd) := rv32i_reg(ibm.io.dec.rs1) + ibm.io.dec.imm
+        rv32i_reg(idm.io.dec.rd) := rv32i_reg(idm.io.dec.rs1) + idm.io.dec.imm
     }
 
     // for test
