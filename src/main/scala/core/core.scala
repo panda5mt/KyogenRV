@@ -171,7 +171,7 @@ class Cpu extends Module {
         w_addr := io.sw.w_ad //w_addr + 4.U(32.W)
         w_data := io.sw.w_da
         w_req  := true.B
-        r_addr := io.sw.w_pc//0.U(32.W)
+        r_addr := io.sw.w_pc
     }
 
     // ID Module instance
