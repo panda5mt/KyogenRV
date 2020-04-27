@@ -125,7 +125,7 @@ class IDecode /*(implicit val p: Parameters) extends DecodeConstants*/ {
     //MRET    ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X /*,CSR.I*/),
     //DRET    ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X /*,CSR.I*/),
     EBREAK  ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X /*,CSR.I*/),
-    //WFI     ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/) // implemented as a NOP
+    //WFI     ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/), // implemented as a NOP
 
     FENCE_I ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/),
     FENCE   ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_1, M_X  , MT_X /*,CSR.N*/)

@@ -213,7 +213,7 @@ class CpuBus extends Module {
     cpu.io.sw.w_da := sw_wdata
     cpu.io.sw.w_ad := sw_waddr
     cpu.io.sw.g_ad := sw_gaddr
-    cpu.io.sw.w_pc  := w_pc
+    cpu.io.sw.w_pc := w_pc
 
     // Read memory
     memory.io.r_ach.req     <> cpu.io.r_ach.req
