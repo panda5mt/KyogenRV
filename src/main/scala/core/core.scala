@@ -3,7 +3,6 @@ package core
 import chisel3._
 import chisel3.util._
 import chisel3.Bool
-import chisel3.Printable
 
 import bus.HostIf
 import bus.SlaveIf
@@ -12,10 +11,13 @@ import bus.TestIf
 import mem._
 import mem.IMem
 
+
+
 /// Test modules //////
 import chisel3.iotesters 
 import chisel3.iotesters.PeekPokeTester
 ///////////////////////
+import util._
 
 object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
@@ -134,15 +136,19 @@ class Cpu extends Module {
 
     // ID Module instance
     val idm = Module(new IDModule)
-    idm.io.inst := r_data
-    val inst_code   = Cat(idm.io.dec.fct3,idm.io.dec.op)
-    val alu_func    = RegInit(0.U(4.W))
+    idm.io.imem := r_data
+
+    val id_ctrl = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
+
+    // val inst_code   = Cat(idm.io.dec.fct3,idm.io.dec.op)
+    // val alu_func    = RegInit(0.U(4.W))
 
 
 
-    when (inst_code === BitPat("b000_0010011")) {// ADDI
-        rv32i_reg(idm.io.dec.rd) := rv32i_reg(idm.io.dec.rs1) + idm.io.dec.imm
-    }
+
+    // when (inst_code === BitPat("b000_0010011")) {// ADDI
+    //     rv32i_reg(idm.io.dec.rd) := rv32i_reg(idm.io.dec.rs1) + idm.io.dec.imm
+    // }
 
     // for test
     io.sw.data      := r_data
