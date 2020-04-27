@@ -11,7 +11,7 @@ import bus.TestIf
 import mem._
 import mem.IMem
 
-
+import ScalarOpConstants._
 
 /// Test modules //////
 import chisel3.iotesters 
@@ -96,7 +96,6 @@ object Test extends App {
                 println(f"read : x$lp%2d = 0x$d%08X") //peek(c.io.sw.data)
                 step(1)
             }
-
         }
     }
 }
@@ -136,19 +135,33 @@ class Cpu extends Module {
 
     // ID Module instance
     val idm = Module(new IDModule)
-    idm.io.imem := r_data
-
+    idm.io.imem := r_data // instruction decode
     val id_ctrl = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
-    // val inst_code   = Cat(idm.io.dec.fct3,idm.io.dec.op)
-    // val alu_func    = RegInit(0.U(4.W))
+    // ALU OP1 selector
+    val ex_op1 = MuxLookup(id_ctrl.alu_op1, 0.U(32.W),
+        Seq(
+            OP1_RS1 -> rv32i_reg(idm.io.inst.rs1),
+            OP1_IMU -> 0.U(32.W),   // DUMMY 
+            OP1_IMZ -> 0.U(32.W)    // DUMMY
+        )
+    )
+    val ex_op2 = MuxLookup(id_ctrl.alu_op2, 0.U(32.W),
+        Seq(
+            OP2_RS2 -> rv32i_reg(idm.io.inst.rs2),
+            OP2_IMI -> idm.io.inst.imm,   // DUMMY 
+            OP2_IMS -> 0.U(32.W)    // DUMMY
+        )
+    )
 
+    import ALU._
+    val alu = Module(new ALU)
+    alu.io.alu_op := id_ctrl.alu_func
+    alu.io.op1 := ex_op1
+    alu.io.op2 := ex_op2
+    
+    rv32i_reg(idm.io.inst.rd) := alu.io.out
 
-
-
-    // when (inst_code === BitPat("b000_0010011")) {// ADDI
-    //     rv32i_reg(idm.io.dec.rd) := rv32i_reg(idm.io.dec.rs1) + idm.io.dec.imm
-    // }
 
     // for test
     io.sw.data      := r_data

@@ -9,6 +9,7 @@ import scala.collection.mutable.ArrayBuffer
 import Instructions._
 import ScalarOpConstants._
 import MemoryOpConstants._
+import ALU._
 
 object util {
     implicit def uintToBitPat(x: UInt):BitPat = BitPat(x)
@@ -26,7 +27,7 @@ class ElementOfInstruction extends Bundle{
     val rs1     = UInt(5.W)         // rs
     val rs2     = UInt(5.W)         // or shamt 
     //val imm115  = UInt(7.W)         //  
-    //val imm     = UInt(12.W)        // imm[11:0]
+    val imm     = UInt(12.W)        // imm[11:0]
 }
 
 class CDecoder(x: UInt){
@@ -37,9 +38,9 @@ class CDecoder(x: UInt){
         //fct3:   UInt = x(14, 12),
         rd:     UInt = x(11, 7),
         rs1:    UInt = x(19, 15),
-        rs2:    UInt = x(24, 20)
+        rs2:    UInt = x(24, 20),
         //imm115: UInt = x(31, 25),
-        //imm:    UInt = x(31, 20)
+        imm:    UInt = x(31, 20)
         ) = 
     {
         val res = Wire(new ElementOfInstruction)
@@ -50,7 +51,7 @@ class CDecoder(x: UInt){
         res.rs1     := rs1
         res.rs2     := rs2
         //res.imm115  := imm115
-        //res.imm     := imm
+        res.imm     := imm
         res // return (res)
     }
 }

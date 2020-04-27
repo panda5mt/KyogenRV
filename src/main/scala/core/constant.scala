@@ -53,20 +53,6 @@ def REN_0   = "b0".U
 def REN_1   = "b1".U
 def REN_X   = BitPat("b?")//"b0".U
 
-// ALU Operation Signal
-def ALU_ADD = 1.U(4.W)
-def ALU_SUB = 2.U(4.W)
-def ALU_SLL = 3.U(4.W)
-def ALU_SRL = 4.U(4.W)
-def ALU_SRA = 5.U(4.W)
-def ALU_AND = 6.U(4.W)
-def ALU_OR  = 7.U(4.W)
-def ALU_XOR = 8.U(4.W)
-def ALU_SLT = 9.U(4.W)
-def ALU_SLTU= 10.U(4.W)
-def ALU_COPY1= 11.U(4.W)
-def ALU_X   = BitPat("b????")//0.U(4.W)
-
 // Writeback Select Signal
 def WB_ALU  = 0.U(2.W)
 def WB_MEM  = 1.U(2.W)

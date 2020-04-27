@@ -63,7 +63,6 @@ class SlaveIf extends Bundle {
     // write operation
     val w_ach   = Flipped(new AddressChannel) // flipped I/O
     val w_dch   = Flipped(new wDataChannel)	
-
 }
 
 class TestIf extends Bundle {
