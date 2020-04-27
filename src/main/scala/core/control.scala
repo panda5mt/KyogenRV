@@ -162,7 +162,7 @@ class IntCtrlSigs extends Bundle {
         val decoder = DecodeLogic(inst, default, mappingIn = table)
 
         val sigs = Seq(legal, br_type, alu_op1, alu_op2, alu_func, wb_sel, rf_wen, mem_en, mem_wr, mask_type)
-        sigs zip decoder map {case (s,d) => (s := d) }
+        sigs zip decoder map {case (s,d) => s := d }
 
         this // return (this)
     }
@@ -172,13 +172,7 @@ class IntCtrlSigs extends Bundle {
 object DecodeLogic {
     def apply(addr: UInt, default: Seq[BitPat], mappingIn: Iterable[(BitPat, Seq[BitPat])]): Seq[UInt] = {
         val mapping = ArrayBuffer.fill(default.size)(ArrayBuffer[(BitPat, BitPat)]())
-
-        // Array(BEQ-> List(Y, ...,A2_RS2, A1_RS1, ...), JALR-> List(N, ...,A2_IMM, A1_RS1, ...), ...) の並びから、
-        // ArrayBuffer(ArrayBuffer(BEQ -> Y, JALR -> N, ...),
-        //             ...
-        //             ArrayBuffer(BEQ -> A2_RS2, JALR -> A2_IMM, ...),
-        //             ArrayBuffer(BEQ -> A1_RS1, JALR -> A1_RS1, ...), ...)
-        // の形に並び替え
+       
         for ((key, values) <- mappingIn)
         for ((value, i) <- values zipWithIndex)
         mapping(i) += key -> value
@@ -187,15 +181,9 @@ object DecodeLogic {
         yield apply(addr, thisDefault, thisMapping)
     }
 
-    /** 1種類の制御信号を、機械語から生成する。
-    * @param addr  機械語
-    * @param mappinIn 命令のビットパターンと、対応する制御信号のシーケンス
-    */
+    
     def apply(addr: UInt, default: BitPat, mapping: Iterable[(BitPat, BitPat)]): UInt = {
-    // MuxCase(default.value, Seq(
-    //   addr === BEQ -> A2_RS2,
-    //   addr === JALR -> A2_IMM, ...))
-    // の形に変形
+  
     MuxCase(default.value.U,
     mapping.map{ case (instBitPat, ctrlSigBitPat) => (addr === instBitPat) -> ctrlSigBitPat.value.U }.toSeq)
     }
