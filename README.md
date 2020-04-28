@@ -1,4 +1,4 @@
-building minimum CPU logic system in chisel3/scala
+building minimum CPU logic system(響玄RV) written in chisel3/scala based on RISC-V RV32I
 =======================
 ### Basically Logic 
 #### 1.Instruction Fetch Stage(IF)  
