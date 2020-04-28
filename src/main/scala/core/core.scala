@@ -23,38 +23,39 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
             var memarray = Array(
-               
-               0x00000093L, // addi x1,x0,0 (x1 = x0 + 0 = 0)
-               0x00100113L, // addi x2,x0,1 (x2 = x0 + 1 = 1)
-               0x00200193L, // addi x3,x0,2 (x3 = x0 + 2 = 2)
-               0x00300213L, // addi x4,x0,3 (x4 = x0 + 3 = 3)
-               0x00400293L, // addi x5,x0,4
-               0x00500313L, // addi x6,x0,5
-               0x00600393L, // addi x7,x0,6
-               0x00700413L, // addi x8,x0,7
-               0x00800493L, // addi x9,x0,8
-               0x00900513L, // addi x10,x0,9
-               0x00A00593L, // addi x11,x0,10
-               0x00B00613L, // addi x12,x0,11
-               0x00C00693L, // addi x13,x0,12
-               0x00D00713L, // addi x14,x0,13
-               0x00E00793L, // addi x15,x0,14
-               0x00F00813L, // addi x16,x0,15
-               0x01000893L, // addi x17,x0,16
-               0x01100913L, // addi x18,x0,17
-               0x01200993L, // addi x19,x0,18
-               0x01300A13L, // addi x20,x0,19
-               0x01400A93L, // addi x21,x0,20
-               0x01500B13L, // addi x22,x0,21
-               0x01600B93L, // addi x23,x0,22
-               0x01700C13L, // addi x24,x0,23
-               0x01800C93L, // addi x25,x0,24
-               0x01900D13L, // addi x26,x0,25
-               0x01A00D93L, // addi x27,x0,26
-               0x01B00E13L, // addi x28,x0,27
-               0x01C00E93L, // addi x29,x0,28
-               0x01D00F13L, // addi x30,x0,29
-               0x01E00F93L  // addi x31,x0,30
+            0x00000000L,
+            0x00100093L, // addi x1,x0,1 (x1 = x0 + 1 = 1)
+            0x00100113L, // addi x2,x0,1 (x2 = x0 + 1 = 1)
+            0x00200193L, // addi x3,x0,2 (x3 = x0 + 2 = 2)
+            0x00300213L, // addi x4,x0,3 (x4 = x0 + 3 = 3)
+            0x00400293L, // addi x5,x0,4
+            0x00500313L, // addi x6,x0,5
+            0x00600393L, // addi x7,x0,6
+            0x00700413L, // addi x8,x0,7
+            0x00800493L, // addi x9,x0,8
+            0x00900513L, // addi x10,x0,9
+            0x00A00593L, // addi x11,x0,10 (x11 = 0 + 10 = 10)
+            0x00259093L, // slli x1,x11,2 (x3 = x11 << 2 = 40)
+            0x00B00613L, // addi x12,x0,11
+            0x00C00693L, // addi x13,x0,12
+            0x00D00713L, // addi x14,x0,13
+            0x00E00793L, // addi x15,x0,14
+            0x00F00813L, // addi x16,x0,15
+            0x01000893L, // addi x17,x0,16
+            0x01100913L, // addi x18,x0,17
+            0x01200993L, // addi x19,x0,18
+            0x01300A13L, // addi x20,x0,19
+            0x01400A93L, // addi x21,x0,20
+            0x01500B13L, // addi x22,x0,21
+            0x01600B93L, // addi x23,x0,22
+            0x01700C13L, // addi x24,x0,23
+            0x01800C93L, // addi x25,x0,24
+            0x01900D13L, // addi x26,x0,25
+            0x01A00D93L, // addi x27,x0,26
+            0x01B00E13L, // addi x28,x0,27
+            0x01C00E93L, // addi x29,x0,28
+            0x01D00F13L, // addi x30,x0,29
+            0x01E00F93L  // addi x31,x0,30
                 
             )
             step(1)
@@ -146,6 +147,7 @@ class Cpu extends Module {
             OP1_IMZ -> 0.U(32.W)    // DUMMY
         )
     )
+    // ALU OP2 selector
     val ex_op2 = MuxLookup(id_ctrl.alu_op2, 0.U(32.W),
         Seq(
             OP2_RS2 -> rv32i_reg(idm.io.inst.rs2),
@@ -160,9 +162,15 @@ class Cpu extends Module {
     alu.io.op1 := ex_op1
     alu.io.op2 := ex_op2
 
-    val rf_wen = id_ctrl.rf_wen
-    when (rf_wen){
-        rv32i_reg(idm.io.inst.rd) := alu.io.out // 
+    val rf_wen = id_ctrl.rf_wen     // register write enable flag
+    val rd_addr = idm.io.inst.rd    // destination register
+
+    when (rf_wen === REN_1){
+        when (rd_addr =/= 0.U){
+            rv32i_reg(rd_addr) := alu.io.out
+        }.otherwise { // rd_addr = 0
+            rv32i_reg(0.U) := 0.U(32.W)
+        }  
     }
 
     // for test
