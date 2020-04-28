@@ -149,7 +149,7 @@ class Cpu extends Module {
     val ex_op2 = MuxLookup(id_ctrl.alu_op2, 0.U(32.W),
         Seq(
             OP2_RS2 -> rv32i_reg(idm.io.inst.rs2),
-            OP2_IMI -> idm.io.inst.imm,   // DUMMY 
+            OP2_IMI -> idm.io.inst.imm,   
             OP2_IMS -> 0.U(32.W)    // DUMMY
         )
     )
@@ -159,9 +159,11 @@ class Cpu extends Module {
     alu.io.alu_op := id_ctrl.alu_func
     alu.io.op1 := ex_op1
     alu.io.op2 := ex_op2
-    
-    rv32i_reg(idm.io.inst.rd) := alu.io.out
 
+    val rf_wen = id_ctrl.rf_wen
+    when (rf_wen){
+        rv32i_reg(idm.io.inst.rd) := alu.io.out // 
+    }
 
     // for test
     io.sw.data      := r_data
