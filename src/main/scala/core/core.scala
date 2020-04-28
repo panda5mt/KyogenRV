@@ -35,7 +35,7 @@ object Test extends App {
             0x00800493L, // addi x9,x0,8
             0x00900513L, // addi x10,x0,9
             0x00A00593L, // addi x11,x0,10 (x11 = 0 + 10 = 10)
-            0x00259093L, // slli x1,x11,2 (x3 = x11 << 2 = 40)
+            0x00259093L, // slli x1,x11,2 (x1 = x11 << 2 = 40)
             0x00B00613L, // addi x12,x0,11
             0x00C00693L, // addi x13,x0,12
             0x00D00713L, // addi x14,x0,13
