@@ -1,4 +1,4 @@
-building tiny CPU(響玄RV) in chisel3 based on RISC-V RV32I
+tiny CPU(響玄RV) in chisel3 based on RISC-V RV32I
 =======================
 ### Basically Logic 
 #### 1.Instruction Fetch Stage(IF)  
