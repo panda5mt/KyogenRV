@@ -162,6 +162,8 @@ class Cpu extends Module {
     alu.io.op1 := ex_op1
     alu.io.op2 := ex_op2
 
+
+    // register write
     val rf_wen = id_ctrl.rf_wen     // register write enable flag
     val rd_addr = idm.io.inst.rd    // destination register
 
