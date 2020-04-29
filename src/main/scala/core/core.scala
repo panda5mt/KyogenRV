@@ -20,7 +20,6 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
             var memarray: Array[Long] = Array(
-            0x00000000L, //
             0x00100093L, // addi x1,x0,1 (x1 = x0 + 1 = 1)
             0x00100113L, // addi x2,x0,1 (x2 = x0 + 1 = 1)
             0x00200193L, // addi x3,x0,2 (x3 = x0 + 2 = 2)
@@ -104,7 +103,7 @@ class Cpu extends Module {
     val io = IO(new HostIf)
     
     // initialization
-    val r_addr: UInt    = RegInit(0.U(32.W))
+    val r_addr: UInt    = RegInit(0.U(32.W))    // pc
     val r_data: UInt    = RegInit(0.U(32.W))
     val r_req: Bool     = RegInit(true.B)       // fetch signal
     val r_rw: Bool      = RegInit(false.B)
@@ -124,6 +123,9 @@ class Cpu extends Module {
         when(r_ack === true.B){
             r_addr := r_addr + 4.U(32.W)    // increase program counter
             w_req  := false.B
+        }.otherwise {
+            r_req   := true.B
+            r_addr  := 0.U(32.W)
         }
     }.otherwise { // halt mode
         // enable Write Operation
@@ -192,7 +194,7 @@ class Cpu extends Module {
     // read process
     r_ack  := io.r_dch.ack
     r_data := io.r_dch.data
-    
+
     // x0 - x31
     io.sw.g_da := rv32i_reg(io.sw.g_ad)
 

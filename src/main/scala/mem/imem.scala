@@ -14,7 +14,7 @@ class IMem extends Module {
     //val mem     = SyncReadMem(1024, UInt(32.W))
     val mem: Mem[UInt] = Mem(1024, UInt(32.W))
 
-    val i_ack: Bool = RegInit(true.B)
+    val i_ack: Bool = RegInit(false.B)
     val i_req: Bool = RegInit(false.B)
     //val i_data  = RegInit(0.U(32.W))
     
