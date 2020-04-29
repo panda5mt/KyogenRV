@@ -1,16 +1,13 @@
+// See README.md for license details.
 package core
 
 import chisel3._
 import chisel3.util._
-import chisel3.Bool
 
 import bus.HostIf
-import bus.SlaveIf
 import bus.TestIf
 
-import mem._
 import mem.IMem
-
 import ScalarOpConstants._
 
 /// Test modules //////
@@ -23,7 +20,7 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
             var memarray = Array(
-            0x00000000L, // todo:fix this
+            0x00000000L, //
             0x00100093L, // addi x1,x0,1 (x1 = x0 + 1 = 1)
             0x00100113L, // addi x2,x0,1 (x2 = x0 + 1 = 1)
             0x00200193L, // addi x3,x0,2 (x3 = x0 + 2 = 2)
@@ -57,12 +54,12 @@ object Test extends App {
             0x01C00E93L, // addi x29,x0,28
             0x01D00F13L, // addi x30,x0,29
             0x01E00F93L  // addi x31,x0,30
-                
+
             )
             step(1)
             poke(c.io.sw.halt, true.B)
             step(1)
-            for (addr <- 0 to (memarray.length * 4 - 1) by 4){    
+            for (addr <- 0 to (memarray.length * 4 - 1) by 4){
                 poke(c.io.sw.w_ad, addr)
                 poke(c.io.sw.w_da, memarray(addr/4))
                 println(f"write: addr = 0x${addr}%08X, data = 0x${memarray(addr/4)}%08X")
@@ -71,11 +68,11 @@ object Test extends App {
             step(1)
             println("---------------------------------------------------------")
             poke(c.io.sw.w_pc, 0)   // restart pc address
-            step(1)                 // fetch pc  
+            step(1)                 // fetch pc
             poke(c.io.sw.halt, false.B)
             step(1)
             step(1)
-            
+
             for (lp <- 0 to (memarray.length - 1) by 1){
                 val a = peek(c.io.sw.addr)
                 val d = peek(c.io.sw.data)

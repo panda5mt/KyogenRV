@@ -1,3 +1,4 @@
+// See README.md for license details.
 package core
 
 import chisel3._
@@ -175,17 +176,17 @@ object DecodeLogic {
         val mapping = ArrayBuffer.fill(default.size)(ArrayBuffer[(BitPat, BitPat)]())
        
         for ((key, values) <- mappingIn)
-        for ((value, i) <- values zipWithIndex)
-        mapping(i) += key -> value
+            for ((value, i) <- values zipWithIndex)
+                mapping(i) += key -> value
 
         for ((thisDefault, thisMapping) <- default zip mapping)
-        yield apply(addr, thisDefault, thisMapping)
+            yield apply(addr, thisDefault, thisMapping)
     }
 
     
     def apply(addr: UInt, default: BitPat, mapping: Iterable[(BitPat, BitPat)]): UInt = {
   
-    MuxCase(default.value.U,
-    mapping.map{ case (instBitPat, ctrlSigBitPat) => (addr === instBitPat) -> ctrlSigBitPat.value.U }.toSeq)
+    MuxCase(default.value.U, mapping.map{ 
+        case (instBitPat, ctrlSigBitPat) => (addr === instBitPat) -> ctrlSigBitPat.value.U }.toSeq)
     }
 }

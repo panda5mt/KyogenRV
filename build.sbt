@@ -53,3 +53,4 @@ libraryDependencies += "edu.berkeley.cs" %% "chisel-iotesters" % "[1.2.5,1.3-SNA
 scalacOptions ++= scalacOptionsVersion(scalaVersion.value)
 
 javacOptions ++= javacOptionsVersion(scalaVersion.value)
+
