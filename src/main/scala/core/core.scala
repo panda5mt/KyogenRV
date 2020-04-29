@@ -104,9 +104,9 @@ object Test extends App {
 class Cpu extends Module {
     val io = IO(new HostIf)
     
-    // initialization    
+    // initialization
     val r_addr  = RegInit(0.U(32.W))
-    val r_data  = RegInit(0.U(32.W))    
+    val r_data  = RegInit(0.U(32.W))
     val r_req   = RegInit(true.B)       // fetch signal
     val r_rw    = RegInit(false.B)
     val r_ack   = RegInit(false.B)
@@ -119,7 +119,7 @@ class Cpu extends Module {
     //val g_addr  = RegInit(0.U(32.W))
     val rv32i_reg   = RegInit(VecInit(Seq.fill(32)(0.U(32.W)))) // x0 - x31:All zero initialized
    
-    when (io.sw.halt === false.B){     
+    when (io.sw.halt === false.B){
         when(r_ack === true.B){
             r_addr := r_addr + 4.U(32.W)    // increase program counter
             w_req  := false.B
@@ -141,7 +141,7 @@ class Cpu extends Module {
     val ex_op1 = MuxLookup(id_ctrl.alu_op1, 0.U(32.W),
         Seq(
             OP1_RS1 -> rv32i_reg(idm.io.inst.rs1),
-            OP1_IMU -> 0.U(32.W),   // DUMMY 
+            OP1_IMU -> 0.U(32.W),   // DUMMY
             OP1_IMZ -> 0.U(32.W)    // DUMMY
         )
     )
@@ -149,7 +149,7 @@ class Cpu extends Module {
     val ex_op2 = MuxLookup(id_ctrl.alu_op2, 0.U(32.W),
         Seq(
             OP2_RS2 -> rv32i_reg(idm.io.inst.rs2),
-            OP2_IMI -> idm.io.inst.imm,   
+            OP2_IMI -> idm.io.inst.imm,
             OP2_IMS -> 0.U(32.W)    // DUMMY
         )
     )

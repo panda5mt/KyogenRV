@@ -3,8 +3,6 @@ package core
 
 import chisel3._
 import chisel3.util._
-
-//import chisel3.util.ImplicitConversions._
 import scala.collection.mutable.ArrayBuffer
 
 import Instructions._
