@@ -25,13 +25,13 @@ import ALU._
 class ALU extends Module {
     val io = IO (new Bundle
     {
-        val op1     = Input(UInt(32.W))
-        val op2     = Input(UInt(32.W))
-        val alu_op  = Input(UInt(4.W))
-        val out     = Output(UInt(32.W))
+        val op1: UInt = Input(UInt(32.W))
+        val op2: UInt = Input(UInt(32.W))
+        val alu_op: UInt = Input(UInt(4.W))
+        val out: UInt = Output(UInt(32.W))
     })
-    val shamt = io.op2(4,0).asUInt
-    val w_out = Wire(UInt(32.W))
+    val shamt: UInt = io.op2(4,0).asUInt
+    val w_out: UInt = Wire(UInt(32.W))
 
     w_out := MuxLookup(io.alu_op, io.op2, Seq(
         ALU_ADD  -> (io.op1 + io.op2),

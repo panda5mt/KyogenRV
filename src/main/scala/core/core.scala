@@ -19,7 +19,7 @@ import util._
 object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
-            var memarray = Array(
+            var memarray: Array[Long] = Array(
             0x00000000L, //
             0x00100093L, // addi x1,x0,1 (x1 = x0 + 1 = 1)
             0x00100113L, // addi x2,x0,1 (x2 = x0 + 1 = 1)
@@ -61,7 +61,7 @@ object Test extends App {
             for (addr <- 0 to (memarray.length * 4 - 1) by 4){
                 poke(c.io.sw.w_ad, addr)
                 poke(c.io.sw.w_da, memarray(addr/4))
-                println(f"write: addr = 0x${addr}%08X, data = 0x${memarray(addr/4)}%08X")
+                println(f"write: addr = 0x$addr%08X, data = 0x${memarray(addr/4)}%08X")
                 step(1)
             }
             step(1)
@@ -72,7 +72,7 @@ object Test extends App {
             step(1)
             step(1)
 
-            for (lp <- 0 to (memarray.length - 1) by 1){
+            for (lp <- memarray.indices by 1){
                 val a = peek(c.io.sw.addr)
                 val d = peek(c.io.sw.data)
 
@@ -104,19 +104,21 @@ class Cpu extends Module {
     val io = IO(new HostIf)
     
     // initialization
-    val r_addr  = RegInit(0.U(32.W))
-    val r_data  = RegInit(0.U(32.W))
-    val r_req   = RegInit(true.B)       // fetch signal
-    val r_rw    = RegInit(false.B)
-    val r_ack   = RegInit(false.B)
+    val r_addr: UInt = RegInit(0.U(32.W))
+    val r_data: UInt = RegInit(0.U(32.W))
+    val r_req: Bool = RegInit(true.B)       // fetch signal
+    val r_rw: Bool = RegInit(false.B)
+    val r_ack: Bool = RegInit(false.B)
 
-    val w_req   = RegInit(true.B)
-    val w_ack   = RegInit(false.B)
-    val w_addr  = RegInit(0.U(32.W))
-    val w_data  = RegInit(0.U(32.W))
+    val w_req: Bool = RegInit(true.B)
+    val w_ack: Bool = RegInit(false.B)
+    val w_addr: UInt = RegInit(0.U(32.W))
+    val w_data: UInt = RegInit(0.U(32.W))
     
     //val g_addr  = RegInit(0.U(32.W))
-    val rv32i_reg   = RegInit(VecInit(Seq.fill(32)(0.U(32.W)))) // x0 - x31:All zero initialized
+    val rv32i_reg: Vec[UInt] = {
+        RegInit(VecInit(Seq.fill(32)(0.U(32.W))))
+    } // x0 - x31:All zero initialized
    
     when (io.sw.halt === false.B){
         when(r_ack === true.B){
@@ -132,12 +134,12 @@ class Cpu extends Module {
     }
 
     // ID Module instance
-    val idm = Module(new IDModule)
+    val idm: IDModule = Module(new IDModule)
     idm.io.imem := r_data // instruction decode
-    val id_ctrl = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
+    val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
     // ALU OP1 selector
-    val ex_op1 = MuxLookup(id_ctrl.alu_op1, 0.U(32.W),
+    val ex_op1: UInt = MuxLookup(id_ctrl.alu_op1, 0.U(32.W),
         Seq(
             OP1_RS1 -> rv32i_reg(idm.io.inst.rs1),
             OP1_IMU -> 0.U(32.W),   // DUMMY
@@ -145,7 +147,7 @@ class Cpu extends Module {
         )
     )
     // ALU OP2 selector
-    val ex_op2 = MuxLookup(id_ctrl.alu_op2, 0.U(32.W),
+    val ex_op2: UInt = MuxLookup(id_ctrl.alu_op2, 0.U(32.W),
         Seq(
             OP2_RS2 -> rv32i_reg(idm.io.inst.rs2),
             OP2_IMI -> idm.io.inst.imm,
@@ -154,22 +156,22 @@ class Cpu extends Module {
     )
 
     import ALU._
-    val alu = Module(new ALU)
+    val alu: ALU = Module(new ALU)
     alu.io.alu_op := id_ctrl.alu_func
     alu.io.op1 := ex_op1
     alu.io.op2 := ex_op2
 
 
     // register write
-    val rf_wen = id_ctrl.rf_wen     // register write enable flag
-    val rd_addr = idm.io.inst.rd    // destination register
+    val rf_wen: Bool = id_ctrl.rf_wen     // register write enable flag
+    val rd_addr: UInt = idm.io.inst.rd    // destination register
 
     when (rf_wen === REN_1){
         when (rd_addr =/= 0.U){
             rv32i_reg(rd_addr) := alu.io.out
         }.otherwise { // rd_addr = 0
             rv32i_reg(0.U) := 0.U(32.W)
-        }  
+        }
     }
 
     // for test
@@ -185,11 +187,11 @@ class Cpu extends Module {
     io.w_dch.data   := w_data
     io.w_ach.req    := w_req
     
-    //w_pc    := io.sw.w_pc      
+    //w_pc    := io.sw.w_pc
     
     // read process
     r_ack  := io.r_dch.ack
-    r_data := io.r_dch.data 
+    r_data := io.r_dch.data
     
     // x0 - x31
     io.sw.g_da := rv32i_reg(io.sw.g_ad)
@@ -198,30 +200,30 @@ class Cpu extends Module {
 }
 
 class CpuBus extends Module {
-    val io      = IO(new TestIf)
+    val io: TestIf = IO(new TestIf)
   
-    val sw_halt     = RegInit(true.B)       // input
-    val sw_data     = RegInit(0.U(32.W))    // output
-    val sw_addr     = RegInit(0.U(32.W))    // output
-    val sw_rw       = RegInit(false.B)      // input
-    val sw_wdata    = RegInit(0.U(32.W))    // input
-    val sw_waddr    = RegInit(0.U(32.W))    // input
+    val sw_halt: Bool = RegInit(true.B)       // input
+    val sw_data: UInt = RegInit(0.U(32.W))    // output
+    val sw_addr: UInt = RegInit(0.U(32.W))    // output
+    val sw_rw: Bool = RegInit(false.B)      // input
+    val sw_wdata: UInt = RegInit(0.U(32.W))    // input
+    val sw_waddr: UInt = RegInit(0.U(32.W))    // input
     
-    val w_pc        = RegInit(0.U(32.W))
+    val w_pc: UInt = RegInit(0.U(32.W))
 
-    val sw_gaddr    = RegInit(0.U(32.W))    // general reg.(x0 to x31)
+    val sw_gaddr: UInt = RegInit(0.U(32.W))    // general reg.(x0 to x31)
     
-    val cpu     = Module(new Cpu)
-    val memory  = Module(new IMem)
+    val cpu: Cpu = Module(new Cpu)
+    val memory: IMem = Module(new IMem)
     
     // Connect Test Module
-    sw_halt     := io.sw.halt  
+    sw_halt     := io.sw.halt
     sw_data     := memory.io.r_dch.data
     sw_addr     := memory.io.r_ach.addr
     
     sw_wdata    := io.sw.w_da // data to write memory
     sw_waddr    := io.sw.w_ad
-    sw_gaddr    := io.sw.g_ad 
+    sw_gaddr    := io.sw.g_ad
 
     io.sw.data  := sw_data
     io.sw.addr  := sw_addr
@@ -240,7 +242,7 @@ class CpuBus extends Module {
     // Read memory
     memory.io.r_ach.req     <> cpu.io.r_ach.req
     memory.io.r_ach.addr    <> cpu.io.r_ach.addr
-    cpu.io.r_dch.data       <> memory.io.r_dch.data 
+    cpu.io.r_dch.data       <> memory.io.r_dch.data
     cpu.io.r_dch.ack        <> memory.io.r_dch.ack
 
     // write memory

@@ -13,7 +13,7 @@ import ALU._
 import scala.collection.JavaConverters._
 
 object util {
-    implicit def uintToBitPat(x: UInt):BitPat = BitPat(x)
+    implicit def uintToBitPat(x: UInt): BitPat = BitPat(x)
 }
 
 import util._
@@ -58,11 +58,13 @@ class CDecoder(x: UInt){
 }
 
 class IDModule extends Module{
-    val io = IO(new Bundle {
-        val imem = Input(UInt(32.W))
-        val inst = Output(new ElementOfInstruction)
-  })
-  io.inst := new CDecoder(io.imem).inst(io.imem)
+    val io = IO {
+        new Bundle {
+            val imem = Input(UInt(32.W))
+            val inst = Output(new ElementOfInstruction)
+        }
+    }
+    io.inst := new CDecoder(io.imem).inst(io.imem)
 }
 
 // abstract trait DecodeConstants {
@@ -167,7 +169,7 @@ class IntCtrlSigs extends Bundle {
         val sigs = {
             Seq(legal, br_type, alu_op1, alu_op2, alu_func, wb_sel, rf_wen, mem_en, mem_wr, mask_type)
         }
-        (sigs zip decoder).map({case (s,d) => s := d })
+        (sigs zip decoder).foreach({case (s,d) => s := d })
 
         this // return (this)
     }
