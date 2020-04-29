@@ -54,7 +54,6 @@ object Test extends App {
             0x01C00E93L, // addi x29,x0,28
             0x01D00F13L, // addi x30,x0,29
             0x01E00F93L  // addi x31,x0,30
-
             )
             step(1)
             poke(c.io.sw.halt, true.B)
