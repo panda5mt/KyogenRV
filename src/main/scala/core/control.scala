@@ -21,33 +21,33 @@ import util._
 // ID-Stage
 
 class ElementOfInstruction extends Bundle{
-    val bits: UInt = UInt(32.W)
-    //val op      = UInt(7.W)   // opcode
-    //val fct3    = UInt(3.W)   // funct3
-    val rd: UInt = UInt(5.W)     // rd or imm[4:0]
-    val rs1: UInt = UInt(5.W)     // rs
-    val rs2: UInt = UInt(5.W)     // or shamt
-    //val imm115  = UInt(7.W)   //
-    val imm: UInt = UInt(12.W)    // imm[11:0]
+    val bits: UInt  = UInt(32.W)
+    //val op        = UInt(7.W)   // opcode
+    //val fct3      = UInt(3.W)   // funct3
+    val rd: UInt    = UInt(5.W)     // rd or imm[4:0]
+    val rs1: UInt   = UInt(5.W)     // rs
+    val rs2: UInt   = UInt(5.W)     // or shamt
+    //val imm115    = UInt(7.W)   //
+    val imm: UInt   = UInt(12.W)    // imm[11:0]
 }
 
 class CDecoder(x: UInt){
 
     def inst(
-        bits:   UInt,
+        bits: UInt,
         //op:     UInt = x(6, 0),
         //fct3:   UInt = x(14, 12),
-        rd:     UInt = x(11, 7),
-        rs1:    UInt = x(19, 15),
-        rs2:    UInt = x(24, 20),
+        rd: UInt    = x(11, 7),
+        rs1: UInt   = x(19, 15),
+        rs2: UInt   = x(24, 20),
         //imm115: UInt = x(31, 25),
-        imm:    UInt = x(31, 20)
+        imm: UInt   = x(31, 20)
         ): ElementOfInstruction =
     {
         val res = Wire(new ElementOfInstruction)
         res.bits    := bits
-        //res.op      := op
-        //res.fct3    := fct3
+        //res.op    := op
+        //res.fct3  := fct3
         res.rd      := rd
         res.rs1     := rs1
         res.rs2     := rs2
@@ -60,8 +60,8 @@ class CDecoder(x: UInt){
 class IDModule extends Module{
     val io = IO {
         new Bundle {
-            val imem = Input(UInt(32.W))
-            val inst = Output(new ElementOfInstruction)
+            val imem    = Input(UInt(32.W))
+            val inst    = Output(new ElementOfInstruction)
         }
     }
     io.inst := new CDecoder(io.imem).inst(io.imem)
@@ -72,7 +72,7 @@ class IDModule extends Module{
 // }
 
 // See also instructions.scala and constant.scala
-class IDecode /*(implicit val p: Parameters) extends DecodeConstants*/ {
+class IDecode {
     val table: Array[(BitPat, List[BitPat])] = Array(
                 /* 1bit | 4bit   |  2bit  |   2bit  |  4bit   |  2bit  | 1bit | 1bit | 1bit | 3bit |  3bit */
                 /* val  |  BR    |  op1   |   op2   |  ALU    |  wb    | rf   | mem  | mem  | mask |  csr  */
@@ -131,7 +131,6 @@ class IDecode /*(implicit val p: Parameters) extends DecodeConstants*/ {
     EBREAK  ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X /*,CSR.I*/),
     //WFI     ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/),
     // implemented as a NOP
-
     FENCE_I ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/),
     FENCE   ->  List(Y, BR_N  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_0, MEN_1, M_X  , MT_X /*,CSR.N*/)
     // we are already sequentially consistent, so no need to honor the fence instruction
@@ -142,18 +141,18 @@ class IDecode /*(implicit val p: Parameters) extends DecodeConstants*/ {
 // Internal Control Signal Bundle(ALU ctrl, memory ctrl, etc)
 // from Rocket chip Decode.scala
 class IntCtrlSigs extends Bundle {
-    val legal: Bool = Bool()
-    val br_type: UInt = Bits(BR_X.getWidth.W)
+    val legal: Bool     = Bool()
+    val br_type: UInt   = Bits(BR_X.getWidth.W)
 
-    val alu_op1: UInt = Bits(OP1_X.getWidth.W)
-    val alu_op2: UInt = Bits(OP2_X.getWidth.W)
-    val alu_func: UInt = Bits(ALU_X.getWidth.W)
+    val alu_op1: UInt   = Bits(OP1_X.getWidth.W)
+    val alu_op2: UInt   = Bits(OP2_X.getWidth.W)
+    val alu_func: UInt  = Bits(ALU_X.getWidth.W)
     
-    val wb_sel: UInt = Bits(WB_X.getWidth.W)
-    val rf_wen: Bool = Bool()//Bits(REN_X.getWidth.W)
-    val mem_en: Bool = Bool()//Bits(MEN_X.getWidth.W)
+    val wb_sel: UInt    = Bits(WB_X.getWidth.W)
+    val rf_wen: Bool    = Bool()//Bits(REN_X.getWidth.W)
+    val mem_en: Bool    = Bool()//Bits(MEN_X.getWidth.W)
 
-    val mem_wr: UInt = Bits(M_SZ)
+    val mem_wr: UInt    = Bits(M_SZ)
     val mask_type: UInt = Bits(MT_SZ)
 
     def default: List[BitPat] =
@@ -161,7 +160,7 @@ class IntCtrlSigs extends Bundle {
 
     //noinspection ScalaStyle
     def decode(
-        inst:  UInt,
+        inst: UInt,
         table: Iterable[(BitPat, List[BitPat])]
         ): IntCtrlSigs =
     {
