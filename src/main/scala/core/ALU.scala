@@ -6,18 +6,18 @@ import chisel3.util._
 
 object ALU {
     // ALU Operation Signal
-    def ALU_ADD     = 1.U(4.W)
-    def ALU_SUB     = 2.U(4.W)
-    def ALU_SLL     = 3.U(4.W)
-    def ALU_SRL     = 4.U(4.W)
-    def ALU_SRA     = 5.U(4.W)
-    def ALU_AND     = 6.U(4.W)
-    def ALU_OR      = 7.U(4.W)
-    def ALU_XOR     = 8.U(4.W)
-    def ALU_SLT     = 9.U(4.W)
-    def ALU_SLTU    = 10.U(4.W)
-    def ALU_COPY1   = 11.U(4.W)
-    def ALU_X       = 0.U(4.W) // BitPat("b????")
+    def ALU_ADD: UInt = 1.U(4.W)
+    def ALU_SUB: UInt = 2.U(4.W)
+    def ALU_SLL: UInt = 3.U(4.W)
+    def ALU_SRL: UInt = 4.U(4.W)
+    def ALU_SRA: UInt = 5.U(4.W)
+    def ALU_AND: UInt = 6.U(4.W)
+    def ALU_OR: UInt = 7.U(4.W)
+    def ALU_XOR: UInt = 8.U(4.W)
+    def ALU_SLT: UInt = 9.U(4.W)
+    def ALU_SLTU: UInt = 10.U(4.W)
+    def ALU_COPY1: UInt = 11.U(4.W)
+    def ALU_X: UInt = 0.U(4.W) // BitPat("b????")
 }
 
 import ALU._

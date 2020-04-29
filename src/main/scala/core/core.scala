@@ -209,7 +209,7 @@ class CpuBus extends Module {
     
     val w_pc        = RegInit(0.U(32.W))
 
-    val sw_gaddr    = RegInit(0.U(32.W))    // general geg.(x0 to x31)
+    val sw_gaddr    = RegInit(0.U(32.W))    // general reg.(x0 to x31)
     
     val cpu     = Module(new Cpu)
     val memory  = Module(new IMem)
