@@ -49,57 +49,57 @@ object ScalarOpConstants {
    def REN_X: UInt = "b0".U
 
    // Writeback Select Signal
-   def WB_ALU :UInt = 0.U(2.W)
-   def WB_MEM :UInt = 1.U(2.W)
-   def WB_PC4 :UInt = 2.U(2.W)
-   def WB_CSR :UInt = 3.U(2.W)
-   def WB_X:BitPat = BitPat("b??")// 0.U(2.W)
+   def WB_ALU: UInt = 0.U(2.W)
+   def WB_MEM: UInt = 1.U(2.W)
+   def WB_PC4: UInt = 2.U(2.W)
+   def WB_CSR: UInt = 3.U(2.W)
+   def WB_X: BitPat = BitPat("b??")// 0.U(2.W)
 }
 
 
 object MemoryOpConstants
 {
    // Memory Function Type (Read,Write,Fence) Signal
-   def MWR_R :UInt    = 0.U(2.W)
-   def MWR_W :UInt    = 1.U(2.W)
-   def MWR_F :UInt    = 2.U(2.W)
-   def MWR_X :BitPat  = BitPat("b??")
+   def MWR_R: UInt = 0.U(2.W)
+   def MWR_W: UInt = 1.U(2.W)
+   def MWR_F: UInt = 2.U(2.W)
+   def MWR_X: BitPat = BitPat("b??")
 
    // Memory Enable Signal
-   def MEN_0 :UInt = "b0".U
-   def MEN_1 :UInt = "b1".U
-   def MEN_X :UInt = "b0".U
+   def MEN_0: UInt = "b0".U
+   def MEN_1: UInt = "b1".U
+   def MEN_X: UInt = "b0".U
 
    // Memory Mask Type Signal
-   def MSK_B :UInt    = 0.U(3.W)
-   def MSK_BU :UInt   = 1.U(3.W)
-   def MSK_H :UInt    = 2.U(3.W)
-   def MSK_HU :UInt   = 3.U(3.W)
-   def MSK_W :UInt    = 4.U(3.W)
-   def MSK_X :BitPat  = BitPat("b???") //4.U(3.W)
+   def MSK_B: UInt = 0.U(3.W)
+   def MSK_BU: UInt = 1.U(3.W)
+   def MSK_H: UInt = 2.U(3.W)
+   def MSK_HU: UInt = 3.U(3.W)
+   def MSK_W: UInt = 4.U(3.W)
+   def MSK_X: BitPat = BitPat("b???") //4.U(3.W)
 
 
    // Cache Flushes & Sync Primitives
-   def M_N :UInt   = 0.U(3.W)
-   def M_SI :UInt  = 1.U(3.W)   // synch instruction stream
-   def M_SD :UInt  = 2.U(3.W)   // synch data stream
-   def M_FA :UInt  = 3.U(3.W)   // flush all caches
-   def M_FD :UInt  = 4.U(3.W)   // flush data cache
+   def M_N: UInt = 0.U(3.W)
+   def M_SI: UInt = 1.U(3.W)   // synch instruction stream
+   def M_SD: UInt = 2.U(3.W)   // synch data stream
+   def M_FA: UInt = 3.U(3.W)   // flush all caches
+   def M_FD: UInt = 4.U(3.W)   // flush data cache
 
    // Memory Functions (read, write, fence)
-   def MT_READ :UInt  = 0.U(2.W)
-   def MT_WRITE :UInt = 1.U(2.W)
-   def MT_FENCE :UInt = 2.U(2.W)
+   def MT_READ: UInt = 0.U(2.W)
+   def MT_WRITE: UInt = 1.U(2.W)
+   def MT_FENCE: UInt = 2.U(2.W)
 
 
    val MT_SZ: Width = 3.W
-   def MT_X :BitPat = BitPat("b???") // 0.U(3.W)
-   def MT_B :UInt  = 1.U(3.W)
-   def MT_H :UInt  = 2.U(3.W)
-   def MT_W :UInt  = 3.U(3.W)
-   def MT_D :UInt  = 4.U(3.W)
-   def MT_BU :UInt = 5.U(3.W)
-   def MT_HU :UInt = 6.U(3.W)
+   def MT_X: BitPat = BitPat("b???") // 0.U(3.W)
+   def MT_B: UInt = 1.U(3.W)
+   def MT_H: UInt = 2.U(3.W)
+   def MT_W: UInt = 3.U(3.W)
+   def MT_D: UInt = 4.U(3.W)
+   def MT_BU: UInt = 5.U(3.W)
+   def MT_HU: UInt = 6.U(3.W)
    def MT_WU: UInt = 7.U(3.W)
 
    val M_SZ: Width = 1.W
