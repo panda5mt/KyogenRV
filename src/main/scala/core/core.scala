@@ -20,6 +20,7 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
             var memarray: Array[Long] = Array(
+            0x00000000L,
             0x00100093L, // addi x1,x0,1 (x1 = x0 + 1 = 1)
             0x00100113L, // addi x2,x0,1 (x2 = x0 + 1 = 1)
             0x00200193L, // addi x3,x0,2 (x3 = x0 + 2 = 2)
