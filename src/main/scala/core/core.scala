@@ -171,7 +171,7 @@ class Cpu extends Module {
     }
 
     // Branch type selector
-    val br_typ: UInt = MuxLookup(id_ctrl.br_type, 0.U(32.W),
+    val pc_incl: UInt = MuxLookup(id_ctrl.br_type, 0.U(32.W),
         Seq(
             BR_N    -> 4.U(32.W), // Next
             BR_NE   -> 0.U(32.W), // Branch on NotEqual
@@ -189,7 +189,7 @@ class Cpu extends Module {
     when (io.sw.halt === false.B){
         when(r_ack === true.B){
             w_req := false.B
-            r_addr := r_addr + br_typ // increase or jump program counter
+            r_addr := r_addr + pc_incl // increase or jump program counter
         }.otherwise {
             r_req   := true.B
             r_addr  := 0.U(32.W)
