@@ -162,7 +162,7 @@ class Cpu extends Module {
         )
     )
 
-    when (rf_wen === REN_1){
+    when (rf_wen === REN_1){ // register write enable?
         when (rd_addr =/= 0.U && rd_addr < 32.U){
             rv32i_reg(rd_addr) := rd_val
         }.otherwise { // rd_addr = 0
