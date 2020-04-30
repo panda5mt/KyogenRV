@@ -22,12 +22,12 @@ import util._
 
 class ElementOfInstruction extends Bundle{
     val bits: UInt  = UInt(32.W)
-    //val op        = UInt(7.W)   // opcode
-    //val fct3      = UInt(3.W)   // funct3
+    //val op        = UInt(7.W)     // opcode
+    //val fct3      = UInt(3.W)     // funct3
     val rd: UInt    = UInt(5.W)     // rd or imm[4:0]
     val rs1: UInt   = UInt(5.W)     // rs
     val rs2: UInt   = UInt(5.W)     // or shamt
-    //val imm115    = UInt(7.W)   //
+    //val imm115    = UInt(7.W)     //
     val imm: UInt   = UInt(12.W)    // imm[11:0]
 }
 
