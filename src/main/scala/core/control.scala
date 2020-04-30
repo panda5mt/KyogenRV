@@ -63,7 +63,7 @@ class IDModule extends Module{
             val imem: UInt = Input(UInt(32.W))
             val inst: ElementOfInstruction = Output(new ElementOfInstruction)
         })
-    io.inst := new CDecoder(io.imem).inst(io.imem)
+    io.inst := new CDecoder(x = io.imem).inst(bits = io.imem)
 }
 
 // abstract trait DecodeConstants {
