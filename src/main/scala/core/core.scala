@@ -7,10 +7,10 @@ import chisel3.util._
 import _root_.core.ScalarOpConstants._
 import mem.IMem
 
-/// Test modules //////
+/// Test modules /////
 import chisel3.iotesters
 import chisel3.iotesters.PeekPokeTester
-///////////////////////
+//////////////////////
 
 object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
