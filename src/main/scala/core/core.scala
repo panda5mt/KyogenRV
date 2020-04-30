@@ -141,8 +141,9 @@ class Cpu extends Module {
     val ex_op1: UInt = MuxLookup(id_ctrl.alu_op1, 0.U(32.W),
         Seq(
             OP1_RS1 -> rv32i_reg(idm.io.inst.rs1),
-            OP1_IMU -> 0.U(32.W),   // DUMMY
-            OP1_IMZ -> 0.U(32.W)    // DUMMY
+            OP1_IMU -> 0.U(32.W),   // immediate, U-type
+            OP1_IMZ -> 0.U(32.W),   // zero-extended rs1 field, CSRI insts
+            OP1_X   -> 0.U(32.W)
         )
     )
     // ALU OP2 selector
@@ -150,7 +151,8 @@ class Cpu extends Module {
         Seq(
             OP2_RS2 -> rv32i_reg(idm.io.inst.rs2),
             OP2_IMI -> idm.io.inst.imm,
-            OP2_IMS -> 0.U(32.W)    // DUMMY
+            OP2_IMS -> 0.U(32.W),    // DUMMY
+            OP2_X   -> 0.U(32.W)
         )
     )
 
