@@ -152,7 +152,7 @@ class Cpu extends Module {
             OP2_RS2 -> rv32i_reg(idm.io.inst.rs2),
             OP2_IMI -> (idm.io.inst bits(31, 20)),
             OP2_IMS -> Cat(idm.io.inst bits(31, 25), idm.io.inst bits(11, 7)),    // immediate, S-type
-            OP2_PC  -> 0.U(32.W),
+            OP2_PC  -> r_addr,  //0.U(32.W),
             OP2_X   -> 0.U(32.W)
         )
     )
