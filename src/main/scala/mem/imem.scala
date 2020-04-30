@@ -23,7 +23,7 @@ class IMem extends Module {
     // read operation
     i_req           :=io.r_ach.req
     io.r_dch.data   := mem.read(io.r_ach.addr)
-    //i_ack           := i_req
+    //i_ack          := i_req
     io.r_dch.ack    := i_ack
     when(io.r_ach.req === true.B) {
         i_ack := true.B

@@ -141,7 +141,7 @@ class Cpu extends Module {
     val ex_op1: UInt = MuxLookup(id_ctrl.alu_op1, 0.U(32.W),
         Seq(
             OP1_RS1 -> rv32i_reg(idm.io.inst.rs1),
-            OP1_IMU -> 0.U(32.W),   // immediate, U-type
+            OP1_IMU -> (idm.io.inst bits(31, 12)),   // immediate, U-type(insts_code[31:12])
             OP1_IMZ -> 0.U(32.W),   // zero-extended rs1 field, CSRI insts
             OP1_X   -> 0.U(32.W)
         )
@@ -150,8 +150,9 @@ class Cpu extends Module {
     val ex_op2: UInt = MuxLookup(id_ctrl.alu_op2, 0.U(32.W),
         Seq(
             OP2_RS2 -> rv32i_reg(idm.io.inst.rs2),
-            OP2_IMI -> idm.io.inst.imm,
-            OP2_IMS -> 0.U(32.W),    // DUMMY
+            OP2_IMI -> (idm.io.inst bits(31, 20)),
+            OP2_IMS -> Cat(idm.io.inst bits(31, 25), idm.io.inst bits(11, 7)),    // immediate, S-type
+            OP2_PC  -> 0.U(32.W),
             OP2_X   -> 0.U(32.W)
         )
     )
@@ -167,7 +168,7 @@ class Cpu extends Module {
     val rd_addr:    UInt = idm.io.inst.rd    // destination register
 
     when (rf_wen === REN_1){
-        when (rd_addr =/= 0.U){
+        when (rd_addr =/= 0.U && rd_addr < 32.U){
             rv32i_reg(rd_addr) := alu.io.out
         }.otherwise { // rd_addr = 0
             rv32i_reg(0.U) := 0.U(32.W)
