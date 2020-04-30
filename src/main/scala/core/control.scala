@@ -3,18 +3,21 @@ package core
 
 import chisel3._
 import chisel3.util._
-import _root_.core.ALU._
-import _root_.core.Instructions._
-import _root_.core.MemoryOpConstants._
-import _root_.core.ScalarOpConstants._
 
 import scala.collection.mutable.ArrayBuffer
+import Instructions._
+import ScalarOpConstants._
+import MemoryOpConstants._
+import ALU._
 
+import scala.collection.JavaConverters._
+
+//noinspection ScalaStyle
 object util {
     implicit def uintToBitPat(x: UInt): BitPat = BitPat(x)
 }
 
-import core.util._
+import util._
 
 // ID-Stage
 
