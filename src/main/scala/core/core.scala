@@ -96,6 +96,7 @@ object Test extends App {
 
 
 
+//noinspection ScalaStyle
 class Cpu extends Module {
     val io: HostIf = IO(new HostIf)
     
@@ -115,22 +116,7 @@ class Cpu extends Module {
     val rv32i_reg: Vec[UInt] = {
         RegInit(VecInit(Seq.fill(32)(0.U(32.W))))
     } // x0 - x31:All zero initialized
-   
-    when (io.sw.halt === false.B){
-        when(r_ack === true.B){
-            r_addr := r_addr + 4.U(32.W)    // increase program counter
-            w_req  := false.B
-        }.otherwise {
-            r_req   := true.B
-            r_addr  := 0.U(32.W)
-        }
-    }.otherwise { // halt mode
-        // enable Write Operation
-        w_addr := io.sw.w_ad //w_addr + 4.U(32.W)
-        w_data := io.sw.w_da
-        w_req  := true.B
-        r_addr := io.sw.w_pc
-    }
+
 
     // ID Module instance
     val idm: IDModule = Module(new IDModule)
@@ -164,15 +150,56 @@ class Cpu extends Module {
 
 
     // register write
-    val rf_wen:     Bool = id_ctrl.rf_wen     // register write enable flag
-    val rd_addr:    UInt = idm.io.inst.rd    // destination register
+    val rf_wen: Bool = id_ctrl.rf_wen     // register write enable flag
+    val rd_addr:UInt = idm.io.inst.rd    // destination register
+    val rd_val: UInt = MuxLookup(id_ctrl.wb_sel, 0.U(32.W),
+        Seq(
+            WB_ALU -> alu.io.out,
+            WB_PC4 -> (r_addr + 4.U(32.W)),           //pc + 4
+            WB_CSR -> 0.U(32.W),
+            WB_MEM -> 0.U(32.W),
+            WB_X   -> 0.U(32.W)
+        )
+    )
 
     when (rf_wen === REN_1){
         when (rd_addr =/= 0.U && rd_addr < 32.U){
-            rv32i_reg(rd_addr) := alu.io.out
+            rv32i_reg(rd_addr) := rd_val
         }.otherwise { // rd_addr = 0
             rv32i_reg(0.U) := 0.U(32.W)
         }
+    }
+
+    // Branch type selector
+    val br_typ: UInt = MuxLookup(id_ctrl.br_type, 0.U(32.W),
+        Seq(
+            BR_N    -> 4.U(32.W), // Next
+            BR_NE   -> 0.U(32.W), // Branch on NotEqual
+            BR_EQ   -> 0.U(32.W), // Branch on Equal
+            BR_GE   -> 0.U(32.W), // Branch on Greater/Equal
+            BR_GEU  -> 0.U(32.W), // Branch on Greater/Equal Unsigned
+            BR_LT   -> 0.U(32.W), // Branch on Less Than
+            BR_LTU  -> 0.U(32.W), // Branch on Less Than Unsigned
+            BR_J    -> Cat(idm.io.inst bits 31, idm.io.inst bits(19,12), idm.io.inst bits 20, idm.io.inst bits(30, 21)), // Jump
+            BR_JR   -> 0.U(32.W), // Jump Register
+            BR_X    -> 0.U(32.W)  //
+        )
+    )
+
+    when (io.sw.halt === false.B){
+        when(r_ack === true.B){
+            w_req := false.B
+            r_addr := r_addr + br_typ // increase or jump program counter
+        }.otherwise {
+            r_req   := true.B
+            r_addr  := 0.U(32.W)
+        }
+    }.otherwise { // halt mode
+        // enable Write Operation
+        w_addr := io.sw.w_ad //w_addr + 4.U(32.W)
+        w_data := io.sw.w_da
+        w_req  := true.B
+        r_addr := io.sw.w_pc
     }
 
     // for test
