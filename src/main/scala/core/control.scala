@@ -58,12 +58,11 @@ class CDecoder(x: UInt){
 }
 
 class IDModule extends Module{
-    val io = IO {
+    val io = IO (
         new Bundle {
-            val imem    = Input(UInt(32.W))
-            val inst    = Output(new ElementOfInstruction)
-        }
-    }
+            val imem: UInt = Input(UInt(32.W))
+            val inst: ElementOfInstruction = Output(new ElementOfInstruction)
+        })
     io.inst := new CDecoder(io.imem).inst(io.imem)
 }
 
@@ -141,22 +140,23 @@ class IDecode {
 // Internal Control Signal Bundle(ALU ctrl, memory ctrl, etc)
 // from Rocket chip Decode.scala
 class IntCtrlSigs extends Bundle {
-    val legal: Bool     = Bool()
-    val br_type: UInt   = Bits(BR_X.getWidth.W)
+    val legal:      Bool = Bool()
+    val br_type:    UInt = Bits(BR_X.getWidth.W)
 
-    val alu_op1: UInt   = Bits(OP1_X.getWidth.W)
-    val alu_op2: UInt   = Bits(OP2_X.getWidth.W)
-    val alu_func: UInt  = Bits(ALU_X.getWidth.W)
+    val alu_op1:    UInt = Bits(OP1_X.getWidth.W)
+    val alu_op2:    UInt = Bits(OP2_X.getWidth.W)
+    val alu_func:   UInt = Bits(ALU_X.getWidth.W)
     
-    val wb_sel: UInt    = Bits(WB_X.getWidth.W)
-    val rf_wen: Bool    = Bool()//Bits(REN_X.getWidth.W)
-    val mem_en: Bool    = Bool()//Bits(MEN_X.getWidth.W)
+    val wb_sel:     UInt = Bits(WB_X.getWidth.W)
+    val rf_wen:     Bool = Bool()//Bits(REN_X.getWidth.W)
+    val mem_en:     Bool = Bool()//Bits(MEN_X.getWidth.W)
 
-    val mem_wr: UInt    = Bits(M_SZ)
-    val mask_type: UInt = Bits(MT_SZ)
+    val mem_wr:     UInt = Bits(M_SZ)
+    val mask_type:  UInt = Bits(MT_SZ)
 
-    def default: List[BitPat] =
-        List(X, BR_X  , OP1_X  , OP2_X  ,  ALU_X    , WB_X  , REN_X, MEN_X, M_X  , MT_X/*CSR.N*/)
+    def default: List[BitPat] = {
+        List(X, BR_X, OP1_X, OP2_X, ALU_X, WB_X, REN_X, MEN_X, M_X, MT_X /*CSR.N*/)
+    }
 
     //noinspection ScalaStyle
     def decode(
@@ -164,10 +164,14 @@ class IntCtrlSigs extends Bundle {
         table: Iterable[(BitPat, List[BitPat])]
         ): IntCtrlSigs =
     {
-        val decoder: Seq[UInt] = DecodeLogic(inst, default, mappingIn = table)
+        val decoder: Seq[UInt] = {
+            DecodeLogic(inst, default, mappingIn = table)
+        }
+
         val sigs = {
             Seq(legal, br_type, alu_op1, alu_op2, alu_func, wb_sel, rf_wen, mem_en, mem_wr, mask_type)
         }
+        
         (sigs zip decoder).foreach({case (s,d) => s := d })
 
         this // return (this)
@@ -179,17 +183,16 @@ object DecodeLogic {
     def apply(addr: UInt, default: Seq[BitPat], mappingIn: Iterable[(BitPat, Seq[BitPat])]): Seq[UInt] = {
         val mapping = ArrayBuffer.fill(default.size)(ArrayBuffer[(BitPat, BitPat)]())
 
-        for ((key, values) <- mappingIn)
-            for ((value, i) <- values zipWithIndex)
-                mapping(i) += key -> value
+        for ((key: BitPat, values: Seq[BitPat]) <- mappingIn)
+            (values zipWithIndex)
+              .foreach { case (value, i) => mapping(i) += key.->(value) }
 
         for ((thisDefault, thisMapping) <- default zip mapping)
             yield apply(addr, thisDefault, thisMapping)
     }
     
     def apply(addr: UInt, default: BitPat, mapping: Iterable[(BitPat, BitPat)]): UInt = {
-  
-    MuxCase(default.value.U, mapping.map{
-        case (instBitPat, ctrlSigBitPat) => (addr === instBitPat) -> ctrlSigBitPat.value.U }.toSeq)
+        MuxCase(default.value.U, mapping.map{
+            case (instBitPat, ctrlSigBitPat) => (addr === instBitPat) -> ctrlSigBitPat.value.U }.toSeq)
     }
 }

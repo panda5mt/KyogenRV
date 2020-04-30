@@ -1,20 +1,16 @@
 // See README.md for license details.
 package core
 
+import bus.{HostIf, TestIf}
 import chisel3._
 import chisel3.util._
-
-import bus.HostIf
-import bus.TestIf
-
+import _root_.core.ScalarOpConstants._
 import mem.IMem
-import ScalarOpConstants._
 
 /// Test modules //////
-import chisel3.iotesters 
+import chisel3.iotesters
 import chisel3.iotesters.PeekPokeTester
 ///////////////////////
-import util._
 
 object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
@@ -58,7 +54,7 @@ object Test extends App {
             step(1)
             poke(c.io.sw.halt, true.B)
             step(1)
-            for (addr <- 0 to (memarray.length * 4 - 1) by 4){
+            for (addr <- 0 until memarray.length * 4 by 4){
                 poke(c.io.sw.w_ad, addr)
                 poke(c.io.sw.w_da, memarray(addr/4))
                 println(f"write: addr = 0x$addr%08X, data = 0x${memarray(addr/4)}%08X")
@@ -101,19 +97,19 @@ object Test extends App {
 
 
 class Cpu extends Module {
-    val io = IO(new HostIf)
+    val io: HostIf = IO(new HostIf)
     
     // initialization
-    val r_addr: UInt    = RegInit(0.U(32.W))    // pc
-    val r_data: UInt    = RegInit(0.U(32.W))
-    val r_req: Bool     = RegInit(true.B)       // fetch signal
-    val r_rw: Bool      = RegInit(false.B)
-    val r_ack: Bool     = RegInit(false.B)
+    val r_addr: UInt = RegInit(0.U(32.W))    // pc
+    val r_data: UInt = RegInit(0.U(32.W))
+    val r_req:  Bool = RegInit(true.B)       // fetch signal
+    val r_rw:   Bool = RegInit(false.B)
+    val r_ack:  Bool = RegInit(false.B)
 
-    val w_req: Bool     = RegInit(true.B)
-    val w_ack: Bool     = RegInit(false.B)
-    val w_addr: UInt    = RegInit(0.U(32.W))
-    val w_data: UInt    = RegInit(0.U(32.W))
+    val w_req:  Bool = RegInit(true.B)
+    val w_ack:  Bool = RegInit(false.B)
+    val w_addr: UInt = RegInit(0.U(32.W))
+    val w_data: UInt = RegInit(0.U(32.W))
     
     //val g_addr  = RegInit(0.U(32.W))
     val rv32i_reg: Vec[UInt] = {
@@ -158,7 +154,6 @@ class Cpu extends Module {
         )
     )
 
-    import ALU._
     val alu: ALU    = Module(new ALU)
     alu.io.alu_op   := id_ctrl.alu_func
     alu.io.op1      := ex_op1
@@ -166,8 +161,8 @@ class Cpu extends Module {
 
 
     // register write
-    val rf_wen: Bool    = id_ctrl.rf_wen     // register write enable flag
-    val rd_addr: UInt   = idm.io.inst.rd    // destination register
+    val rf_wen:     Bool = id_ctrl.rf_wen     // register write enable flag
+    val rd_addr:    UInt = idm.io.inst.rd    // destination register
 
     when (rf_wen === REN_1){
         when (rd_addr =/= 0.U){
@@ -205,19 +200,19 @@ class Cpu extends Module {
 class CpuBus extends Module {
     val io: TestIf = IO(new TestIf)
   
-    val sw_halt: Bool   = RegInit(true.B)       // input
-    val sw_data: UInt   = RegInit(0.U(32.W))    // output
-    val sw_addr: UInt   = RegInit(0.U(32.W))    // output
-    val sw_rw: Bool     = RegInit(false.B)      // input
-    val sw_wdata: UInt  = RegInit(0.U(32.W))    // input
-    val sw_waddr: UInt  = RegInit(0.U(32.W))    // input
+    val sw_halt:    Bool = RegInit(true.B)       // input
+    val sw_data:    UInt = RegInit(0.U(32.W))    // output
+    val sw_addr:    UInt = RegInit(0.U(32.W))    // output
+    val sw_rw:      Bool = RegInit(false.B)      // input
+    val sw_wdata:   UInt = RegInit(0.U(32.W))    // input
+    val sw_waddr:   UInt = RegInit(0.U(32.W))    // input
     
-    val w_pc: UInt      = RegInit(0.U(32.W))
+    val w_pc:       UInt = RegInit(0.U(32.W))
 
-    val sw_gaddr: UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
+    val sw_gaddr:   UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
     
-    val cpu: Cpu        = Module(new Cpu)
-    val memory: IMem    = Module(new IMem)
+    val cpu:        Cpu = Module(new Cpu)
+    val memory:     IMem = Module(new IMem)
     
     // Connect Test Module
     sw_halt     := io.sw.halt
