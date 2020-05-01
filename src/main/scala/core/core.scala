@@ -50,7 +50,7 @@ object Test extends App {
             0x01C00E93L, // addi x29,x0,28
             0x01D00F13L, // addi x30,x0,29
             0x01E00F93L, // addi x31,x0,30
-            0x00008167L, // jalr  x2,x1,0
+            0x00008167L, // jalr  x2,x1,0 (x2 = pc+4.U, pc = x1 + 0 = 40 = 0x28)
             0x00200093L, // addi x1,x0,2 (x1 = x0 + 2 = 2)
             0x00300113L  // addi x2,x0,2 (x2 = x0 + 3 = 3)
 
