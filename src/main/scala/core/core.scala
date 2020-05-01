@@ -49,7 +49,11 @@ object Test extends App {
             0x01B00E13L, // addi x28,x0,27
             0x01C00E93L, // addi x29,x0,28
             0x01D00F13L, // addi x30,x0,29
-            0x01E00F93L  // addi x31,x0,30
+            0x01E00F93L,  // addi x31,x0,30
+            0x00008167L, /// jalr  x2,
+            0x00008167L,
+            0x00000000L
+
             )
             step(1)
             poke(c.io.sw.halt, true.B)
@@ -68,7 +72,8 @@ object Test extends App {
             step(1)
             step(1)
 
-            for (lp <- memarray.indices by 1){
+            //for (lp <- memarray.indices by 1){
+            for (lp <- 0 until 100 by 1){
                 val a = peek(c.io.sw.addr)
                 val d = peek(c.io.sw.data)
 
@@ -117,10 +122,14 @@ class Cpu extends Module {
         RegInit(VecInit(Seq.fill(32)(0.U(32.W))))
     } // x0 - x31:All zero initialized
 
+    val next_inst_is_valid: Bool = RegInit(true.B) //
 
     // ID Module instance
     val idm: IDModule = Module(new IDModule)
-    idm.io.imem := r_data // instruction decode
+
+    // instruction decode
+    idm.io.imem := Mux(next_inst_is_valid, r_data, 0.U(32.W)) // if (command == branch) next.command = invalid
+
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
     // ALU OP1 selector
@@ -154,7 +163,7 @@ class Cpu extends Module {
     val rd_val: UInt = MuxLookup(id_ctrl.wb_sel, 0.U(32.W),
         Seq(
             WB_ALU -> alu.io.out,
-            WB_PC4 -> (r_addr + 4.U(32.W)),           //pc + 4
+            WB_PC4 -> (r_addr/* + 4.U(32.W)*/),           //pc + 4
             WB_CSR -> 0.U(32.W),
             WB_MEM -> 0.U(32.W),
             WB_X   -> 0.U(32.W)
@@ -172,7 +181,7 @@ class Cpu extends Module {
     // Branch type selector
     val pc_incl: UInt = MuxLookup(id_ctrl.br_type, 0.U(32.W),
         Seq(
-            BR_N    -> 4.U(32.W), // Next
+            BR_N    -> (r_addr + 4.U(32.W)), // Next
             BR_NE   -> 0.U(32.W), // Branch on NotEqual
             BR_EQ   -> 0.U(32.W), // Branch on Equal
             BR_GE   -> 0.U(32.W), // Branch on Greater/Equal
@@ -180,15 +189,22 @@ class Cpu extends Module {
             BR_LT   -> 0.U(32.W), // Branch on Less Than
             BR_LTU  -> 0.U(32.W), // Branch on Less Than Unsigned
             BR_J    -> Cat(idm.io.inst bits 31, idm.io.inst bits(19,12), idm.io.inst bits 20, idm.io.inst bits(30, 21)), // Jump
-            BR_JR   -> alu.io.out, // Jump Register (rs1 + IMI)
+            BR_JR   -> alu.io.out, //(alu.io.op1 + alu.io.op2), // Jump Register (rs1 + IMI)
             BR_X    -> 0.U(32.W)  //
         )
+    )
+
+
+    when (id_ctrl.br_type =/= BR_N){        // if(now.inst == branch) { next.inst = invalid } (bubble)
+        next_inst_is_valid := false.B
+    }.otherwise(
+        next_inst_is_valid := true.B
     )
 
     when (io.sw.halt === false.B){
         when(r_ack === true.B){
             w_req := false.B
-            r_addr := r_addr + pc_incl // increase or jump program counter
+            r_addr := pc_incl // increase or jump program counter
         }.otherwise {
             r_req   := true.B
             r_addr  := 0.U(32.W)
