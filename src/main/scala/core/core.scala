@@ -50,7 +50,7 @@ object Test extends App {
             0x01C00E93L, // addi x29,x0,28
             0x01D00F13L, // addi x30,x0,29
             0x01E00F93L,  // addi x31,x0,30
-            0x00008167L, /// jalr  x2,
+            0x00008167L, /// jalr  x2,x1,0
             0x00008167L,
             0x00000000L
 
@@ -163,7 +163,7 @@ class Cpu extends Module {
     val rd_val: UInt = MuxLookup(id_ctrl.wb_sel, 0.U(32.W),
         Seq(
             WB_ALU -> alu.io.out,
-            WB_PC4 -> (r_addr/* + 4.U(32.W)*/),           //pc + 4
+            WB_PC4 -> r_addr,           //r_addr = pc + 4
             WB_CSR -> 0.U(32.W),
             WB_MEM -> 0.U(32.W),
             WB_X   -> 0.U(32.W)
@@ -177,7 +177,7 @@ class Cpu extends Module {
             rv32i_reg(0.U) := 0.U(32.W)
         }
     }
-    // JALR    ->  List(Y, BR_JR , OP1_RS1, OP2_IMI , ALU_X   ,  WB_PC4, REN_1, MEN_0, M_X  , MT_X /*,CSR.N*/),
+
     // Branch type selector
     val pc_incl: UInt = MuxLookup(id_ctrl.br_type, 0.U(32.W),
         Seq(
