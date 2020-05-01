@@ -13,4 +13,9 @@ git clone http://github.com/panda5mt/KyogenRV -b 0.0.9 --depth 1
 cd KyogenRV/
 make test
 ```
-
+#### 3.Branch (PC update)
+```
+git clone http://github.com/panda5mt/KyogenRV -b 0.0.9.6 --depth 1 
+cd KyogenRV/
+make test
+```
