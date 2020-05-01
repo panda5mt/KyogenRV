@@ -12,21 +12,21 @@ object ScalarOpConstants {
    def X: UInt = 0.U(1.W)
 
    // PC Select Signal
-   def PC_4: UInt = 0.U(3.W) // PC + 4
+   def PC_4: UInt = 0.U(3.W)  // PC + 4
    def PC_BR: UInt = 1.U(3.W) // branch_target
-   def PC_J: UInt = 2.U(3.W) // jump_target
+   def PC_J: UInt = 2.U(3.W)  // jump_target
    def PC_JR: UInt = 3.U(3.W) // jump_reg_target
-   def PC_EXC: UInt = 4.U(3.W) // exception
+   def PC_EXC: UInt = 4.U(3.W)// exception
 
    // Branch Type
-   def BR_N: UInt = 0.U(4.W) // Next
+   def BR_N: UInt = 0.U(4.W)  // Next
    def BR_NE: UInt = 1.U(4.W) // Branch on NotEqual
    def BR_EQ: UInt = 2.U(4.W) // Branch on Equal
    def BR_GE: UInt = 3.U(4.W) // Branch on Greater/Equal
-   def BR_GEU: UInt = 4.U(4.W) // Branch on Greater/Equal Unsigned
+   def BR_GEU: UInt = 4.U(4.W)// Branch on Greater/Equal Unsigned
    def BR_LT: UInt = 5.U(4.W) // Branch on Less Than
-   def BR_LTU: UInt = 6.U(4.W) // Branch on Less Than Unsigned
-   def BR_J: UInt = 7.U(4.W) // Jump
+   def BR_LTU: UInt = 6.U(4.W)// Branch on Less Than Unsigned
+   def BR_J: UInt = 7.U(4.W)  // Jump
    def BR_JR: UInt = 8.U(4.W) // Jump Register
    def BR_X: UInt = 0.U(4.W)
 
@@ -37,10 +37,10 @@ object ScalarOpConstants {
    def OP1_X: UInt = 0.U(2.W)
 
    // RS2 Operand Select Signal
-   def OP2_RS2: UInt = 0.U(2.W) // Register Source #2
-   def OP2_IMI: UInt = 1.U(2.W) // immediate, I-type
-   def OP2_IMS: UInt = 2.U(2.W) // immediate, S-type
-   def OP2_PC: UInt = 3.U(2.W) // PC
+   def OP2_RS2: UInt = 0.U(2.W)  // Register Source #2
+   def OP2_IMI: UInt = 1.U(2.W)  // immediate, I-type
+   def OP2_IMS: UInt = 2.U(2.W)  // immediate, S-type
+   def OP2_PC: UInt = 3.U(2.W)   // PC
    def OP2_X: UInt = 0.U(2.W)
 
    // Register File Write Enable Signal
@@ -90,7 +90,6 @@ object MemoryOpConstants
    def MT_READ: UInt = 0.U(2.W)
    def MT_WRITE: UInt = 1.U(2.W)
    def MT_FENCE: UInt = 2.U(2.W)
-
 
    val MT_SZ: Width = 3.W
    def MT_X: BitPat = BitPat("b???") // 0.U(3.W)

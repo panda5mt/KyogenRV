@@ -148,8 +148,7 @@ class Cpu extends Module {
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
 
-
-    // register write
+     // register write
     val rf_wen: Bool = id_ctrl.rf_wen     // register write enable flag
     val rd_addr:UInt = idm.io.inst.rd    // destination register
     val rd_val: UInt = MuxLookup(id_ctrl.wb_sel, 0.U(32.W),
@@ -169,7 +168,7 @@ class Cpu extends Module {
             rv32i_reg(0.U) := 0.U(32.W)
         }
     }
-
+    // JALR    ->  List(Y, BR_JR , OP1_RS1, OP2_IMI , ALU_X   ,  WB_PC4, REN_1, MEN_0, M_X  , MT_X /*,CSR.N*/),
     // Branch type selector
     val pc_incl: UInt = MuxLookup(id_ctrl.br_type, 0.U(32.W),
         Seq(
@@ -181,7 +180,7 @@ class Cpu extends Module {
             BR_LT   -> 0.U(32.W), // Branch on Less Than
             BR_LTU  -> 0.U(32.W), // Branch on Less Than Unsigned
             BR_J    -> Cat(idm.io.inst bits 31, idm.io.inst bits(19,12), idm.io.inst bits 20, idm.io.inst bits(30, 21)), // Jump
-            BR_JR   -> 0.U(32.W), // Jump Register
+            BR_JR   -> alu.io.out, // Jump Register (rs1 + IMI)
             BR_X    -> 0.U(32.W)  //
         )
     )
