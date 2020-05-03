@@ -1,6 +1,6 @@
 # riscv64-unknown-elf-as test.S -o test.elf
 # riscv64-unknown-elf-objcopy --gap-fill 0 -O binary test.elf test.bin
-# od -An -tx4 -w4 test.bin >> test.hex
+# od -An -tx4 -w4 test.bin >> test.txt
 #
 
 _start:
