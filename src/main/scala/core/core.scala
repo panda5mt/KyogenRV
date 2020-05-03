@@ -7,6 +7,8 @@ import chisel3.util._
 import _root_.core.ScalarOpConstants._
 import mem.IMem
 
+import scala.io.Source
+
 /// Test modules /////
 import chisel3.iotesters
 import chisel3.iotesters.PeekPokeTester
@@ -15,53 +17,28 @@ import chisel3.iotesters.PeekPokeTester
 object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
-            var memarray: Array[Long] = Array(
-                0x00000013L,
-                0x00100093L,
-                0x00100113L,
-                0x00200193L,
-                0x00300213L,
-                0x00400293L,
-                0x00500313L,
-                0x00600393L,
-                0x00700413L,
-                0x00800493L,
-                0x00900513L,
-                0x00a00593L,
-                0x00259093L,
-                0x00b00613L,
-                0x00c581b3L,
-                0x00c00693L,
-                0x00d00713L,
-                0x00e00793L,
-                0x00f00813L,
-                0x01000893L,
-                0x01100913L,
-                0x01200993L,
-                0x01300a13L,
-                0x01400a93L,
-                0x01500b13L,
-                0x01600b93L,
-                0x01700c13L,
-                0x01800c93L,
-                0x01900d13L,
-                0x01a00d93L,
-                0x01b00e13L,
-                0x01c00e93L,
-                0x00c000efL,
-                0x01d00f13L,
-                0x01e00f93L,
-                0xfedff06fL
-            )
+            // read from binary file
+            val s = Source.fromFile("src/sw/test.txt")
+            var bufs :Array[String] = _
+            try {
+                bufs = s.getLines.toArray
+            } finally {
+                s.close()
+            }
             step(1)
             poke(c.io.sw.halt, true.B)
             step(1)
-            for (addr <- 0 until memarray.length * 4 by 4){
+
+            for (addr <- 0 until bufs.length * 4 by 4){
+                val mem_val = bufs(addr/4).replace(" ", "")
+                val mem = Integer.parseUnsignedInt(mem_val,16)
+
                 poke(c.io.sw.w_ad, addr)
-                poke(c.io.sw.w_da, memarray(addr/4))
-                println(f"write: addr = 0x$addr%08X, data = 0x${memarray(addr/4)}%08X")
+                poke(c.io.sw.w_da, mem)
+                println(f"write: addr = 0x$addr%08X, data = 0x${mem}%08X")
                 step(1)
             }
+            //bufs.close()
             step(1)
             println("---------------------------------------------------------")
             poke(c.io.sw.w_pc, 0)   // restart pc address
