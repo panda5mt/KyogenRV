@@ -126,7 +126,7 @@ class Cpu extends Module {
     val idm: IDModule = Module(new IDModule)
 
     // instruction decode
-    idm.io.imem := Mux(next_inst_is_valid, r_data, 0.U(32.W)) // if (command == branch) next.command = invalid
+    idm.io.imem := Mux(next_inst_is_valid, r_data, 0.U(32.W)) // if (command.type == branch) next.command = invalid
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
     // ALU OP1 selector
@@ -188,7 +188,7 @@ class Cpu extends Module {
             BR_LT -> 0.U(32.W), // Branch on Less Than
             BR_LTU -> 0.U(32.W), // Branch on Less Than Unsigned
             BR_J -> (r_addr - 4.U + rel_pc), // Jump(pc += imm(J-type))
-            BR_JR -> alu.io.out, //(alu.io.op1 + alu.io.op2), // Jump Register (rs1 + IMI)
+            BR_JR -> alu.io.out, //(alu.io.op1 + alu.io.op2), // Jump Register (rs1 + imm(I-type))
             BR_X -> 0.U(32.W) //
         )
     )
