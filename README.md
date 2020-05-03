@@ -15,7 +15,18 @@ make test
 ```
 #### 3.Branch (PC update)
 ```
-git clone http://github.com/panda5mt/KyogenRV -b 0.0.9.6 --depth 1 
+git clone http://github.com/panda5mt/KyogenRV -b 0.0.9.7 --depth 1 
 cd KyogenRV/
+```
+
+write asm file and save to src/sw/test.s
+then build as follows 
+
+```
+make asm
+```
+you'll get test.hex in src/sw/
+then build test module in chisel project
+```
 make test
 ```
