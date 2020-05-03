@@ -38,7 +38,7 @@ object Test extends App {
                 println(f"write: addr = 0x$addr%08X, data = 0x${mem}%08X")
                 step(1)
             }
-            //bufs.close()
+            
             step(1)
             println("---------------------------------------------------------")
             poke(c.io.sw.w_pc, 0)   // restart pc address
