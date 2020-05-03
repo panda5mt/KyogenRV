@@ -1,9 +1,10 @@
 SBT = sbt
 TARGET = fpga/chisel_generated
+INCLUDE=src/sw/
+ASM_TARGET = test
+ASM_DIR = src/sw
 
-#all:
-#	$(clean)
-#	$(hdl)
+include  src/sw/common.mk
 
 # Generate Verilog code
 hdl:
@@ -13,17 +14,5 @@ test:
 	$(SBT) 'runMain core.Test'
 
 clean:
-	rm -rf $(TARGET)/*.json $(TARGET)/*.fir $(TARGET)/*.v
+	rm -rf $(TARGET)/*.json $(TARGET)/*.fir $(TARGET)/*.v $(ASM_DIR)/$(ASM_TARGET).o $(ASM_DIR)/$(ASM_TARGET).bin $(ASM_DIR)/$(ASM_TARGET).hex
 
-
-
-build:
-
-$(ASM_TARGET).hex : $(ASM_TARGET).bin
-	od -tx4 -v -w4 -Ax $^ | sed 's/^/0x/g' | gawk -F ' ' '{printf "@%08x %s\n", rshift(strtonum($$1), 2), $$2}' > $@
-
-$(ASM_TARGET).bin : $(ASM_TARGET).elf
-	riscv64-unknown-elf-objcopy --gap-fill 0 -O binary $^ $@
-
-$(ASM_TARGET).elf : $(ASM_TARGET).s
-	riscv64-unknown-elf-as $^ -o $@
