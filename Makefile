@@ -15,4 +15,3 @@ test:
 
 clean:
 	rm -rf $(TARGET)/*.json $(TARGET)/*.fir $(TARGET)/*.v $(ASM_DIR)/$(ASM_TARGET).o $(ASM_DIR)/$(ASM_TARGET).bin $(ASM_DIR)/$(ASM_TARGET).hex
-
