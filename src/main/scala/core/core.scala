@@ -16,44 +16,42 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
             var memarray: Array[Long] = Array(
-            0x00000000L,
-            0x00100093L, // addi x1,x0,1 (x1 = x0 + 1 = 1)
-            0x00100113L, // addi x2,x0,1 (x2 = x0 + 1 = 1)
-            0x00200193L, // addi x3,x0,2 (x3 = x0 + 2 = 2)
-            0x00300213L, // addi x4,x0,3 (x4 = x0 + 3 = 3)
-            0x00400293L, // addi x5,x0,4
-            0x00500313L, // addi x6,x0,5
-            0x00600393L, // addi x7,x0,6
-            0x00700413L, // addi x8,x0,7
-            0x00800493L, // addi x9,x0,8
-            0x00900513L, // addi x10,x0,9
-            0x00A00593L, // addi x11,x0,10 (x11 = 0 + 10 = 10)
-            0x00259093L, // slli x1,x11,2 (x1 = x11 << 2 = 40)
-            0x00B00613L, // addi x12,x0,11 (x12 = 11)
-            0x00C581B3L, // add x3,x11,x12 (x3 = x11 + x12 = 10 + 11 = 21 = 0x15)
-            0x00C00693L, // addi x13,x0,12
-            0x00D00713L, // addi x14,x0,13
-            0x00E00793L, // addi x15,x0,14
-            0x00F00813L, // addi x16,x0,15
-            0x01000893L, // addi x17,x0,16
-            0x01100913L, // addi x18,x0,17
-            0x01200993L, // addi x19,x0,18
-            0x01300A13L, // addi x20,x0,19
-            0x01400A93L, // addi x21,x0,20
-            0x01500B13L, // addi x22,x0,21
-            0x01600B93L, // addi x23,x0,22
-            0x01700C13L, // addi x24,x0,23
-            0x01800C93L, // addi x25,x0,24
-            0x01900D13L, // addi x26,x0,25
-            0x01A00D93L, // addi x27,x0,26
-            0x01B00E13L, // addi x28,x0,27
-            0x01C00E93L, // addi x29,x0,28
-            0x01D00F13L, // addi x30,x0,29
-            0x01E00F93L, // addi x31,x0,30
-            0x00008167L, // jalr  x2,x1,0 (x2 = pc+4.U, pc = x1 + 0 = 40 = 0x28)
-            0x00200093L, // addi x1,x0,2 (x1 = x0 + 2 = 2)
-            0x00300113L  // addi x2,x0,2 (x2 = x0 + 3 = 3)
-
+                0x00000013L,
+                0x00100093L,
+                0x00100113L,
+                0x00200193L,
+                0x00300213L,
+                0x00400293L,
+                0x00500313L,
+                0x00600393L,
+                0x00700413L,
+                0x00800493L,
+                0x00900513L,
+                0x00a00593L,
+                0x00259093L,
+                0x00b00613L,
+                0x00c581b3L,
+                0x00c00693L,
+                0x00d00713L,
+                0x00e00793L,
+                0x00f00813L,
+                0x01000893L,
+                0x01100913L,
+                0x01200993L,
+                0x01300a13L,
+                0x01400a93L,
+                0x01500b13L,
+                0x01600b93L,
+                0x01700c13L,
+                0x01800c93L,
+                0x01900d13L,
+                0x01a00d93L,
+                0x01b00e13L,
+                0x01c00e93L,
+                0x00c000efL,
+                0x01d00f13L,
+                0x01e00f93L,
+                0xfedff06fL
             )
             step(1)
             poke(c.io.sw.halt, true.B)
@@ -129,7 +127,6 @@ class Cpu extends Module {
 
     // instruction decode
     idm.io.imem := Mux(next_inst_is_valid, r_data, 0.U(32.W)) // if (command == branch) next.command = invalid
-
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
     // ALU OP1 selector
@@ -179,18 +176,20 @@ class Cpu extends Module {
     }
 
     // Branch type selector
-    val pc_incl: UInt = MuxLookup(id_ctrl.br_type, 0.U(32.W),
-        Seq(
-            BR_N    -> (r_addr + 4.U(32.W)), // Next
-            BR_NE   -> 0.U(32.W), // Branch on NotEqual
-            BR_EQ   -> 0.U(32.W), // Branch on Equal
-            BR_GE   -> 0.U(32.W), // Branch on Greater/Equal
-            BR_GEU  -> 0.U(32.W), // Branch on Greater/Equal Unsigned
-            BR_LT   -> 0.U(32.W), // Branch on Less Than
-            BR_LTU  -> 0.U(32.W), // Branch on Less Than Unsigned
-            BR_J    -> Cat(idm.io.inst bits 31, idm.io.inst bits(19,12), idm.io.inst bits 20, idm.io.inst bits(30, 21)), // Jump
-            BR_JR   -> alu.io.out, //(alu.io.op1 + alu.io.op2), // Jump Register (rs1 + IMI)
-            BR_X    -> 0.U(32.W)  //
+    val imm_j:  UInt = Cat(idm.io.inst bits 31, idm.io.inst bits(19, 12), idm.io.inst bits 20, idm.io.inst bits(30, 21))
+    val rel_pc: UInt = Mux(idm.io.inst bits 31, (imm_j - 0xfffff.U(32.W) - 1.U) * 2.U, (imm_j * 2.U)) // two's complement
+    val pc_incl:UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
+        mapping = Seq(
+            BR_N -> (r_addr + 4.U(32.W)), // Next
+            BR_NE -> 0.U(32.W), // Branch on NotEqual
+            BR_EQ -> 0.U(32.W), // Branch on Equal
+            BR_GE -> 0.U(32.W), // Branch on Greater/Equal
+            BR_GEU -> 0.U(32.W), // Branch on Greater/Equal Unsigned
+            BR_LT -> 0.U(32.W), // Branch on Less Than
+            BR_LTU -> 0.U(32.W), // Branch on Less Than Unsigned
+            BR_J -> (r_addr - 4.U + rel_pc), // Jump(pc += imm(J-type))
+            BR_JR -> alu.io.out, //(alu.io.op1 + alu.io.op2), // Jump Register (rs1 + IMI)
+            BR_X -> 0.U(32.W) //
         )
     )
 
