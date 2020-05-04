@@ -153,18 +153,21 @@ class Cpu extends Module {
     }
 
     // Branch type selector
-    val imm_j:  UInt = Cat(idm.io.inst bits 31, idm.io.inst bits(19, 12), idm.io.inst bits 20, idm.io.inst bits(30, 21))
-    val rel_pc: UInt = Mux(idm.io.inst bits 31, (imm_j - 0xfffff.U(32.W) - 1.U) * 2.U, imm_j * 2.U) // two's complement
-    val pc_incl:UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
+    val imm_j:   UInt = Cat(idm.io.inst bits 31, idm.io.inst bits(19, 12), idm.io.inst bits 20, idm.io.inst bits(30, 21))
+    val imm_u:   UInt = Cat(idm.io.inst bits 31, idm.io.inst bits 7, idm.io.inst bits(30, 25), idm.io.inst bits(11, 8))
+    val rel_pcj: UInt = Mux(idm.io.inst bits 31, (imm_j - 0xfffff.U(32.W) - 1.U) * 2.U, imm_j * 2.U) // (j-type) two's complement
+    val rel_pcu: UInt = Mux(idm.io.inst bits 31, (imm_u - 0xfff.U(32.W) - 1.U) * 2.U, imm_u * 2.U) // (u-type) two's complement
+
+    val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
         mapping = Seq(
             BR_N -> (r_addr + 4.U(32.W)), // Next
             BR_NE -> 0.U(32.W), // Branch on NotEqual
-            BR_EQ -> 0.U(32.W), // Branch on Equal
+            BR_EQ -> Mux(rv32i_reg(idm.io.inst.rs1) === rv32i_reg(idm.io.inst.rs2), r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Equal
             BR_GE -> 0.U(32.W), // Branch on Greater/Equal
             BR_GEU -> 0.U(32.W), // Branch on Greater/Equal Unsigned
             BR_LT -> 0.U(32.W), // Branch on Less Than
             BR_LTU -> 0.U(32.W), // Branch on Less Than Unsigned
-            BR_J -> (r_addr - 4.U + rel_pc), // Jump(pc += imm(J-type))
+            BR_J -> (r_addr - 4.U + rel_pcj), // Jump(pc += imm(J-type))
             BR_JR -> alu.io.out, //(alu.io.op1 + alu.io.op2), // Jump Register (rs1 + imm(I-type))
             BR_X -> 0.U(32.W) //
         )
