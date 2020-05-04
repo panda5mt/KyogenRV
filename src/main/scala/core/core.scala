@@ -7,7 +7,7 @@ import chisel3.util._
 import _root_.core.ScalarOpConstants._
 import mem.IMem
 
-import scala.io.Source
+import scala.io.{BufferedSource, Source}
 
 /// Test modules /////
 import chisel3.iotesters
@@ -18,7 +18,7 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus()){
         c => new PeekPokeTester(c) {
             // read from binary file
-            val s = Source.fromFile("src/sw/test.hex")
+            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
             var bufs :Array[String] = _
             try {
                 bufs = s.getLines.toArray
@@ -38,7 +38,7 @@ object Test extends App {
                 println(f"write: addr = 0x$addr%08X, data = 0x${mem}%08X")
                 step(1)
             }
-            
+
             step(1)
             println("---------------------------------------------------------")
             poke(c.io.sw.w_pc, 0)   // restart pc address
