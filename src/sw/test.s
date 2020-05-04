@@ -41,6 +41,6 @@ _start3:
     addi x31,x0,30
 _start4:
     jal  x0,_start3
-#    addi x1,x0,2 #(x1 = x0 + 2 = 2)
-#    addi x2,x0,2 #(x2 = x0 + 3 = 3)
+    addi x1,x0,2 #(x1 = x0 + 2 = 2)
+    addi x2,x0,2 #(x2 = x0 + 3 = 3)
 
