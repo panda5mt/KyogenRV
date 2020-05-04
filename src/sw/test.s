@@ -2,6 +2,7 @@
 
 _start:
     nop
+    nop
     addi x1,x0,1;# (x1 = x0 + 1 = 1)
     addi x2,x0,1;# (x2 = x0 + 1 = 1)
     addi x3,x0,2;# (x3 = x0 + 2 = 2)
@@ -36,11 +37,11 @@ _start3:
     addi x28,x0,27
     addi x29,x0,28
 
-    jal  x1, _start4 #(x1 = pc+4.U, pc = x1 + 0 = 40 = 0x28)
+    jal  x2, _start4 #(x1 = pc+4.U, pc = x1 + 0 = 40 = 0x28)
     addi x30,x0,29
     addi x31,x0,30
 _start4:
-    jal  x0,_start3
+    jal  x1,_start3
     addi x1,x0,2 #(x1 = x0 + 2 = 2)
     addi x2,x0,2 #(x2 = x0 + 3 = 3)
 
