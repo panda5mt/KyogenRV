@@ -19,9 +19,9 @@ object Test extends App {
         c => new PeekPokeTester(c) {
             // read from binary file
             val s: BufferedSource = Source.fromFile("src/sw/test.hex")
-            var bufs :Array[String] = _
+            var buffs :Array[String] = _
             try {
-                bufs = s.getLines.toArray
+                buffs = s.getLines.toArray
             } finally {
                 s.close()
             }
@@ -29,13 +29,13 @@ object Test extends App {
             poke(c.io.sw.halt, true.B)
             step(1)
 
-            for (addr <- 0 until bufs.length * 4 by 4){
-                val mem_val = bufs(addr/4).replace(" ", "")
+            for (addr <- 0 until buffs.length * 4 by 4){
+                val mem_val = buffs(addr/4).replace(" ", "")
                 val mem = Integer.parseUnsignedInt(mem_val,16)
 
                 poke(c.io.sw.w_ad, addr)
                 poke(c.io.sw.w_da, mem)
-                println(f"write: addr = 0x$addr%08X, data = 0x${mem}%08X")
+                println(f"write: addr = 0x$addr%08X, data = 0x$mem%08X")
                 step(1)
             }
 
@@ -48,7 +48,7 @@ object Test extends App {
             step(1)
 
             //for (lp <- memarray.indices by 1){
-            for (lp <- 0 until 100 by 1){
+            for (_ <- 0 until 100 by 1){
                 val a = peek(c.io.sw.addr)
                 val d = peek(c.io.sw.data)
 
@@ -154,7 +154,7 @@ class Cpu extends Module {
 
     // Branch type selector
     val imm_j:  UInt = Cat(idm.io.inst bits 31, idm.io.inst bits(19, 12), idm.io.inst bits 20, idm.io.inst bits(30, 21))
-    val rel_pc: UInt = Mux(idm.io.inst bits 31, (imm_j - 0xfffff.U(32.W) - 1.U) * 2.U, (imm_j * 2.U)) // two's complement
+    val rel_pc: UInt = Mux(idm.io.inst bits 31, (imm_j - 0xfffff.U(32.W) - 1.U) * 2.U, imm_j * 2.U) // two's complement
     val pc_incl:UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
         mapping = Seq(
             BR_N -> (r_addr + 4.U(32.W)), // Next
