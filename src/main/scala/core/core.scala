@@ -161,7 +161,7 @@ class Cpu extends Module {
     val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
         mapping = Seq(
             BR_N -> (r_addr + 4.U(32.W)), // Next
-            BR_NE -> 0.U(32.W), // Branch on NotEqual
+            BR_NE -> Mux(rv32i_reg(idm.io.inst.rs1) =/= rv32i_reg(idm.io.inst.rs2), r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)),  // Branch on NotEqual
             BR_EQ -> Mux(rv32i_reg(idm.io.inst.rs1) === rv32i_reg(idm.io.inst.rs2), r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Equal
             BR_GE -> 0.U(32.W), // Branch on Greater/Equal
             BR_GEU -> 0.U(32.W), // Branch on Greater/Equal Unsigned
