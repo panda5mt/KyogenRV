@@ -168,8 +168,8 @@ class Cpu extends Module {
             BR_GEU -> 0.U(32.W), // Branch on Greater/Equal Unsigned
             BR_LT -> 0.U(32.W), // Branch on Less Than
             BR_LTU -> 0.U(32.W), // Branch on Less Than Unsigned
-            BR_J -> (r_addr - 4.U + rel_pcj), // Jump(pc += imm(J-type))
-            BR_JR -> alu.io.out, //(alu.io.op1 + alu.io.op2), // Jump Register (rs1 + imm(I-type))
+            BR_JR -> alu.io.out, // Jump(pc += imm(J-type))
+            BR_J -> (r_addr - 4.U + rel_pcj), //(alu.io.op1 + alu.io.op2), // Jump Register (rs1 + imm(I-type))
             BR_X -> 0.U(32.W) //
         )
     )
@@ -177,17 +177,17 @@ class Cpu extends Module {
     // bubble logic
     next_inst_is_valid.:=(true.B)
     switch (id_ctrl.br_type) {
-        is( BR_J  ) { next_inst_is_valid.:=(false.B) }
-        is( BR_JR ) { next_inst_is_valid.:=(false.B) }
+        is( BR_J  ) { next_inst_is_valid.:=(false.B) }  // JAL
+        is( BR_JR ) { next_inst_is_valid.:=(false.B) }  // JALR
         is( BR_EQ ) {
             when(val_rs1 === val_rs2)
-                    { next_inst_is_valid.:=(false.B) }  // EQ = true: bubble next inst
+                    { next_inst_is_valid.:=(false.B) }  // EQ = true: bubble next inst & branch
               .otherwise
                     { next_inst_is_valid.:=(true.B) }
         }
         is( BR_NE ) {
             when(val_rs1 =/= val_rs2)
-                    { next_inst_is_valid.:=(false.B) } // NEQ = true: bubble next inst
+                    { next_inst_is_valid.:=(false.B) } // NEQ = true: bubble next inst & branch
               .otherwise
                     { next_inst_is_valid.:=(true.B) }
         }
