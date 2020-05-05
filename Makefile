@@ -5,7 +5,7 @@ ASM_TARGET = test
 ASM_DIR = src/sw
 
 include  src/sw/common.mk
-
+.DEFAULT_GOAL := test
 # Generate Verilog code
 hdl:
 	$(SBT) 'runMain core.kyogenrv --target-dir $(TARGET)'
