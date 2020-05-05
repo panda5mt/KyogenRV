@@ -161,16 +161,16 @@ class Cpu extends Module {
     val val_rs2: UInt = rv32i_reg(idm.io.inst.rs2)
     val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
         mapping = Seq(
-            BR_N -> (r_addr + 4.U(32.W)), // Next
-            BR_NE -> Mux(val_rs1 =/= val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)),  // Branch on NotEqual
-            BR_EQ -> Mux(val_rs1 === val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Equal
-            BR_GE -> Mux(val_rs1 > val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Greater/Equal
-            BR_GEU -> 0.U(32.W), // Branch on Greater/Equal Unsigned
-            BR_LT -> Mux(val_rs1 < val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Less Than
-            BR_LTU -> 0.U(32.W), // Branch on Less Than Unsigned
-            BR_JR -> alu.io.out, // Jump(pc += imm(J-type))
-            BR_J -> (r_addr - 4.U + rel_pcj), //(alu.io.op1 + alu.io.op2), // Jump Register (rs1 + imm(I-type))
-            BR_X -> 0.U(32.W) //
+            BR_N   -> (r_addr + 4.U(32.W)), // Next
+            BR_NE  -> Mux(val_rs1 =/= val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)),  // Branch on NotEqual
+            BR_EQ  -> Mux(val_rs1 === val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Equal
+            BR_GE  -> Mux(val_rs1 > val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Greater/Equal
+            BR_GEU -> Mux(val_rs1 > val_rs2, r_addr - 4.U + (imm_u * 2.U), r_addr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
+            BR_LT  -> Mux(val_rs1 < val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Less Than
+            BR_LTU -> Mux(val_rs1 < val_rs2, r_addr - 4.U + (imm_u * 2.U), r_addr + 4.U(32.W)), // Branch on Less Than Unsigned
+            BR_JR  -> alu.io.out, // Jump(pc += imm(J-type))
+            BR_J   -> (r_addr - 4.U + rel_pcj), // Jump Register (rs1 + imm(I-type))
+            BR_X   -> 0.U(32.W) //
         )
     )
 
