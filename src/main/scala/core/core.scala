@@ -198,9 +198,9 @@ class Cpu extends Module {
         }
         is( BR_LT ) {
             when(val_rs1 < val_rs2)
-            { next_inst_is_valid.:=(false.B) } // NEQ = true: bubble next inst & branch
+                    { next_inst_is_valid.:=(false.B) } // NEQ = true: bubble next inst & branch
               .otherwise
-              { next_inst_is_valid.:=(true.B) }
+                    { next_inst_is_valid.:=(true.B) }
         }
         is( BR_J  ) { next_inst_is_valid.:=(false.B) }  // JAL
         is( BR_JR ) { next_inst_is_valid.:=(false.B) }  // JALR
