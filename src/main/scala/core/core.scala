@@ -102,6 +102,13 @@ class Cpu extends Module {
     // ID Module instance
     val idm: IDModule = Module(new IDModule)
 
+    val imm_i:   SInt = (idm.io.inst bits(31, 20)).asSInt
+    val imm_u:   SInt = (idm.io.inst bits(31, 12)).asSInt
+    val imm_s:   SInt = Cat(idm.io.inst bits(31, 25), idm.io.inst bits(11, 7)).asSInt
+    val imm_j:   SInt = Cat(idm.io.inst bits 31, idm.io.inst bits(19, 12), idm.io.inst bits 20, idm.io.inst bits(30, 21),"b0".U).asSInt
+    val imm_b:   SInt = Cat(idm.io.inst bits 31, idm.io.inst bits 7, idm.io.inst bits(30, 25), idm.io.inst bits(11, 8),"b0".U).asSInt
+    val val_rs1: SInt = rv32i_reg(idm.io.inst.rs1).asSInt
+    val val_rs2: SInt = rv32i_reg(idm.io.inst.rs2).asSInt
     // instruction decode
     idm.io.imem := Mux(next_inst_is_valid, r_data, 0.U(32.W)) // if (command.type == branch) next.command = invalid
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
@@ -109,8 +116,8 @@ class Cpu extends Module {
     // ALU OP1 selector
     val ex_op1: UInt = MuxLookup(key = id_ctrl.alu_op1, default = 0.U(32.W),
         mapping = Seq(
-            OP1_RS1 -> rv32i_reg(idm.io.inst.rs1),
-            OP1_IMU -> (idm.io.inst bits(31, 12)), // immediate, U-type(insts_code[31:12])
+            OP1_RS1 -> rv32i_reg(idm.io.inst.rs1).asUInt(),
+            OP1_IMU -> imm_u.asUInt, // immediate, U-type(insts_code[31:12])
             OP1_IMZ -> 0.U(32.W), // zero-extended rs1 field, CSRI insts
             OP1_X -> 0.U(32.W)
         )
@@ -118,9 +125,9 @@ class Cpu extends Module {
     // ALU OP2 selector
     val ex_op2: UInt = MuxLookup(key = id_ctrl.alu_op2, default = 0.U(32.W),
         mapping = Seq(
-            OP2_RS2 -> rv32i_reg(idm.io.inst.rs2),
-            OP2_IMI -> (idm.io.inst bits(31, 20)),
-            OP2_IMS -> Cat(idm.io.inst bits(31, 25), idm.io.inst bits(11, 7)), // immediate, S-type
+            OP2_RS2 -> rv32i_reg(idm.io.inst.rs2).asUInt,
+            OP2_IMI -> imm_i.asUInt,
+            OP2_IMS -> imm_s.asUInt, // immediate, S-type
             OP2_PC -> r_addr, //0.U(32.W),
             OP2_X -> 0.U(32.W)
         )
@@ -153,66 +160,59 @@ class Cpu extends Module {
     }
 
     // Branch type selector
-    val imm_j:   UInt = Cat(idm.io.inst bits 31, idm.io.inst bits(19, 12), idm.io.inst bits 20, idm.io.inst bits(30, 21))
-    val imm_u:   UInt = Cat(idm.io.inst bits 31, idm.io.inst bits 7, idm.io.inst bits(30, 25), idm.io.inst bits(11, 8))
-    val rel_pcj: UInt = Mux(idm.io.inst bits 31, (imm_j - 0xfffff.U(32.W) - 1.U) * 2.U, imm_j * 2.U) // (j-type) two's complement
-    val rel_pcu: UInt = Mux(idm.io.inst bits 31, (imm_u - 0xfff.U(32.W) - 1.U) * 2.U, imm_u * 2.U) // (u-type) two's complement
-    val val_rs1: UInt = rv32i_reg(idm.io.inst.rs1)
-    val val_rs2: UInt = rv32i_reg(idm.io.inst.rs2)
     val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
         mapping = Seq(
             BR_N   -> (r_addr + 4.U(32.W)), // Next
-            BR_NE  -> Mux(val_rs1 =/= val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)),  // Branch on NotEqual
-            BR_EQ  -> Mux(val_rs1 === val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Equal
-            BR_GE  -> Mux(val_rs1 > val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Greater/Equal
-            BR_GEU -> Mux(val_rs1 > val_rs2, r_addr - 4.U + (imm_u * 2.U), r_addr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
-            BR_LT  -> Mux(val_rs1 < val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Less Than
-            BR_LTU -> Mux(val_rs1 < val_rs2, r_addr - 4.U + (imm_u * 2.U), r_addr + 4.U(32.W)), // Branch on Less Than Unsigned
-            BR_JR  -> alu.io.out, // Jump(pc += imm(J-type))
-            BR_J   -> (r_addr - 4.U + rel_pcj), // Jump Register (rs1 + imm(I-type))
+            BR_NE  -> Mux(val_rs1 =/= val_rs2, r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)),  // Branch on NotEqual
+            BR_EQ  -> Mux(val_rs1 === val_rs2, r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Equal
+            BR_GE  -> Mux(val_rs1 > val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Greater/Equal
+            BR_GEU -> Mux(val_rs1 > val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
+            BR_LT  -> Mux(val_rs1 < val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Less Than
+            BR_LTU -> Mux(val_rs1 < val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Less Than Unsigned
+            BR_JR  -> (val_rs1 + imm_j).asUInt, //JALR: rs1 + imm
+            BR_J   -> (r_addr - 4.U + imm_j.asUInt), //JAL:pc += imm
             BR_X   -> 0.U(32.W) //
-        )
-    )
+    ))
 
     // bubble logic
-    next_inst_is_valid.:=(true.B)
+    next_inst_is_valid := true.B
     switch (id_ctrl.br_type) {
 
         is( BR_NE ) {
-            when(val_rs1 =/= val_rs2)
-            { next_inst_is_valid.:=(false.B) } // NEQ = true: bubble next inst & branch
-              .otherwise
-              { next_inst_is_valid.:=(true.B) }
+            when(val_rs1 =/= val_rs2) {
+                next_inst_is_valid.:=(false.B)} // NEQ = true: bubble next inst & branch
+            .otherwise {
+                next_inst_is_valid.:=(true.B) }
         }
         is( BR_EQ ) {
-            when(val_rs1 === val_rs2)
-                    { next_inst_is_valid.:=(false.B) }  // EQ = true: bubble next inst & branch
-              .otherwise
-                    { next_inst_is_valid.:=(true.B) }
+            when(val_rs1 === val_rs2) {
+                next_inst_is_valid.:=(false.B)}  // EQ = true: bubble next inst & branch
+            .otherwise {
+                next_inst_is_valid.:=(true.B) }
         }
         is( BR_GE ) {
-            when(val_rs1 > val_rs2)
-                    { next_inst_is_valid.:=(false.B) } // GE = true: bubble next inst & branch
-              .otherwise
-                    { next_inst_is_valid.:=(true.B) }
+            when(val_rs1 > val_rs2) {
+                next_inst_is_valid.:=(false.B)} // GE = true: bubble next inst & branc
+            .otherwise {
+                next_inst_is_valid.:=(true.B) }
         }
         is( BR_GEU ) {
-            when(val_rs1 > val_rs2)
-            { next_inst_is_valid.:=(false.B) } // GE = true: bubble next inst & branch
-              .otherwise
-              { next_inst_is_valid.:=(true.B) }
+            when(val_rs1 > val_rs2) {
+                next_inst_is_valid.:=(false.B)} // GE = true: bubble next inst & branch
+            .otherwise {
+                next_inst_is_valid.:=(true.B) }
         }
         is( BR_LT ) {
-            when(val_rs1 < val_rs2)
-                    { next_inst_is_valid.:=(false.B) } // LT = true: bubble next inst & branch
-              .otherwise
-                    { next_inst_is_valid.:=(true.B) }
+            when(val_rs1 < val_rs2){
+                next_inst_is_valid.:=(false.B)} // LT = true: bubble next inst & branch
+            .otherwise {
+                next_inst_is_valid.:=(true.B) }
         }
         is( BR_LTU ) {
-            when(val_rs1 < val_rs2)
-            { next_inst_is_valid.:=(false.B) } // LT = true: bubble next inst & branch
-              .otherwise
-              { next_inst_is_valid.:=(true.B) }
+            when(val_rs1 < val_rs2) {
+                next_inst_is_valid.:=(false.B)} // LT = true: bubble next inst & branch
+            .otherwise {
+                next_inst_is_valid.:=(true.B) }
         }
         is( BR_J  ) { next_inst_is_valid.:=(false.B) }  // JAL
         is( BR_JR ) { next_inst_is_valid.:=(false.B) }  // JALR
