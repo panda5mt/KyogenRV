@@ -174,12 +174,25 @@ class Cpu extends Module {
         )
     )
 
+    // bubble logic
+    next_inst_is_valid.:=(true.B)
+    switch (id_ctrl.br_type) {
+        is( BR_J  ) { next_inst_is_valid.:=(false.B) }
+        is( BR_JR ) { next_inst_is_valid.:=(false.B) }
+        is( BR_EQ ) {
+            when(val_rs1 === val_rs2)
+                    { next_inst_is_valid.:=(false.B) }  // EQ = true: bubble next inst
+              .otherwise
+                    { next_inst_is_valid.:=(true.B) }
+        }
+        is( BR_NE ) {
+            when(val_rs1 =/= val_rs2)
+                    { next_inst_is_valid.:=(false.B) } // NEQ = true: bubble next inst
+              .otherwise
+                    { next_inst_is_valid.:=(true.B) }
+        }
+    }
 
-    when (id_ctrl.br_type =/= BR_N){        // if(now.inst == branch) { next.inst = invalid } (bubble)
-        next_inst_is_valid := false.B
-    }.otherwise(
-        next_inst_is_valid := true.B
-    )
 
     when (io.sw.halt === false.B){
         when(r_ack === true.B){
