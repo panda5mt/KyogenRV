@@ -4,6 +4,7 @@ package core
 import bus.{HostIf, TestIf}
 import chisel3._
 import chisel3.util._
+
 import _root_.core.ScalarOpConstants._
 import mem._
 
@@ -15,11 +16,11 @@ import chisel3.iotesters.PeekPokeTester
 //////////////////////
 
 object Test extends App {
-    iotesters.Driver.execute(args, () => new CpuBus()){
-        c => new PeekPokeTester(c) {
+    iotesters.Driver.execute(args, () => new CpuBus())(c => {
+        new PeekPokeTester(c) {
             // read from binary file
             val s: BufferedSource = Source.fromFile("src/sw/test.hex")
-            var buffs :Array[String] = _
+            var buffs: Array[String] = _
             try {
                 buffs = s.getLines.toArray
             } finally {
@@ -29,9 +30,9 @@ object Test extends App {
             poke(c.io.sw.halt, true.B)
             step(1)
 
-            for (addr <- 0 until buffs.length * 4 by 4){
-                val mem_val = buffs(addr/4).replace(" ", "")
-                val mem = Integer.parseUnsignedInt(mem_val,16)
+            for (addr <- 0 until buffs.length * 4 by 4) {
+                val mem_val = buffs(addr / 4).replace(" ", "")
+                val mem = Integer.parseUnsignedInt(mem_val, 16)
 
                 poke(c.io.sw.w_ad, addr)
                 poke(c.io.sw.w_da, mem)
@@ -41,14 +42,14 @@ object Test extends App {
 
             step(1)
             println("---------------------------------------------------------")
-            poke(c.io.sw.w_pc, 0)   // restart pc address
-            step(1)                 // fetch pc
+            poke(c.io.sw.w_pc, 0) // restart pc address
+            step(1) // fetch pc
             poke(c.io.sw.halt, false.B)
             step(1)
             step(1)
 
             //for (lp <- memarray.indices by 1){
-            for (_ <- 0 until 100 by 1){
+            for (_ <- 0 until 100 by 1) {
                 val a = peek(c.io.sw.addr)
                 val d = peek(c.io.sw.data)
 
@@ -61,7 +62,7 @@ object Test extends App {
             poke(c.io.sw.halt, true.B)
             step(1)
             step(1)
-            for (lp <- 0 to 31 by 1){
+            for (lp <- 0 to 31 by 1) {
 
                 poke(c.io.sw.g_ad, lp)
                 step(1)
@@ -71,7 +72,7 @@ object Test extends App {
                 step(1)
             }
         }
-    }
+    })
 }
 
 
@@ -315,6 +316,6 @@ class CpuBus extends Module {
 }
 
 object kyogenrv extends App {
-    chisel3.Driver.execute(args, () => new CpuBus())
+    chisel3.Driver.execute(args, () => new Cpu())
 }
 
