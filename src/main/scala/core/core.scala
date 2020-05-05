@@ -166,9 +166,9 @@ class Cpu extends Module {
             BR_NE  -> Mux(val_rs1 =/= val_rs2, r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)),  // Branch on NotEqual
             BR_EQ  -> Mux(val_rs1 === val_rs2, r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Equal
             BR_GE  -> Mux(val_rs1 > val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Greater/Equal
-            BR_GEU -> Mux(val_rs1 > val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
+            BR_GEU -> Mux(val_rs1.asUInt > val_rs2.asUInt,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
             BR_LT  -> Mux(val_rs1 < val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Less Than
-            BR_LTU -> Mux(val_rs1 < val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Less Than Unsigned
+            BR_LTU -> Mux(val_rs1.asUInt < val_rs2.asUInt,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Less Than Unsigned
             BR_JR  -> (val_rs1 + imm_j).asUInt, //JALR: rs1 + imm
             BR_J   -> (r_addr - 4.U + imm_j.asUInt), //JAL:pc += imm
             BR_X   -> 0.U(32.W) //
