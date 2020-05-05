@@ -5,7 +5,7 @@ import bus.{HostIf, TestIf}
 import chisel3._
 import chisel3.util._
 import _root_.core.ScalarOpConstants._
-import mem.IMem
+import mem._
 
 import scala.io.{BufferedSource, Source}
 
@@ -157,12 +157,13 @@ class Cpu extends Module {
     val imm_u:   UInt = Cat(idm.io.inst bits 31, idm.io.inst bits 7, idm.io.inst bits(30, 25), idm.io.inst bits(11, 8))
     val rel_pcj: UInt = Mux(idm.io.inst bits 31, (imm_j - 0xfffff.U(32.W) - 1.U) * 2.U, imm_j * 2.U) // (j-type) two's complement
     val rel_pcu: UInt = Mux(idm.io.inst bits 31, (imm_u - 0xfff.U(32.W) - 1.U) * 2.U, imm_u * 2.U) // (u-type) two's complement
-
+    val val_rs1: UInt = rv32i_reg(idm.io.inst.rs1)
+    val val_rs2: UInt = rv32i_reg(idm.io.inst.rs2)
     val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
         mapping = Seq(
             BR_N -> (r_addr + 4.U(32.W)), // Next
-            BR_NE -> Mux(rv32i_reg(idm.io.inst.rs1) =/= rv32i_reg(idm.io.inst.rs2), r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)),  // Branch on NotEqual
-            BR_EQ -> Mux(rv32i_reg(idm.io.inst.rs1) === rv32i_reg(idm.io.inst.rs2), r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Equal
+            BR_NE -> Mux(val_rs1 =/= val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)),  // Branch on NotEqual
+            BR_EQ -> Mux(val_rs1 === val_rs2, r_addr - 4.U + rel_pcu, r_addr + 4.U(32.W)), // Branch on Equal
             BR_GE -> 0.U(32.W), // Branch on Greater/Equal
             BR_GEU -> 0.U(32.W), // Branch on Greater/Equal Unsigned
             BR_LT -> 0.U(32.W), // Branch on Less Than
@@ -236,7 +237,7 @@ class CpuBus extends Module {
     val sw_gaddr:   UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
     
     val cpu:        Cpu = Module(new Cpu)
-    val memory:     IMem = Module(new IMem)
+    val memory: IMem = Module(new IMem)
     
     // Connect Test Module
     sw_halt     := io.sw.halt
