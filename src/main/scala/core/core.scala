@@ -107,22 +107,22 @@ class Cpu extends Module {
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
     // ALU OP1 selector
-    val ex_op1: UInt = MuxLookup(id_ctrl.alu_op1, 0.U(32.W),
-        Seq(
+    val ex_op1: UInt = MuxLookup(key = id_ctrl.alu_op1, default = 0.U(32.W),
+        mapping = Seq(
             OP1_RS1 -> rv32i_reg(idm.io.inst.rs1),
-            OP1_IMU -> (idm.io.inst bits(31, 12)),   // immediate, U-type(insts_code[31:12])
-            OP1_IMZ -> 0.U(32.W),   // zero-extended rs1 field, CSRI insts
-            OP1_X   -> 0.U(32.W)
+            OP1_IMU -> (idm.io.inst bits(31, 12)), // immediate, U-type(insts_code[31:12])
+            OP1_IMZ -> 0.U(32.W), // zero-extended rs1 field, CSRI insts
+            OP1_X -> 0.U(32.W)
         )
     )
     // ALU OP2 selector
-    val ex_op2: UInt = MuxLookup(id_ctrl.alu_op2, 0.U(32.W),
-        Seq(
+    val ex_op2: UInt = MuxLookup(key = id_ctrl.alu_op2, default = 0.U(32.W),
+        mapping = Seq(
             OP2_RS2 -> rv32i_reg(idm.io.inst.rs2),
             OP2_IMI -> (idm.io.inst bits(31, 20)),
-            OP2_IMS -> Cat(idm.io.inst bits(31, 25), idm.io.inst bits(11, 7)),    // immediate, S-type
-            OP2_PC  -> r_addr,  //0.U(32.W),
-            OP2_X   -> 0.U(32.W)
+            OP2_IMS -> Cat(idm.io.inst bits(31, 25), idm.io.inst bits(11, 7)), // immediate, S-type
+            OP2_PC -> r_addr, //0.U(32.W),
+            OP2_X -> 0.U(32.W)
         )
     )
 
