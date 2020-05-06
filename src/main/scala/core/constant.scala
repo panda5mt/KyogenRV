@@ -116,6 +116,6 @@ object MemoryOpConstants
    def M_XWR: UInt = "b1".U(1.W) // int store
 
 
-   def DPORT   = 0
-   def IPORT   = 1
+   def DPORT = 0
+   def IPORT = 1
 }

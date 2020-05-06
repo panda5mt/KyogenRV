@@ -43,11 +43,11 @@ _start3:
     addi x31,x0,30
 _start4:
     addi x0,x0, 1
-    addi x1,x0, 3        #(x1 = x0 + 2 = 2)
+    addi x1,x0, -3        #(x1 = x0 + 2 = -3)
     addi x2,x0, 3        #(x2 = x0 + 3 = 3)
-    beq  x1, x2, _start4 #(if(x1 == x2) goto _start4)
-    addi x3,x0, 4        #(x3 = x0 + 4 = 4)
-    addi x4,x0, 5        #(x4 = x0 + 5 = 5)
+    blt  x1, x2, _start4 #(if(x1 < x2) goto _start4)
+    addi x3,x0, -1        #(x3 = x0 + 4 = -1)
+    addi x4,x0, -1        #(x4 = x0 + 5 = -1)
     bne  x1, x2, _start5
     nop
     nop

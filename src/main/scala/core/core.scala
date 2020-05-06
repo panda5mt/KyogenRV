@@ -4,77 +4,11 @@ package core
 import bus.{HostIf, TestIf}
 import chisel3._
 import chisel3.util._
-
 import _root_.core.ScalarOpConstants._
+import chisel3.iotesters.PeekPokeTester
 import mem._
 
 import scala.io.{BufferedSource, Source}
-
-/// Test modules /////
-import chisel3.iotesters
-import chisel3.iotesters.PeekPokeTester
-//////////////////////
-
-object Test extends App {
-    iotesters.Driver.execute(args, () => new CpuBus())(c => {
-        new PeekPokeTester(c) {
-            // read from binary file
-            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
-            var buffs: Array[String] = _
-            try {
-                buffs = s.getLines.toArray
-            } finally {
-                s.close()
-            }
-            step(1)
-            poke(c.io.sw.halt, true.B)
-            step(1)
-
-            for (addr <- 0 until buffs.length * 4 by 4) {
-                val mem_val = buffs(addr / 4).replace(" ", "")
-                val mem = Integer.parseUnsignedInt(mem_val, 16)
-
-                poke(c.io.sw.w_ad, addr)
-                poke(c.io.sw.w_da, mem)
-                println(f"write: addr = 0x$addr%08X, data = 0x$mem%08X")
-                step(1)
-            }
-
-            step(1)
-            println("---------------------------------------------------------")
-            poke(c.io.sw.w_pc, 0) // restart pc address
-            step(1) // fetch pc
-            poke(c.io.sw.halt, false.B)
-            step(1)
-            step(1)
-
-            //for (lp <- memarray.indices by 1){
-            for (_ <- 0 until 100 by 1) {
-                val a = peek(c.io.sw.addr)
-                val d = peek(c.io.sw.data)
-
-                println(f"read : addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
-                step(1)
-            }
-
-            step(1)
-            println("---------------------------------------------------------")
-            poke(c.io.sw.halt, true.B)
-            step(1)
-            step(1)
-            for (lp <- 0 to 31 by 1) {
-
-                poke(c.io.sw.g_ad, lp)
-                step(1)
-                val d = peek(c.io.sw.g_da)
-
-                println(f"read : x$lp%2d = 0x$d%08X") //peek(c.io.sw.data)
-                step(1)
-            }
-        }
-    })
-}
-
 
 
 //noinspection ScalaStyle
@@ -166,8 +100,8 @@ class Cpu extends Module {
             BR_N   -> (r_addr + 4.U(32.W)), // Next
             BR_NE  -> Mux(val_rs1 =/= val_rs2, r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)),  // Branch on NotEqual
             BR_EQ  -> Mux(val_rs1 === val_rs2, r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Equal
-            BR_GE  -> Mux(val_rs1 > val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Greater/Equal
-            BR_GEU -> Mux(val_rs1.asUInt > val_rs2.asUInt,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
+            BR_GE  -> Mux(val_rs1 >= val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Greater/Equal
+            BR_GEU -> Mux(val_rs1.asUInt >= val_rs2.asUInt,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
             BR_LT  -> Mux(val_rs1 < val_rs2,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Less Than
             BR_LTU -> Mux(val_rs1.asUInt < val_rs2.asUInt,   r_addr - 4.U + imm_b.asUInt, r_addr + 4.U(32.W)), // Branch on Less Than Unsigned
             BR_JR  -> (val_rs1 + imm_j).asUInt, //JALR: rs1 + imm
@@ -198,7 +132,7 @@ class Cpu extends Module {
                 next_inst_is_valid.:=(true.B) }
         }
         is( BR_GEU ) {
-            when(val_rs1 > val_rs2) {
+            when(val_rs1.asUInt > val_rs2.asUInt) {
                 next_inst_is_valid.:=(false.B)} // GE = true: bubble next inst & branch
             .otherwise {
                 next_inst_is_valid.:=(true.B) }
@@ -210,7 +144,7 @@ class Cpu extends Module {
                 next_inst_is_valid.:=(true.B) }
         }
         is( BR_LTU ) {
-            when(val_rs1 < val_rs2) {
+            when(val_rs1.asUInt() < val_rs2.asUInt) {
                 next_inst_is_valid.:=(false.B)} // LT = true: bubble next inst & branch
             .otherwise {
                 next_inst_is_valid.:=(true.B) }
@@ -319,3 +253,62 @@ object kyogenrv extends App {
     chisel3.Driver.execute(args, () => new Cpu())
 }
 
+object Test extends App {
+    iotesters.Driver.execute(args, () => new CpuBus())(c => {
+        new PeekPokeTester(c) {
+            // read from binary file
+            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
+            var buffs: Array[String] = _
+            try {
+                buffs = s.getLines.toArray
+            } finally {
+                s.close()
+            }
+            step(1)
+            poke(c.io.sw.halt, true.B)
+            step(1)
+
+            for (addr <- 0 until buffs.length * 4 by 4) {
+                val mem_val = buffs(addr / 4).replace(" ", "")
+                val mem = Integer.parseUnsignedInt(mem_val, 16)
+
+                poke(c.io.sw.w_ad, addr)
+                poke(c.io.sw.w_da, mem)
+                println(f"write: addr = 0x$addr%08X, data = 0x$mem%08X")
+                step(1)
+            }
+
+            step(1)
+            println("---------------------------------------------------------")
+            poke(c.io.sw.w_pc, 0) // restart pc address
+            step(1) // fetch pc
+            poke(c.io.sw.halt, false.B)
+            step(1)
+            step(1)
+
+            //for (lp <- memarray.indices by 1){
+            for (_ <- 0 until 100 by 1) {
+                val a = peek(c.io.sw.addr)
+                val d = peek(c.io.sw.data)
+
+                println(f"read : addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
+                step(1)
+            }
+
+            step(1)
+            println("---------------------------------------------------------")
+            poke(c.io.sw.halt, true.B)
+            step(1)
+            step(1)
+            for (lp <- 0 to 31 by 1) {
+
+                poke(c.io.sw.g_ad, lp)
+                step(1)
+                val d = peek(c.io.sw.g_da)
+
+                println(f"read : x$lp%2d = 0x$d%08X") //peek(c.io.sw.data)
+                step(1)
+            }
+        }
+    })
+}
