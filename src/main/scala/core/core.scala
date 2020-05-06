@@ -103,11 +103,11 @@ class Cpu extends Module {
     // ID Module instance
     val idm: IDModule = Module(new IDModule)
 
-    val imm_i:   SInt = (idm.io.inst bits(31, 20)).asSInt
-    val imm_u:   SInt = (idm.io.inst bits(31, 12)).asSInt
-    val imm_s:   SInt = Cat(idm.io.inst bits(31, 25), idm.io.inst bits(11, 7)).asSInt
-    val imm_j:   SInt = Cat(idm.io.inst bits 31, idm.io.inst bits(19, 12), idm.io.inst bits 20, idm.io.inst bits(30, 21),"b0".U).asSInt
-    val imm_b:   SInt = Cat(idm.io.inst bits 31, idm.io.inst bits 7, idm.io.inst bits(30, 25), idm.io.inst bits(11, 8),"b0".U).asSInt
+    val imm_i:   SInt = ImmGen(IMM_I,idm.io.inst.bits)
+    val imm_u:   SInt = ImmGen(IMM_U,idm.io.inst.bits)
+    val imm_s:   SInt = ImmGen(IMM_S,idm.io.inst.bits)
+    val imm_j:   SInt = ImmGen(IMM_J,idm.io.inst.bits)
+    val imm_b:   SInt = ImmGen(IMM_B,idm.io.inst.bits)
     val val_rs1: SInt = rv32i_reg(idm.io.inst.rs1).asSInt
     val val_rs2: SInt = rv32i_reg(idm.io.inst.rs2).asSInt
     // instruction decode

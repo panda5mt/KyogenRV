@@ -54,6 +54,15 @@ object ScalarOpConstants {
    def WB_PC4: UInt = 2.U(2.W)
    def WB_CSR: UInt = 3.U(2.W)
    def WB_X:   UInt = 0.U(2.W)
+
+   // imm Type
+   def IMM_X: UInt = 0.U(3.W)
+   def IMM_I: UInt = 0.U(3.W)
+   def IMM_S: UInt = 1.U(3.W)
+   def IMM_B: UInt = 2.U(3.W)
+   def IMM_U: UInt = 3.U(3.W)
+   def IMM_J: UInt = 4.U(3.W)
+   def IMM_Z: UInt = 5.U(3.W) //zimm
 }
 
 
