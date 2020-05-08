@@ -12,6 +12,6 @@ else
 endif
 $(ASM_DIR)/$(ASM_TARGET).bin: $(ASM_DIR)/$(ASM_TARGET).o
 	$(OBJCOPY) --gap-fill 0 -O binary $< $@
-	
+
 $(ASM_DIR)/$(ASM_TARGET).o: $(ASM_DIR)/$(ASM_TARGET).s
 	$(AS) -o $@ -c $<
