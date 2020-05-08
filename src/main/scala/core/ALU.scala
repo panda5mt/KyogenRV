@@ -17,6 +17,7 @@ object ALU {
     def ALU_SLT:    UInt = 9.U(4.W)
     def ALU_SLTU:   UInt = 10.U(4.W)
     def ALU_COPY1:  UInt = 11.U(4.W)
+    def ALU_COPY2:  UInt = 12.U(4.W)
     def ALU_X:      UInt = 0.U(4.W) // BitPat("b????")
 }
 
@@ -45,7 +46,8 @@ class ALU extends Module {
         ALU_AND     -> (io.op1 & io.op2),
         ALU_OR      -> (io.op1 | io.op2),
         ALU_XOR     -> (io.op1 ^ io.op2),
-        ALU_COPY1   -> io.op1))
+        ALU_COPY1   -> io.op1,
+        ALU_COPY2   -> io.op2))
     
     io.out := w_out
 }
