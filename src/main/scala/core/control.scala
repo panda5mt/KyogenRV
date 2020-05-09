@@ -66,9 +66,6 @@ class IDModule extends Module{
     io.inst := new CDecoder(x = io.imem).inst(bits = io.imem)
 }
 
-// abstract trait DecodeConstants {
-//     val table: Array[(BitPat, List[BitPat])]
-// }
 
 // See also instructions.scala and constant.scala
 class IDecode {
@@ -108,7 +105,6 @@ class IDecode {
     SRA     ->  List(Y, BR_N  , OP1_RS1, OP2_RS2 , ALU_SRA ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X /*,CSR.N*/),
     SRL     ->  List(Y, BR_N  , OP1_RS1, OP2_RS2 , ALU_SRL ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X /*,CSR.N*/),
 
-    //JAL     ->  List(Y, BR_J  , OP1_X  , OP2_X   , ALU_X   ,  WB_PC4, REN_1, MEN_0, M_X  , MT_X /*,CSR.N*/),
     JAL     ->  List(Y, BR_J  , OP1_PC , OP2_IMJ , ALU_ADD ,  WB_PC4, REN_1, MEN_0, M_X  , MT_X /*,CSR.N*/),
     JALR    ->  List(Y, BR_JR , OP1_RS1, OP2_IMI , ALU_ADD ,  WB_PC4, REN_1, MEN_0, M_X  , MT_X /*,CSR.N*/),
     BEQ     ->  List(Y, BR_EQ , OP1_PC , OP2_IMB , ALU_ADD ,  WB_ALU, REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/),
@@ -149,8 +145,8 @@ class IntCtrlSigs extends Bundle {
     val alu_func:   UInt = Bits(ALU_X.getWidth.W)
     
     val wb_sel:     UInt = Bits(WB_X.getWidth.W)
-    val rf_wen:     Bool = Bool()//Bits(REN_X.getWidth.W)
-    val mem_en:     Bool = Bool()//Bits(MEN_X.getWidth.W)
+    val rf_wen:     Bool = Bool()
+    val mem_en:     Bool = Bool()
 
     val mem_wr:     UInt = Bits(M_SZ)
     val mask_type:  UInt = Bits(MT_SZ)
@@ -178,7 +174,6 @@ class IntCtrlSigs extends Bundle {
         this // return (this)
     }
 }
-
 
 object DecodeLogic {
     def apply(addr: UInt, default: Seq[BitPat], mappingIn: Iterable[(BitPat, Seq[BitPat])]): Seq[UInt] = {

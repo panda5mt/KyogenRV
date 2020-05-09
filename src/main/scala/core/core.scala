@@ -1,14 +1,15 @@
 // See README.md for license details.
 package core
 
-import bus.{HostIf, TestIf}
 import chisel3._
+import chisel3.iotesters._
 import chisel3.util._
+import scala.io.{BufferedSource, Source}
+
 import _root_.core.ScalarOpConstants._
-import chisel3.iotesters.PeekPokeTester
+import bus.{HostIf, TestIf}
 import mem._
 
-import scala.io.{BufferedSource, Source}
 
 
 //noinspection ScalaStyle
@@ -211,7 +212,7 @@ class CpuBus extends Module {
     val sw_gaddr:   UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
     
     val cpu:        Cpu = Module(new Cpu)
-    val memory: IMem = Module(new IMem)
+    val memory:     IMem = Module(new IMem)
     
     // Connect Test Module
     sw_halt     := io.sw.halt
@@ -250,12 +251,13 @@ class CpuBus extends Module {
 
 }
 
+//noinspection ScalaStyle
 object kyogenrv extends App {
     chisel3.Driver.execute(args, () => new Cpu())
 }
 
 object Test extends App {
-    iotesters.Driver.execute(args, () => new CpuBus())(c => {
+    iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
         new PeekPokeTester(c) {
             // read from binary file
             val s: BufferedSource = Source.fromFile("src/sw/test.hex")
