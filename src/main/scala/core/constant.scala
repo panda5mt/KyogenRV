@@ -19,16 +19,16 @@ object ScalarOpConstants {
    def PC_EXC: UInt = 4.U(3.W)// exception
 
    // Branch Type
-   def BR_N: UInt = 0.U(4.W)  // Next
-   def BR_NE: UInt = 1.U(4.W) // Branch on NotEqual
-   def BR_EQ: UInt = 2.U(4.W) // Branch on Equal
-   def BR_GE: UInt = 3.U(4.W) // Branch on Greater/Equal
-   def BR_GEU: UInt = 4.U(4.W)// Branch on Greater/Equal Unsigned
-   def BR_LT: UInt = 5.U(4.W) // Branch on Less Than
-   def BR_LTU: UInt = 6.U(4.W)// Branch on Less Than Unsigned
-   def BR_J: UInt = 7.U(4.W)  // Jump
-   def BR_JR: UInt = 8.U(4.W) // Jump Register
-   def BR_X: UInt = 0.U(4.W)
+   def BR_N:   UInt = 1.U(4.W) // Next
+   def BR_NE:  UInt = 2.U(4.W) // Branch on NotEqual
+   def BR_EQ:  UInt = 3.U(4.W) // Branch on Equal
+   def BR_GE:  UInt = 4.U(4.W) // Branch on Greater/Equal
+   def BR_GEU: UInt = 5.U(4.W) // Branch on Greater/Equal Unsigned
+   def BR_LT:  UInt = 6.U(4.W) // Branch on Less Than
+   def BR_LTU: UInt = 7.U(4.W) // Branch on Less Than Unsigned
+   def BR_J:   UInt = 8.U(4.W) // Jump
+   def BR_JR:  UInt = 9.U(4.W) // Jump Register
+   def BR_X:   UInt = 0.U(4.W)
 
    // RS1 Operand Select Signal
    def OP1_RS1: UInt = 0.U(1.W) // Register Source #1

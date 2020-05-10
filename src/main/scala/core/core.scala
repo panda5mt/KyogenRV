@@ -108,7 +108,7 @@ class Cpu extends Module {
             BR_LTU -> Mux(val_rs1.asUInt < val_rs2.asUInt,  rd_val, r_addr + 4.U(32.W)), // Branch on Less Than Unsigned
             BR_JR  -> alu.io.out,//(val_rs1 + imm_i).asUInt, //JALR: rs1 + imm
             BR_J   -> alu.io.out,//(r_addr - 4.U + imm_j.asUInt), //JAL:pc += imm
-            BR_X   -> 0.U(32.W) //
+            BR_X   -> (r_addr + 4.U(32.W))//0.U(32.W) //
     ))
 
     // bubble logic
