@@ -158,11 +158,13 @@ class Cpu extends Module {
 
     when (io.sw.halt === false.B){
         when(r_ack === true.B){
-            w_req := false.B
-            r_addr := pc_incl // increase or jump program counter
+            w_req   := false.B
+            r_req   := r_req
+            r_addr  := pc_incl // increase or jump program counter
         }.otherwise {
+            w_req   := false.B
             r_req   := true.B
-            r_addr  := 0.U(32.W)
+            r_addr  := r_addr//0.U(32.W)
         }
     }.otherwise { // halt mode
         // enable Write Operation
@@ -268,48 +270,49 @@ object Test extends App {
                 s.close()
             }
             step(1)
-            poke(c.io.sw.halt, true.B)
+            poke(signal = c.io.sw.halt, value = true.B)
             step(1)
 
             for (addr <- 0 until buffs.length * 4 by 4) {
                 val mem_val = buffs(addr / 4).replace(" ", "")
                 val mem = Integer.parseUnsignedInt(mem_val, 16)
 
-                poke(c.io.sw.w_ad, addr)
-                poke(c.io.sw.w_da, mem)
-                println(f"write: addr = 0x$addr%08X, data = 0x$mem%08X")
+                poke(signal = c.io.sw.w_ad, value = addr)
+                poke(signal = c.io.sw.w_da, value = mem)
+                println(msg = f"write: addr = 0x$addr%08X, data = 0x$mem%08X")
                 step(1)
             }
 
             step(1)
-            println("---------------------------------------------------------")
-            poke(c.io.sw.w_pc, 0) // restart pc address
+            println(msg = "---------------------------------------------------------")
+            poke(signal = c.io.sw.w_pc, value = 0) // restart pc address
             step(1) // fetch pc
-            poke(c.io.sw.halt, false.B)
-            step(1)
-            step(1)
+            poke(signal = c.io.sw.halt, value = false.B)
+            step(2)
 
             //for (lp <- memarray.indices by 1){
             for (_ <- 0 until 100 by 1) {
-                val a = peek(c.io.sw.addr)
-                val d = peek(c.io.sw.data)
+                val a = peek(signal = c.io.sw.addr)
+                val d = peek(signal = c.io.sw.data)
 
-                println(f"read : addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
+                println(msg = f"read : addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
                 step(1)
             }
 
             step(1)
             println("---------------------------------------------------------")
-            poke(c.io.sw.halt, true.B)
+            poke(signal = c.io.sw.halt, value = true.B)
             step(1)
             step(1)
             for (lp <- 0 to 31 by 1) {
 
-                poke(c.io.sw.g_ad, lp)
+                poke(signal = c.io.sw.g_ad, value = lp)
                 step(1)
-                val d = peek(c.io.sw.g_da)
+                val d = {
+                    peek(signal = c.io.sw.g_da)
+                }
 
-                println(f"read : x$lp%2d = 0x$d%08X") //peek(c.io.sw.data)
+                println(msg = f"read : x$lp%2d = 0x$d%08X") //peek(c.io.sw.data)
                 step(1)
             }
         }
