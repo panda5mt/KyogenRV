@@ -27,11 +27,6 @@ class Cpu extends Module {
     val w_ack:  Bool = RegInit(false.B)
     val w_addr: UInt = RegInit(0.U(32.W))
     val w_data: UInt = RegInit(0.U(32.W))
-    
-    //val g_addr  = RegInit(0.U(32.W))
-    val rv32i_reg: Vec[UInt] = RegInit(VecInit(Seq.fill(32)(0.U(32.W))))
-
-     // x0 - x31:All zero initialized
 
     val next_inst_is_valid: Bool = RegInit(true.B) //
 
@@ -43,8 +38,11 @@ class Cpu extends Module {
     val imm_s:   SInt = ImmGen(IMM_S,idm.io.inst.bits)
     val imm_j:   SInt = ImmGen(IMM_J,idm.io.inst.bits)
     val imm_b:   SInt = ImmGen(IMM_B,idm.io.inst.bits)
-    val val_rs1: SInt = rv32i_reg(idm.io.inst.rs1).asSInt
-    val val_rs2: SInt = rv32i_reg(idm.io.inst.rs2).asSInt
+    // register (x0 - x31)
+    val val_raddr12 = IndexedSeq(idm.io.inst.rs1,idm.io.inst.rs2) // treat as 64bit-Addressed SRAM
+    val rrm = new RegRAM
+    val val_rs: IndexedSeq[UInt] = val_raddr12.map(rrm.read _)
+    
     // instruction decode
     idm.io.imem := Mux(next_inst_is_valid, r_data, 0.U(32.W)) // if (command.type == branch) next.command = invalid
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
@@ -52,7 +50,7 @@ class Cpu extends Module {
     // ALU OP1 selector
     val ex_op1: UInt = MuxLookup(key = id_ctrl.alu_op1, default = 0.U(32.W),
         mapping = Seq(
-            OP1_RS1 -> rv32i_reg(idm.io.inst.rs1).asUInt(),
+            OP1_RS1 -> val_rs(0).asUInt(),
             OP1_PC  -> (r_addr - 4.U), // PC = r_addr-4.U
             OP1_X -> 0.U(32.W)
         )
@@ -60,7 +58,7 @@ class Cpu extends Module {
     // ALU OP2 selector
     val ex_op2: UInt = MuxLookup(key = id_ctrl.alu_op2, default = 0.U(32.W),
         mapping = Seq(
-            OP2_RS2 -> rv32i_reg(idm.io.inst.rs2).asUInt,
+            OP2_RS2 -> val_rs(1).asUInt,
             OP2_IMI -> imm_i.asUInt,
             OP2_IMS -> imm_s.asUInt, // immediate, S-type
             OP2_IMU -> imm_u.asUInt, // immediate, U-type(insts_code[31:12])
@@ -75,7 +73,7 @@ class Cpu extends Module {
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
 
-     // register write
+     // register write back
     val rf_wen: Bool = id_ctrl.rf_wen     // register write enable flag
     val rd_addr:UInt = idm.io.inst.rd    // destination register
     val rd_val: UInt = MuxLookup(id_ctrl.wb_sel, 0.U(32.W),
@@ -87,26 +85,28 @@ class Cpu extends Module {
             WB_X   -> 0.U(32.W)
         )
     )
+    when (cond = rf_wen){ rrm.write(rd_addr, rd_val) }
 
-    when (rf_wen === REN_1){ // register write enable?
-        when (rd_addr =/= 0.U && rd_addr < 32.U){
-            rv32i_reg(rd_addr) := rd_val
-        }.otherwise { // rd_addr = 0
-            rv32i_reg(0.U) := 0.U(32.W)
-        }
-    }
+//    when (rf_wen === REN_1){ // register write enable?
+//        when (rd_addr =/= 0.U && rd_addr < 32.U){
+//            rv32i_reg(rd_addr) := rd_val
+//        }.otherwise { // rd_addr = 0
+//            rv32i_reg(0.U) := 0.U(32.W)
+//        }
+//    }
+    
 
     // Branch type selector
     val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
         mapping = Seq(
             BR_N   -> (r_addr + 4.U(32.W)), // Next
-            BR_NE  -> Mux(val_rs1 =/= val_rs2,              rd_val, r_addr + 4.U(32.W)),  // Branch on NotEqual
-            BR_EQ  -> Mux(val_rs1 === val_rs2,              rd_val, r_addr + 4.U(32.W)), // Branch on Equal
-            BR_GE  -> Mux(val_rs1 >= val_rs2,               rd_val, r_addr + 4.U(32.W)), // Branch on Greater/Equal
-            BR_GEU -> Mux(val_rs1.asUInt >= val_rs2.asUInt, rd_val, r_addr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
-            BR_LT  -> Mux(val_rs1 < val_rs2,                rd_val, r_addr + 4.U(32.W)), // Branch on Less Than
-            BR_LTU -> Mux(val_rs1.asUInt < val_rs2.asUInt,  rd_val, r_addr + 4.U(32.W)), // Branch on Less Than Unsigned
-            BR_JR  -> alu.io.out,//(val_rs1 + imm_i).asUInt, //JALR: rs1 + imm
+            BR_NE  -> Mux(val_rs(0) =/= val_rs(1),              rd_val, r_addr + 4.U(32.W)),  // Branch on NotEqual
+            BR_EQ  -> Mux(val_rs(0) === val_rs(1),              rd_val, r_addr + 4.U(32.W)), // Branch on Equal
+            BR_GE  -> Mux(val_rs(0) >= val_rs(1),               rd_val, r_addr + 4.U(32.W)), // Branch on Greater/Equal
+            BR_GEU -> Mux(val_rs(0).asUInt >= val_rs(1).asUInt, rd_val, r_addr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
+            BR_LT  -> Mux(val_rs(0) < val_rs(1),                rd_val, r_addr + 4.U(32.W)), // Branch on Less Than
+            BR_LTU -> Mux(val_rs(0).asUInt < val_rs(1).asUInt,  rd_val, r_addr + 4.U(32.W)), // Branch on Less Than Unsigned
+            BR_JR  -> alu.io.out,//(val_rs(0) + imm_i).asUInt, //JALR: rs1 + imm
             BR_J   -> alu.io.out,//(r_addr - 4.U + imm_j.asUInt), //JAL:pc += imm
             BR_X   -> (r_addr + 4.U(32.W))//0.U(32.W) //
     ))
@@ -116,37 +116,37 @@ class Cpu extends Module {
     switch (id_ctrl.br_type) {
 
         is( BR_NE ) {
-            when(val_rs1 =/= val_rs2) {
+            when(val_rs(0) =/= val_rs(1)) {
                 next_inst_is_valid.:=(false.B)} // NEQ = true: bubble next inst & branch
             .otherwise {
                 next_inst_is_valid.:=(true.B) }
         }
         is( BR_EQ ) {
-            when(val_rs1 === val_rs2) {
+            when(val_rs(0) === val_rs(1)) {
                 next_inst_is_valid.:=(false.B)}  // EQ = true: bubble next inst & branch
             .otherwise {
                 next_inst_is_valid.:=(true.B) }
         }
         is( BR_GE ) {
-            when(val_rs1 > val_rs2) {
+            when(val_rs(0) > val_rs(1)) {
                 next_inst_is_valid.:=(false.B)} // GE = true: bubble next inst & branc
             .otherwise {
                 next_inst_is_valid.:=(true.B) }
         }
         is( BR_GEU ) {
-            when(val_rs1.asUInt > val_rs2.asUInt) {
+            when(val_rs(0).asUInt > val_rs(1).asUInt) {
                 next_inst_is_valid.:=(false.B)} // GE = true: bubble next inst & branch
             .otherwise {
                 next_inst_is_valid.:=(true.B) }
         }
         is( BR_LT ) {
-            when(val_rs1 < val_rs2){
+            when(val_rs(0) < val_rs(1)){
                 next_inst_is_valid.:=(false.B)} // LT = true: bubble next inst & branch
             .otherwise {
                 next_inst_is_valid.:=(true.B) }
         }
         is( BR_LTU ) {
-            when(val_rs1.asUInt() < val_rs2.asUInt) {
+            when(val_rs(0).asUInt() < val_rs(1).asUInt) {
                 next_inst_is_valid.:=(false.B)} // LT = true: bubble next inst & branch
             .otherwise {
                 next_inst_is_valid.:=(true.B) }
@@ -194,9 +194,9 @@ class Cpu extends Module {
     r_data := io.r_dch.data
 
     // x0 - x31
-    io.sw.g_da := rv32i_reg(io.sw.g_ad)
-
-
+    val v_radd = IndexedSeq(io.sw.g_ad,0.U) // treat as 64bit-Addressed SRAM
+    val v_rs: IndexedSeq[UInt] = v_radd.map(rrm.read _)
+    io.sw.g_da := v_rs(0)
 }
 
 class CpuBus extends Module {
@@ -251,6 +251,21 @@ class CpuBus extends Module {
     memory.io.w_dch.data    <> cpu.io.w_dch.data
     cpu.io.w_dch.ack        <> memory.io.w_dch.ack
 
+}
+//noinspection ScalaStyle
+// x0 - x31
+class RegRAM {
+    val ram: Mem[UInt] = Mem(32, UInt(32.W))
+    // read process
+    def read(addr: UInt): UInt = {
+        Mux(addr === 0.U, 0.U, ram(addr))
+    }
+    // write process
+    def write(addr:UInt, data:UInt): WhenContext = {
+        when(addr =/= 0.U) {
+            ram(addr) := data
+        }
+    }
 }
 
 //noinspection ScalaStyle
