@@ -11,8 +11,8 @@ _label1:
 
 _label2:
     addi  x6, x0, 6     # x6 = 6
-    addi  x7, x0, 7     # x7 = 7
-    addi  x8, x0, 8     # x8 = 8 (RETURN HERE)
+    addi  x7, x0, 7     # x7 = 7 (RETURN HERE)
+    addi  x8, x0, 8     # x8 = 8
     addi  x9, x0, 9     # x9 = 9
     addi x10, x0, 10    # x10= 0x0A
     addi x11, x0, 11    # x11= 0x0B
