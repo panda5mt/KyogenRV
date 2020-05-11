@@ -29,9 +29,9 @@ class Cpu extends Module {
     val w_data: UInt = RegInit(0.U(32.W))
     
     //val g_addr  = RegInit(0.U(32.W))
-    val rv32i_reg: Vec[UInt] = {
-        RegInit(VecInit(Seq.fill(32)(0.U(32.W))))
-    } // x0 - x31:All zero initialized
+    val rv32i_reg: Vec[UInt] = RegInit(VecInit(Seq.fill(32)(0.U(32.W))))
+
+     // x0 - x31:All zero initialized
 
     val next_inst_is_valid: Bool = RegInit(true.B) //
 
@@ -278,6 +278,7 @@ object Test extends App {
                 val mem = Integer.parseUnsignedInt(mem_val, 16)
 
                 poke(signal = c.io.sw.w_ad, value = addr)
+                step(1)
                 poke(signal = c.io.sw.w_da, value = mem)
                 println(msg = f"write: addr = 0x$addr%08X, data = 0x$mem%08X")
                 step(1)
@@ -292,19 +293,19 @@ object Test extends App {
 
             //for (lp <- memarray.indices by 1){
             for (_ <- 0 until 100 by 1) {
+
                 val a = peek(signal = c.io.sw.addr)
                 val d = peek(signal = c.io.sw.data)
-
-                println(msg = f"read : addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
                 step(1)
+                println(msg = f"read : addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
+
             }
 
             step(1)
             println("---------------------------------------------------------")
             poke(signal = c.io.sw.halt, value = true.B)
-            step(1)
-            step(1)
-            for (lp <- 0 to 31 by 1) {
+            step(2)
+            for (lp <- 0.U(32.W) to 31.U(32.W) by 1) {
 
                 poke(signal = c.io.sw.g_ad, value = lp)
                 step(1)
