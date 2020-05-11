@@ -10,6 +10,7 @@ _label1:
     jal   x4,  _label4  # x4 => address(_label2), jump _label4
 
 _label2:
+    addi  x6, x0, 6     # x6 = 6
     addi  x7, x0, 7     # x7 = 7
     addi  x8, x0, 8     # x8 = 8 (RETURN HERE)
     addi  x9, x0, 9     # x9 = 9
