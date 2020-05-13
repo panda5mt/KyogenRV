@@ -11,11 +11,12 @@ class CtrlSwChannel extends Bundle {
 
     val r_add: UInt = Output(UInt(32.W))    // for debug: address dump
     val r_dat: UInt = Output(UInt(32.W))    // for test: memory dump
-    val w_dat: UInt = Input(UInt(32.W))     // for test: write data
-    val w_add: UInt = Input(UInt(32.W))     // for test: write address
 
-    val g_ad: UInt = Input(UInt(32.W))     // General register address (0 to 31)
-    val g_da: UInt = Output(UInt(32.W))    // General register data
+    val w_add: UInt = Input(UInt(32.W))     // for test: write address
+    val w_dat: UInt = Input(UInt(32.W))     // for test: write data
+
+    val g_add: UInt = Input(UInt(32.W))     // General register address (0 to 31)
+    val g_dat: UInt = Output(UInt(32.W))    // General register data
 
     val r_pc: UInt = Output(UInt(32.W))    // Program Counter Read register
     val w_pc: UInt = Input(UInt(32.W))     // Program Counter Write register
@@ -44,11 +45,20 @@ class wDataChannel extends Bundle {
 class HostIf extends Bundle {
     // Instruction Memory
     // IO definition
-    val r_ach: AddressChannel = new AddressChannel
-    val r_dch: DataChannel = Flipped(new DataChannel)    // flipped I/O
+    val r_imem_add: AddressChannel = new AddressChannel
+    val r_imem_dat: DataChannel = Flipped(new DataChannel)    // flipped I/O
     // write operation
-    val w_ach: AddressChannel = new AddressChannel
-    val w_dch: wDataChannel = new wDataChannel
+    val w_imem_add: AddressChannel = new AddressChannel
+    val w_imem_dat: wDataChannel = new wDataChannel
+//
+//    // data Memory
+//    // IO definition
+//    val r_dmemadd: AddressChannel   = new AddressChannel
+//    val r_dmemdat: DataChannel      = Flipped(new DataChannel)    // flipped I/O
+//    // write operation
+//    val w_dmemadd: AddressChannel   = new AddressChannel
+//    val w_dmemdat: wDataChannel     = new wDataChannel
+
     // debug if
     val sw: CtrlSwChannel = new CtrlSwChannel
 }
@@ -59,11 +69,11 @@ class HostIf extends Bundle {
 class SlaveIf extends Bundle {
     // IO definition
     // read operation
-    val r_ach: AddressChannel = Flipped(new AddressChannel) // flipped I/O
-    val r_dch: DataChannel = new DataChannel
+    val r_imem_add: AddressChannel = Flipped(new AddressChannel) // flipped I/O
+    val r_imem_dat: DataChannel = new DataChannel
     // write operation
-    val w_ach: AddressChannel = Flipped(new AddressChannel) // flipped I/O
-    val w_dch: wDataChannel = Flipped(new wDataChannel)
+    val w_imem_add: AddressChannel = Flipped(new AddressChannel) // flipped I/O
+    val w_imem_dat: wDataChannel = Flipped(new wDataChannel)
 }
 
 class TestIf extends Bundle {

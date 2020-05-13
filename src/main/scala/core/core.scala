@@ -179,24 +179,24 @@ class Cpu extends Module {
     io.sw.r_add      := pc_cntr
     io.sw.r_pc      := pc_cntr // program counter
 
-    io.r_ach.addr   := pc_cntr
-    io.r_ach.req    := r_req
+    io.r_imem_add.addr   := pc_cntr
+    io.r_imem_add.req    := r_req
     
     // write process
-    io.w_ach.addr   := w_addr
-    io.w_dch.data   := w_data
-    io.w_ach.req    := w_req
+    io.w_imem_add.addr   := w_addr
+    io.w_imem_dat.data   := w_data
+    io.w_imem_add.req    := w_req
     
     //w_pc    := io.sw.w_pc
     
     // read process
-    r_ack  := io.r_dch.ack
-    r_data := io.r_dch.data
+    r_ack  := io.r_imem_dat.ack
+    r_data := io.r_imem_dat.data
 
     // x0 - x31
-    val v_radd = IndexedSeq(io.sw.g_ad,0.U) // treat as 64bit-Addressed SRAM
+    val v_radd = IndexedSeq(io.sw.g_add,0.U) // treat as 64bit-Addressed SRAM
     val v_rs: IndexedSeq[UInt] = v_radd.map(gram.read)
-    io.sw.g_da := v_rs(0)
+    io.sw.g_dat := v_rs(0)
 }
 
 class CpuBus extends Module {
@@ -218,17 +218,17 @@ class CpuBus extends Module {
     
     // Connect Test Module
     sw_halt     := io.sw.halt
-    sw_data     := memory.io.r_dch.data
-    sw_addr     := memory.io.r_ach.addr
+    sw_data     := memory.io.r_imem_dat.data
+    sw_addr     := memory.io.r_imem_add.addr
     
     sw_wdata    := io.sw.w_dat // data to write memory
     sw_waddr    := io.sw.w_add
-    sw_gaddr    := io.sw.g_ad
+    sw_gaddr    := io.sw.g_add
 
     io.sw.r_dat  := sw_data
     io.sw.r_add  := sw_addr
     
-    io.sw.g_da  := cpu.io.sw.g_da
+    io.sw.g_dat  := cpu.io.sw.g_dat
     io.sw.r_pc  := cpu.io.sw.r_pc
 
     w_pc        := io.sw.w_pc
@@ -236,20 +236,20 @@ class CpuBus extends Module {
     cpu.io.sw.halt := sw_halt
     cpu.io.sw.w_dat := sw_wdata
     cpu.io.sw.w_add := sw_waddr
-    cpu.io.sw.g_ad := sw_gaddr
+    cpu.io.sw.g_add := sw_gaddr
     cpu.io.sw.w_pc := w_pc
 
     // Read memory
-    memory.io.r_ach.req     <> cpu.io.r_ach.req
-    memory.io.r_ach.addr    <> cpu.io.r_ach.addr
-    cpu.io.r_dch.data       <> memory.io.r_dch.data
-    cpu.io.r_dch.ack        <> memory.io.r_dch.ack
+    memory.io.r_imem_add.req     <> cpu.io.r_imem_add.req
+    memory.io.r_imem_add.addr    <> cpu.io.r_imem_add.addr
+    cpu.io.r_imem_dat.data       <> memory.io.r_imem_dat.data
+    cpu.io.r_imem_dat.ack        <> memory.io.r_imem_dat.ack
 
     // write memory
-    memory.io.w_ach.req     <> cpu.io.w_ach.req
-    memory.io.w_ach.addr    <> cpu.io.w_ach.addr
-    memory.io.w_dch.data    <> cpu.io.w_dch.data
-    cpu.io.w_dch.ack        <> memory.io.w_dch.ack
+    memory.io.w_imem_add.req     <> cpu.io.w_imem_add.req
+    memory.io.w_imem_add.addr    <> cpu.io.w_imem_add.addr
+    memory.io.w_imem_dat.data    <> cpu.io.w_imem_dat.data
+    cpu.io.w_imem_dat.ack        <> memory.io.w_imem_dat.ack
 
 }
 //noinspection ScalaStyle
@@ -322,10 +322,10 @@ object Test extends App {
             step(2)
             for (lp <- 0.U(32.W) to 31.U(32.W) by 1) {
 
-                poke(signal = c.io.sw.g_ad, value = lp)
+                poke(signal = c.io.sw.g_add, value = lp)
                 step(1)
                 val d = {
-                    peek(signal = c.io.sw.g_da)
+                    peek(signal = c.io.sw.g_dat)
                 }
 
                 println(msg = f"read : x$lp%2d = 0x$d%08X") //peek(c.io.sw.data)

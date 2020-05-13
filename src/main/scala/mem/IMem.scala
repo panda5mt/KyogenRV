@@ -20,22 +20,22 @@ class IMem extends Module {
     val w_ack: Bool = RegInit(false.B)
     
     // read operation
-    i_req           :=io.r_ach.req
-    io.r_dch.data   := mem.read(io.r_ach.addr)
-    //i_ack          := i_req
-    io.r_dch.ack    := i_ack
-    when(io.r_ach.req === true.B) {
+    i_req               :=io.r_imem_add.req
+    io.r_imem_dat.data  := mem.read(io.r_imem_add.addr)
+    //i_ack             := i_req
+    io.r_imem_dat.ack   := i_ack
+    when(io.r_imem_add.req === true.B) {
         i_ack := true.B
     }.otherwise(
         i_ack := false.B
     )
 
     // write operation
-    when(io.w_ach.req === true.B) {
-        mem.write(io.w_ach.addr,io.w_dch.data)
-        w_ack := true.B
+    when(io.w_imem_add.req === true.B) {
+        mem.write(io.w_imem_add.addr,io.w_imem_dat.data)
+        w_ack           := true.B
     }
 
-    io.w_dch.ack    := w_ack
+    io.w_imem_dat.ack   := w_ack
 }
 
