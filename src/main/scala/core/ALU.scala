@@ -23,6 +23,7 @@ object ALU {
 
 import ALU._
 
+//noinspection ScalaStyle
 class ALU extends Module {
     val io = IO {
         new Bundle {
@@ -32,8 +33,8 @@ class ALU extends Module {
             val out: UInt = Output(UInt(32.W))
         }
     }
-    val shamt:  UInt = io.op2(4,0).asUInt
-    val w_out:  UInt = Wire(UInt(32.W))
+    val shamt: UInt = io.op2(4,0).asUInt
+    val w_out: UInt = Wire(UInt(32.W))
 
     w_out := MuxLookup(io.alu_op, io.op2, Seq(
         ALU_ADD     -> (io.op1 + io.op2),

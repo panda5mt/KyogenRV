@@ -17,7 +17,7 @@ class Cpu extends Module {
     val io: HostIf = IO(new HostIf)
     
     // initialization
-    val r_addr: UInt = RegInit(0.U(32.W))    // pc
+    val pc_cntr: UInt = RegInit(0.U(32.W))    // pc
     val r_data: UInt = RegInit(0.U(32.W))
     val r_req:  Bool = RegInit(true.B)       // fetch signal
     val r_rw:   Bool = RegInit(false.B)
@@ -40,8 +40,8 @@ class Cpu extends Module {
     val imm_b:   SInt = ImmGen(IMM_B,idm.io.inst.bits)
     // register (x0 - x31)
     val val_raddr12 = IndexedSeq(idm.io.inst.rs1,idm.io.inst.rs2) // treat as 64bit-Addressed SRAM
-    val rrm = new RegRAM
-    val val_rs: IndexedSeq[UInt] = val_raddr12.map(rrm.read _)
+    val gram = new RegRAM
+    val val_rs: IndexedSeq[UInt] = val_raddr12.map(gram.read _)
     
     // instruction decode
     idm.io.imem := Mux(next_inst_is_valid, r_data, 0.U(32.W)) // if (command.type == branch) next.command = invalid
@@ -51,7 +51,7 @@ class Cpu extends Module {
     val ex_op1: UInt = MuxLookup(key = id_ctrl.alu_op1, default = 0.U(32.W),
         mapping = Seq(
             OP1_RS1 -> val_rs(0).asUInt(),
-            OP1_PC  -> (r_addr - 4.U), // PC = r_addr-4.U
+            OP1_PC  -> (pc_cntr - 4.U), // PC = pc_cntr-4.U
             OP1_X -> 0.U(32.W)
         )
     )
@@ -79,13 +79,13 @@ class Cpu extends Module {
     val rd_val: UInt = MuxLookup(id_ctrl.wb_sel, 0.U(32.W),
         Seq(
             WB_ALU -> alu.io.out,
-            WB_PC4 -> r_addr,           //r_addr = pc + 4
+            WB_PC4 -> pc_cntr,           //pc_cntr = pc + 4
             WB_CSR -> 0.U(32.W),
             WB_MEM -> 0.U(32.W),
             WB_X   -> 0.U(32.W)
         )
     )
-    when (cond = rf_wen){ rrm.write(rd_addr, rd_val) }
+    when (cond = rf_wen){ gram.write(rd_addr, rd_val) }
 
 //    when (rf_wen === REN_1){ // register write enable?
 //        when (rd_addr =/= 0.U && rd_addr < 32.U){
@@ -99,16 +99,16 @@ class Cpu extends Module {
     // Branch type selector
     val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
         mapping = Seq(
-            BR_N   -> (r_addr + 4.U(32.W)), // Next
-            BR_NE  -> Mux(val_rs(0) =/= val_rs(1),              rd_val, r_addr + 4.U(32.W)),  // Branch on NotEqual
-            BR_EQ  -> Mux(val_rs(0) === val_rs(1),              rd_val, r_addr + 4.U(32.W)), // Branch on Equal
-            BR_GE  -> Mux(val_rs(0) >= val_rs(1),               rd_val, r_addr + 4.U(32.W)), // Branch on Greater/Equal
-            BR_GEU -> Mux(val_rs(0).asUInt >= val_rs(1).asUInt, rd_val, r_addr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
-            BR_LT  -> Mux(val_rs(0) < val_rs(1),                rd_val, r_addr + 4.U(32.W)), // Branch on Less Than
-            BR_LTU -> Mux(val_rs(0).asUInt < val_rs(1).asUInt,  rd_val, r_addr + 4.U(32.W)), // Branch on Less Than Unsigned
+            BR_N   -> (pc_cntr + 4.U(32.W)), // Next
+            BR_NE  -> Mux(val_rs(0) =/= val_rs(1),              rd_val, pc_cntr + 4.U(32.W)),  // Branch on NotEqual
+            BR_EQ  -> Mux(val_rs(0) === val_rs(1),              rd_val, pc_cntr + 4.U(32.W)), // Branch on Equal
+            BR_GE  -> Mux(val_rs(0) >= val_rs(1),               rd_val, pc_cntr + 4.U(32.W)), // Branch on Greater/Equal
+            BR_GEU -> Mux(val_rs(0).asUInt >= val_rs(1).asUInt, rd_val, pc_cntr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
+            BR_LT  -> Mux(val_rs(0) < val_rs(1),                rd_val, pc_cntr + 4.U(32.W)), // Branch on Less Than
+            BR_LTU -> Mux(val_rs(0).asUInt < val_rs(1).asUInt,  rd_val, pc_cntr + 4.U(32.W)), // Branch on Less Than Unsigned
             BR_JR  -> alu.io.out,//(val_rs(0) + imm_i).asUInt, //JALR: rs1 + imm
-            BR_J   -> alu.io.out,//(r_addr - 4.U + imm_j.asUInt), //JAL:pc += imm
-            BR_X   -> (r_addr + 4.U(32.W))//0.U(32.W) //
+            BR_J   -> alu.io.out,//(pc_cntr - 4.U + imm_j.asUInt), //JAL:pc += imm
+            BR_X   -> (pc_cntr + 4.U(32.W))//0.U(32.W) //
     ))
 
     // bubble logic
@@ -160,26 +160,26 @@ class Cpu extends Module {
         when(r_ack === true.B){
             w_req   := false.B
             r_req   := r_req
-            r_addr  := pc_incl // increase or jump program counter
+            pc_cntr  := pc_incl // increase or jump program counter
         }.otherwise {
             w_req   := false.B
             r_req   := true.B
-            r_addr  := r_addr//0.U(32.W)
+            pc_cntr  := pc_cntr//0.U(32.W)
         }
     }.otherwise { // halt mode
         // enable Write Operation
-        w_addr := io.sw.w_ad //w_addr + 4.U(32.W)
-        w_data := io.sw.w_da
+        w_addr := io.sw.w_add //w_addr + 4.U(32.W)
+        w_data := io.sw.w_dat
         w_req  := true.B
-        r_addr := io.sw.w_pc
+        pc_cntr := io.sw.w_pc
     }
 
     // for test
-    io.sw.data      := r_data
-    io.sw.addr      := r_addr
-    io.sw.r_pc      := r_addr // program counter
+    io.sw.r_dat      := r_data
+    io.sw.r_add      := pc_cntr
+    io.sw.r_pc      := pc_cntr // program counter
 
-    io.r_ach.addr   := r_addr
+    io.r_ach.addr   := pc_cntr
     io.r_ach.req    := r_req
     
     // write process
@@ -195,7 +195,7 @@ class Cpu extends Module {
 
     // x0 - x31
     val v_radd = IndexedSeq(io.sw.g_ad,0.U) // treat as 64bit-Addressed SRAM
-    val v_rs: IndexedSeq[UInt] = v_radd.map(rrm.read _)
+    val v_rs: IndexedSeq[UInt] = v_radd.map(gram.read)
     io.sw.g_da := v_rs(0)
 }
 
@@ -221,12 +221,12 @@ class CpuBus extends Module {
     sw_data     := memory.io.r_dch.data
     sw_addr     := memory.io.r_ach.addr
     
-    sw_wdata    := io.sw.w_da // data to write memory
-    sw_waddr    := io.sw.w_ad
+    sw_wdata    := io.sw.w_dat // data to write memory
+    sw_waddr    := io.sw.w_add
     sw_gaddr    := io.sw.g_ad
 
-    io.sw.data  := sw_data
-    io.sw.addr  := sw_addr
+    io.sw.r_dat  := sw_data
+    io.sw.r_add  := sw_addr
     
     io.sw.g_da  := cpu.io.sw.g_da
     io.sw.r_pc  := cpu.io.sw.r_pc
@@ -234,8 +234,8 @@ class CpuBus extends Module {
     w_pc        := io.sw.w_pc
 
     cpu.io.sw.halt := sw_halt
-    cpu.io.sw.w_da := sw_wdata
-    cpu.io.sw.w_ad := sw_waddr
+    cpu.io.sw.w_dat := sw_wdata
+    cpu.io.sw.w_add := sw_waddr
     cpu.io.sw.g_ad := sw_gaddr
     cpu.io.sw.w_pc := w_pc
 
@@ -292,10 +292,10 @@ object Test extends App {
                 val mem_val = buffs(addr / 4).replace(" ", "")
                 val mem = Integer.parseUnsignedInt(mem_val, 16)
 
-                poke(signal = c.io.sw.w_ad, value = addr)
+                poke(signal = c.io.sw.w_add, value = addr)
                 step(1)
-                poke(signal = c.io.sw.w_da, value = mem)
-                println(msg = f"write: addr = 0x$addr%08X, data = 0x$mem%08X")
+                poke(signal = c.io.sw.w_dat, value = mem)
+                println(msg = f"write: r_add = 0x$addr%08X, data = 0x$mem%08X")
                 step(1)
             }
 
@@ -309,8 +309,8 @@ object Test extends App {
             //for (lp <- memarray.indices by 1){
             for (_ <- 0 until 100 by 1) {
 
-                val a = peek(signal = c.io.sw.addr)
-                val d = peek(signal = c.io.sw.data)
+                val a = peek(signal = c.io.sw.r_add)
+                val d = peek(signal = c.io.sw.r_dat)
                 step(1)
                 println(msg = f"read : addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
 

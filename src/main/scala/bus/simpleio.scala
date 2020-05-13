@@ -9,10 +9,10 @@ import chisel3.Bool
 class CtrlSwChannel extends Bundle {
     val halt: Bool = Input(Bool())         // CPU or TraceMaster halt
 
-    val addr: UInt = Output(UInt(32.W))    // for debug: address dump
-    val data: UInt = Output(UInt(32.W))    // for test: memory dump
-    val w_da: UInt = Input(UInt(32.W))     // for test: write data
-    val w_ad: UInt = Input(UInt(32.W))     // for test: write address
+    val r_add: UInt = Output(UInt(32.W))    // for debug: address dump
+    val r_dat: UInt = Output(UInt(32.W))    // for test: memory dump
+    val w_dat: UInt = Input(UInt(32.W))     // for test: write data
+    val w_add: UInt = Input(UInt(32.W))     // for test: write address
 
     val g_ad: UInt = Input(UInt(32.W))     // General register address (0 to 31)
     val g_da: UInt = Output(UInt(32.W))    // General register data
@@ -42,6 +42,7 @@ class wDataChannel extends Bundle {
 // HOST :read only(IMem)
 // HOST :read/Write(Dmem)
 class HostIf extends Bundle {
+    // Instruction Memory
     // IO definition
     val r_ach: AddressChannel = new AddressChannel
     val r_dch: DataChannel = Flipped(new DataChannel)    // flipped I/O
