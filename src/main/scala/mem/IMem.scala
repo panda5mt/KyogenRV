@@ -4,10 +4,10 @@ package mem
 import chisel3._
 import chisel3.Bool
 
-import bus.SlaveIf
+import bus.SlaveIf_Inst
 
 class IMem extends Module {
-    val io: SlaveIf = IO(new SlaveIf)
+    val io: SlaveIf_Inst = IO(new SlaveIf_Inst)
 
     // initialization
     //val mem = SyncReadMem(1024, UInt(32.W))

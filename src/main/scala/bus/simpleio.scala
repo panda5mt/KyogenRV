@@ -1,9 +1,7 @@
 // See README.md for license details.
 package bus
 
-import chisel3._
-import chisel3.util._
-import chisel3.Bool
+import chisel3.{Bool, _}
 
 // bus ctrl
 class CtrlSwChannel extends Bundle {
@@ -21,7 +19,6 @@ class CtrlSwChannel extends Bundle {
     val r_pc: UInt = Output(UInt(32.W))    // Program Counter Read register
     val w_pc: UInt = Input(UInt(32.W))     // Program Counter Write register
 }
-
 
 // address channel bundle
 class AddressChannel extends Bundle {
@@ -42,7 +39,7 @@ class wDataChannel extends Bundle {
 
 // HOST :read only(IMem)
 // HOST :read/Write(Dmem)
-class HostIf extends Bundle {
+class HostIf_Inst extends Bundle {
     // Instruction Memory
     // IO definition
     val r_imem_add: AddressChannel = new AddressChannel
@@ -50,23 +47,25 @@ class HostIf extends Bundle {
     // write operation
     val w_imem_add: AddressChannel = new AddressChannel
     val w_imem_dat: wDataChannel = new wDataChannel
-//
-//    // data Memory
-//    // IO definition
-//    val r_dmemadd: AddressChannel   = new AddressChannel
-//    val r_dmemdat: DataChannel      = Flipped(new DataChannel)    // flipped I/O
-//    // write operation
-//    val w_dmemadd: AddressChannel   = new AddressChannel
-//    val w_dmemdat: wDataChannel     = new wDataChannel
 
     // debug if
     val sw: CtrlSwChannel = new CtrlSwChannel
 }
 
+class HostIf_Data extends Bundle {
+    // data Memory
+    // IO definition
+    val r_dmem_add: AddressChannel   = new AddressChannel
+    val r_dmem_dat: DataChannel      = Flipped(new DataChannel)    // flipped I/O
+    // write operation
+    val w_dmem_add: AddressChannel   = new AddressChannel
+    val w_dmem_dat: wDataChannel     = new wDataChannel
+}
+
 // Memory-Mapped Slave IF
 // Slave :read/Write(IMem)
 // Slave :read/Write(Dmem)
-class SlaveIf extends Bundle {
+class SlaveIf_Inst extends Bundle {
     // IO definition
     // read operation
     val r_imem_add: AddressChannel = Flipped(new AddressChannel) // flipped I/O
@@ -74,6 +73,16 @@ class SlaveIf extends Bundle {
     // write operation
     val w_imem_add: AddressChannel = Flipped(new AddressChannel) // flipped I/O
     val w_imem_dat: wDataChannel = Flipped(new wDataChannel)
+}
+
+class SlaveIf_Data extends Bundle {
+    // data Memory
+    // IO definition
+    val r_dmem_add: AddressChannel   = Flipped(new AddressChannel)
+    val r_dmem_dat: DataChannel      = new DataChannel    // flipped I/O
+    // write operation
+    val w_dmem_add: AddressChannel   = Flipped(new AddressChannel)
+    val w_dmem_dat: wDataChannel     = Flipped(new wDataChannel)
 }
 
 class TestIf extends Bundle {

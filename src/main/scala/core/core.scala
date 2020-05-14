@@ -7,19 +7,17 @@ import chisel3.util._
 import scala.io.{BufferedSource, Source}
 
 import _root_.core.ScalarOpConstants._
-import bus.{HostIf, TestIf}
+import bus.{HostIf_Inst, TestIf}
 import mem._
-
-
 
 //noinspection ScalaStyle
 class Cpu extends Module {
-    val io: HostIf = IO(new HostIf)
+    val io: HostIf_Inst = IO(new HostIf_Inst)
     
     // initialization
-    val pc_cntr: UInt = RegInit(0.U(32.W))    // pc
+    val pc_cntr: UInt = RegInit(0.U(32.W))      // pc
     val r_data: UInt = RegInit(0.U(32.W))
-    val r_req:  Bool = RegInit(true.B)       // fetch signal
+    val r_req:  Bool = RegInit(true.B)          // fetch signal
     val r_rw:   Bool = RegInit(false.B)
     val r_ack:  Bool = RegInit(false.B)
 
@@ -28,7 +26,7 @@ class Cpu extends Module {
     val w_addr: UInt = RegInit(0.U(32.W))
     val w_data: UInt = RegInit(0.U(32.W))
 
-    val next_inst_is_valid: Bool = RegInit(true.B) //
+    val next_inst_is_valid: Bool = RegInit(true.B)
 
     // ID Module instance
     val idm: IDModule = Module(new IDModule)
@@ -128,13 +126,13 @@ class Cpu extends Module {
                 next_inst_is_valid.:=(true.B) }
         }
         is( BR_GE ) {
-            when(val_rs(0) > val_rs(1)) {
+            when(val_rs(0) >= val_rs(1)) {
                 next_inst_is_valid.:=(false.B)} // GE = true: bubble next inst & branc
             .otherwise {
                 next_inst_is_valid.:=(true.B) }
         }
         is( BR_GEU ) {
-            when(val_rs(0).asUInt > val_rs(1).asUInt) {
+            when(val_rs(0).asUInt >= val_rs(1).asUInt) {
                 next_inst_is_valid.:=(false.B)} // GE = true: bubble next inst & branch
             .otherwise {
                 next_inst_is_valid.:=(true.B) }
