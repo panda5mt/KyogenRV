@@ -39,7 +39,7 @@ class wDataChannel extends Bundle {
 
 // HOST :read only(IMem)
 // HOST :read/Write(Dmem)
-class HostIf_Inst extends Bundle {
+class HostIf extends Bundle {
     // Instruction Memory
     // IO definition
     val r_imem_add: AddressChannel = new AddressChannel
@@ -48,11 +48,6 @@ class HostIf_Inst extends Bundle {
     val w_imem_add: AddressChannel = new AddressChannel
     val w_imem_dat: wDataChannel = new wDataChannel
 
-    // debug if
-    val sw: CtrlSwChannel = new CtrlSwChannel
-}
-
-class HostIf_Data extends Bundle {
     // data Memory
     // IO definition
     val r_dmem_add: AddressChannel   = new AddressChannel
@@ -60,6 +55,9 @@ class HostIf_Data extends Bundle {
     // write operation
     val w_dmem_add: AddressChannel   = new AddressChannel
     val w_dmem_dat: wDataChannel     = new wDataChannel
+
+    // debug if
+    val sw: CtrlSwChannel = new CtrlSwChannel
 }
 
 // Memory-Mapped Slave IF

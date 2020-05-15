@@ -4,21 +4,22 @@ package core
 import chisel3._
 import chisel3.iotesters._
 import chisel3.util._
-import scala.io.{BufferedSource, Source}
 
+import scala.io.{BufferedSource, Source}
 import _root_.core.ScalarOpConstants._
-import bus.{HostIf_Inst, TestIf}
+import MemoryOpConstants._
+import bus.{HostIf, TestIf}
 import mem._
 
 //noinspection ScalaStyle
 class Cpu extends Module {
-    val io: HostIf_Inst = IO(new HostIf_Inst)
-    
-    // initialization
+    val io: HostIf = IO(new HostIf)
+
+    // initialization(Inst)
     val pc_cntr: UInt = RegInit(0.U(32.W))      // pc
     val r_data: UInt = RegInit(0.U(32.W))
     val r_req:  Bool = RegInit(true.B)          // fetch signal
-    val r_rw:   Bool = RegInit(false.B)
+    //val r_rw: Bool = RegInit(false.B)
     val r_ack:  Bool = RegInit(false.B)
 
     val w_req:  Bool = RegInit(true.B)
@@ -27,6 +28,16 @@ class Cpu extends Module {
     val w_data: UInt = RegInit(0.U(32.W))
 
     val next_inst_is_valid: Bool = RegInit(true.B)
+
+    // initialization(Data)
+    val r_dreq: Bool = RegInit(true.B)
+    val r_dack: Bool = RegInit(false.B)
+    val r_ddat: UInt = RegInit(0.U(32.W))
+    val r_dadd: UInt = RegInit(0.U(32.W))
+
+    io.r_dmem_add.addr  := r_dadd
+    io.r_dmem_add.req   := r_dreq
+
 
     // ID Module instance
     val idm: IDModule = Module(new IDModule)
@@ -37,9 +48,9 @@ class Cpu extends Module {
     val imm_j:   SInt = ImmGen(IMM_J,idm.io.inst.bits)
     val imm_b:   SInt = ImmGen(IMM_B,idm.io.inst.bits)
     // register (x0 - x31)
-    val val_raddr12 = IndexedSeq(idm.io.inst.rs1,idm.io.inst.rs2) // treat as 64bit-Addressed SRAM
-    val gram = new RegRAM
-    val val_rs: IndexedSeq[UInt] = val_raddr12.map(gram.read _)
+    val val_rsad = IndexedSeq(idm.io.inst.rs1,idm.io.inst.rs2) // treat as 64bit-Addressed SRAM
+    val gram: RegRAM = new RegRAM
+    val val_rs: IndexedSeq[UInt] = val_rsad.map(gram.read)
     
     // instruction decode
     idm.io.imem := Mux(next_inst_is_valid, r_data, 0.U(32.W)) // if (command.type == branch) next.command = invalid
@@ -71,27 +82,31 @@ class Cpu extends Module {
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
 
-     // register write back
-    val rf_wen: Bool = id_ctrl.rf_wen     // register write enable flag
-    val rd_addr:UInt = idm.io.inst.rd    // destination register
+    // write data_mem
+    io.w_dmem_add.addr  := alu.io.out
+    io.w_dmem_add.req   := (id_ctrl.mem_en === M_XWR) // write request
+    io.r_dmem_add.req   := (id_ctrl.mem_en =/= M_XWR) // read request
+    //todo: send cpubus data size
+    io.w_dmem_dat.data  := val_rs(0)
+
+
+    // register write back
+    val rf_wen: Bool = id_ctrl.rf_wen       // register write enable flag
+    val rd_addr:UInt = idm.io.inst.rd       // destination register
+    io.r_dmem_add.addr  := alu.io.out
     val rd_val: UInt = MuxLookup(id_ctrl.wb_sel, 0.U(32.W),
         Seq(
             WB_ALU -> alu.io.out,
             WB_PC4 -> pc_cntr,           //pc_cntr = pc + 4
             WB_CSR -> 0.U(32.W),
-            WB_MEM -> 0.U(32.W),
+            WB_MEM -> io.r_dmem_dat.data,   //0.U(32.W),
             WB_X   -> 0.U(32.W)
         )
     )
-    when (cond = rf_wen){ gram.write(rd_addr, rd_val) }
+    when (cond = rf_wen){
+        gram.write(rd_addr, rd_val)
+    }
 
-//    when (rf_wen === REN_1){ // register write enable?
-//        when (rd_addr =/= 0.U && rd_addr < 32.U){
-//            rv32i_reg(rd_addr) := rd_val
-//        }.otherwise { // rd_addr = 0
-//            rv32i_reg(0.U) := 0.U(32.W)
-//        }
-//    }
     
 
     // Branch type selector
@@ -110,9 +125,13 @@ class Cpu extends Module {
     ))
 
     // bubble logic
-    next_inst_is_valid := true.B
     switch (id_ctrl.br_type) {
-
+        is ( BR_N ) {
+            next_inst_is_valid := true.B
+        }
+        is ( BR_X ) {
+            next_inst_is_valid := true.B
+        }
         is( BR_NE ) {
             when(val_rs(0) =/= val_rs(1)) {
                 next_inst_is_valid.:=(false.B)} // NEQ = true: bubble next inst & branch
@@ -153,7 +172,6 @@ class Cpu extends Module {
         is( BR_JR ) { next_inst_is_valid.:=(false.B) }  // JALR
     }
 
-
     when (io.sw.halt === false.B){
         when(r_ack === true.B){
             w_req   := false.B
@@ -184,9 +202,7 @@ class Cpu extends Module {
     io.w_imem_add.addr   := w_addr
     io.w_imem_dat.data   := w_data
     io.w_imem_add.req    := w_req
-    
-    //w_pc    := io.sw.w_pc
-    
+
     // read process
     r_ack  := io.r_imem_dat.ack
     r_data := io.r_imem_dat.data
@@ -212,42 +228,55 @@ class CpuBus extends Module {
     val sw_gaddr:   UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
     
     val cpu:        Cpu = Module(new Cpu)
-    val memory:     IMem = Module(new IMem)
+    val inst_mem:   IMem = Module(new IMem)
+    val data_mem:   DMem = Module(new DMem)
     
     // Connect Test Module
     sw_halt     := io.sw.halt
-    sw_data     := memory.io.r_imem_dat.data
-    sw_addr     := memory.io.r_imem_add.addr
+    sw_data     := inst_mem.io.r_imem_dat.data
+    sw_addr     := inst_mem.io.r_imem_add.addr
     
-    sw_wdata    := io.sw.w_dat // data to write memory
+    sw_wdata    := io.sw.w_dat // data to write inst_mem
     sw_waddr    := io.sw.w_add
     sw_gaddr    := io.sw.g_add
 
-    io.sw.r_dat  := sw_data
-    io.sw.r_add  := sw_addr
+    io.sw.r_dat := sw_data
+    io.sw.r_add := sw_addr
     
-    io.sw.g_dat  := cpu.io.sw.g_dat
+    io.sw.g_dat := cpu.io.sw.g_dat
     io.sw.r_pc  := cpu.io.sw.r_pc
 
     w_pc        := io.sw.w_pc
 
-    cpu.io.sw.halt := sw_halt
+    cpu.io.sw.halt  := sw_halt
     cpu.io.sw.w_dat := sw_wdata
     cpu.io.sw.w_add := sw_waddr
     cpu.io.sw.g_add := sw_gaddr
-    cpu.io.sw.w_pc := w_pc
+    cpu.io.sw.w_pc  := w_pc
 
-    // Read memory
-    memory.io.r_imem_add.req     <> cpu.io.r_imem_add.req
-    memory.io.r_imem_add.addr    <> cpu.io.r_imem_add.addr
-    cpu.io.r_imem_dat.data       <> memory.io.r_imem_dat.data
-    cpu.io.r_imem_dat.ack        <> memory.io.r_imem_dat.ack
+    // Read inst_mem
+    inst_mem.io.r_imem_add.req  <> cpu.io.r_imem_add.req
+    inst_mem.io.r_imem_add.addr <> cpu.io.r_imem_add.addr
+    cpu.io.r_imem_dat.data      <> inst_mem.io.r_imem_dat.data
+    cpu.io.r_imem_dat.ack       <> inst_mem.io.r_imem_dat.ack
 
-    // write memory
-    memory.io.w_imem_add.req     <> cpu.io.w_imem_add.req
-    memory.io.w_imem_add.addr    <> cpu.io.w_imem_add.addr
-    memory.io.w_imem_dat.data    <> cpu.io.w_imem_dat.data
-    cpu.io.w_imem_dat.ack        <> memory.io.w_imem_dat.ack
+    // write inst_mem
+    inst_mem.io.w_imem_add.req   <> cpu.io.w_imem_add.req
+    inst_mem.io.w_imem_add.addr  <> cpu.io.w_imem_add.addr
+    inst_mem.io.w_imem_dat.data  <> cpu.io.w_imem_dat.data
+    cpu.io.w_imem_dat.ack        <> inst_mem.io.w_imem_dat.ack
+
+    // Read data_mem
+    data_mem.io.r_dmem_add.req  <> cpu.io.r_dmem_add.req
+    data_mem.io.r_dmem_add.addr <> cpu.io.r_dmem_add.addr
+    cpu.io.r_dmem_dat.data      <> data_mem.io.r_dmem_dat.data
+    cpu.io.r_dmem_dat.ack       <> data_mem.io.r_dmem_dat.ack
+
+    // write data_mem
+    data_mem.io.w_dmem_add.req   <> cpu.io.w_dmem_add.req
+    data_mem.io.w_dmem_add.addr  <> cpu.io.w_dmem_add.addr
+    data_mem.io.w_dmem_dat.data  <> cpu.io.w_dmem_dat.data
+    cpu.io.w_dmem_dat.ack        <> data_mem.io.w_dmem_dat.ack
 
 }
 //noinspection ScalaStyle
