@@ -30,15 +30,21 @@ class Cpu extends Module {
     val next_inst_is_valid: Bool = RegInit(true.B)
 
     // initialization(Data)
-    val r_dreq: Bool = RegInit(true.B)
     val r_dack: Bool = RegInit(false.B)
     val r_ddat: UInt = RegInit(0.U(32.W))
     val r_dadd: UInt = RegInit(0.U(32.W))
+    val r_dreq = RegInit(true.B)
+    val w_dreq = RegInit(false.B)
+
+    val w_dack = RegInit(false.B)
+    val w_ddat = RegInit(0.U(32.W))
 
     io.r_dmem_add.addr  := r_dadd
+    io.w_dmem_dat.data  := w_ddat
     io.r_dmem_add.req   := r_dreq
-
-
+    io.w_dmem_add.req   := w_dreq
+    //w_dack := io.w_dmem_dat.ack
+    r_dack := io.r_dmem_dat.ack
     // ID Module instance
     val idm: IDModule = Module(new IDModule)
 
@@ -82,32 +88,38 @@ class Cpu extends Module {
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
 
+
     // write data_mem
     io.w_dmem_add.addr  := alu.io.out
-    io.w_dmem_add.req   := (id_ctrl.mem_en === M_XWR) // write request
-    io.r_dmem_add.req   := (id_ctrl.mem_en =/= M_XWR) // read request
-    //todo: send cpubus data size
-    io.w_dmem_dat.data  := val_rs(0)
+    io.r_dmem_add.addr  := alu.io.out
 
+    w_dreq := (id_ctrl.mem_wr === M_XWR) // write request
+    r_dreq := (id_ctrl.mem_wr =/= M_XWR) // read request
+    //todo: send cpubus data size
+    //io.w_dmem_dat.data  := val_rs(0)
+    when (r_dack){
+        r_ddat := io.r_dmem_dat.data
+    }
+    when(w_dack){
+        w_ddat := val_rs(1)
+    }
 
     // register write back
     val rf_wen: Bool = id_ctrl.rf_wen       // register write enable flag
     val rd_addr:UInt = idm.io.inst.rd       // destination register
-    io.r_dmem_add.addr  := alu.io.out
+
     val rd_val: UInt = MuxLookup(id_ctrl.wb_sel, 0.U(32.W),
         Seq(
             WB_ALU -> alu.io.out,
             WB_PC4 -> pc_cntr,           //pc_cntr = pc + 4
             WB_CSR -> 0.U(32.W),
-            WB_MEM -> io.r_dmem_dat.data,   //0.U(32.W),
+            WB_MEM -> r_ddat,   //0.U(32.W),
             WB_X   -> 0.U(32.W)
         )
     )
     when (cond = rf_wen){
         gram.write(rd_addr, rd_val)
     }
-
-    
 
     // Branch type selector
     val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),

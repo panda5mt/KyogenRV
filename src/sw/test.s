@@ -4,10 +4,15 @@ _start0:
     nop
     nop
 _label1:
+
     addi  x1,  x0, 1    # x1 = x0 + 1 = 1
     addi  x2,  x0, 2    # x2 = x0 + 1 = 2
+    nop
+    sw  x2,   8(x0)
+    nop
+    ld  x30,  8(x0)
     addi  x3,  x0, 3    # x3 = x0 + 2 = 3
-    jal   x4,  _label4  # x4 => address(_label2), jump _label4
+    jal   x4,  _label4  # x4 => address(_label2), jump _lasbel4
 
 _label2:
     addi  x6, x0, 6     # x6 = 6
