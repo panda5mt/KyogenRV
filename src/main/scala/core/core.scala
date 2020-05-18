@@ -5,6 +5,9 @@ import chisel3._
 import chisel3.iotesters._
 import chisel3.util._
 
+import chisel3.Clock
+
+
 import scala.io.{BufferedSource, Source}
 import _root_.core.ScalarOpConstants._
 import MemoryOpConstants._
@@ -15,9 +18,63 @@ import mem._
 class Cpu extends Module {
     val io: HostIf = IO(new HostIf)
 
-    // initialization(Inst)
+    // ------- START: pipeline registers --------
+    // program counter init
+    val pc_cntr_init: UInt = "h0000_0000".U(32.W)         // pc start address
+    val pc_next_init: UInt = pc_cntr_init + 4.U(32.W)     // pc next
+    val inst_nop: UInt = "h0000_0013".U(32.W)             // NOP instruction (addi x0, x0, 0)
+    val nop_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(inst_nop, (new IDecode).table)
+
+    // IF stage
+
+    // ID stage pipeline register
+    val id_inst: UInt = RegInit(inst_nop)
+    val id_pc: UInt = RegInit(pc_cntr_init)
+    val id_npc: UInt = RegInit(pc_next_init)
+
+    // EX stage pipeline register
+    val ex_pc: UInt = RegInit(pc_cntr_init)
+    val ex_npc: UInt = RegInit(pc_next_init)
+    val ex_inst: UInt = RegInit(inst_nop)
+    val ex_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
+    val ex_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
+    val ex_reg_waddr: UInt = RegInit(0.U(5.W))
+    val ex_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
+
+    // MEM stage pipeline register
+    val mem_pc: UInt = RegInit(pc_cntr_init)
+    val mem_npc: UInt = RegInit(pc_next_init)
+    val mem_inst: UInt = RegInit(inst_nop)
+    val mem_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
+    val mem_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
+    val mem_reg_waddr: UInt = RegInit(0.U(5.W))
+    val mem_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
+    val mem_alu_out: UInt = RegInit(0.U(32.W))
+    val mem_cmp_out: Bool = RegInit(false.B)
+
+    // WB stage pipeline register
+    val wb_npc: UInt = RegInit(pc_next_init)
+    val wb_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
+    //val wb_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
+    val wb_reg_waddr: UInt = RegInit(0.U(5.W))
+    // todo: fix alu_op
+    val wb_alu_out = RegInit(0.U(32.W))
+    val wb_dmem_read_data: UInt = RegInit(0.U(32.W))
+
+    // stall control
+    val load_stall: Bool = Wire(Bool())
+
+    // branch control
+    val jump_bubble: Bool = Wire(Bool())
+    // ------- END: pipeline registers --------
+
+
+
+    // Program Counter 
     val pc_cntr: UInt = RegInit(0.U(32.W))      // pc
-    val r_data: UInt = RegInit(0.U(32.W))
+    val npc: UInt = pc_cntr + 4.U(32.W)         // next pc counter
+    
+    //val r_data: UInt = RegInit(0.U(32.W))
     val r_req:  Bool = RegInit(true.B)          // fetch signal
     //val r_rw: Bool = RegInit(false.B)
     val r_ack:  Bool = RegInit(false.B)
@@ -26,174 +83,263 @@ class Cpu extends Module {
     val w_ack:  Bool = RegInit(false.B)
     val w_addr: UInt = RegInit(0.U(32.W))
     val w_data: UInt = RegInit(0.U(32.W))
+//
+//    val next_inst_is_valid: Bool = RegInit(true.B)
+//
+//    // initialization(Data)
+//    val r_dack: Bool = RegInit(false.B)
+//    val r_ddat: UInt = RegInit(0.U(32.W))
+//    val r_dadd: UInt = RegInit(0.U(32.W))
+//    val r_dreq: Bool = RegInit(true.B)
+//    val w_dreq: Bool = RegInit(false.B)
+//
+//    val w_dack: Bool = RegInit(false.B)
+//    val w_ddat: UInt = RegInit(0.U(32.W))
+//    val w_dadd: UInt = RegInit(0.U(32.W))
+//
+//    io.r_dmem_add.addr  := r_dadd
+//    io.w_dmem_dat.data  := w_ddat
+//
+//    io.w_dmem_add.addr  := w_dadd
+    io.r_dmem_add.req   := RegInit(false.B)
+    io.r_dmem_add.addr   := RegInit(0.U(32.W))
+//    io.w_dmem_add.req   := w_dreq
+//    //w_dack := io.w_dmem_dat.ack
+//    r_dack := io.r_dmem_dat.ack
 
-    val next_inst_is_valid: Bool = RegInit(true.B)
 
-    // initialization(Data)
-    val r_dack: Bool = RegInit(false.B)
-    val r_ddat: UInt = RegInit(0.U(32.W))
-    val r_dadd: UInt = RegInit(0.U(32.W))
-    val r_dreq = RegInit(true.B)
-    val w_dreq = RegInit(false.B)
+    // --------　START: IF stage　-------
+    io.r_imem_add.addr   := pc_cntr
+    io.r_imem_add.req    := true.B
 
-    val w_dack = RegInit(false.B)
-    val w_ddat = RegInit(0.U(32.W))
+    // --------　END: IF stage　--------
 
-    io.r_dmem_add.addr  := r_dadd
-    io.w_dmem_dat.data  := w_ddat
-    io.r_dmem_add.req   := r_dreq
-    io.w_dmem_add.req   := w_dreq
-    //w_dack := io.w_dmem_dat.ack
-    r_dack := io.r_dmem_dat.ack
-    // ID Module instance
+
+
+    // --------　START: ID stage　--------
+    when (!load_stall && !jump_bubble) {
+        id_pc := pc_cntr
+        id_npc := npc
+        id_inst := io.r_imem_dat.data// r_data
+    } .elsewhen(jump_bubble) {
+        id_pc := pc_cntr_init
+        id_npc := npc
+        id_inst := inst_nop
+    }
     val idm: IDModule = Module(new IDModule)
-
-    val imm_i:   SInt = ImmGen(IMM_I,idm.io.inst.bits)
-    val imm_u:   SInt = ImmGen(IMM_U,idm.io.inst.bits)
-    val imm_s:   SInt = ImmGen(IMM_S,idm.io.inst.bits)
-    val imm_j:   SInt = ImmGen(IMM_J,idm.io.inst.bits)
-    val imm_b:   SInt = ImmGen(IMM_B,idm.io.inst.bits)
-    // register (x0 - x31)
-    val val_rsad = IndexedSeq(idm.io.inst.rs1,idm.io.inst.rs2) // treat as 64bit-Addressed SRAM
-    val gram: RegRAM = new RegRAM
-    val val_rs: IndexedSeq[UInt] = val_rsad.map(gram.read)
+    idm.io.imem := id_inst
     
     // instruction decode
-    idm.io.imem := Mux(next_inst_is_valid, r_data, 0.U(32.W)) // if (command.type == branch) next.command = invalid
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
+    // get rs1,rs2,rd address(x0 - x31)
+    val id_waddr: UInt = idm.io.inst.rd       // rd
+    val id_raddr: IndexedSeq[UInt] = IndexedSeq(idm.io.inst.rs1,idm.io.inst.rs2) // rs1,2 :treat as 64bit-Addressed SRAM
+
+    // read register data
+    val reg_f: RegRAM = new RegRAM
+    val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read _)
+
+    // judge if stall needed
+    load_stall := ((id_rs(0) === ex_reg_waddr || id_rs(1) === ex_reg_waddr)
+      && (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || (io.r_imem_dat.ack === false.B)
+
+    // -------- END: ID stage --------
+
+
+    // -------- START: EX Stage --------
+    when (!load_stall && !jump_bubble) {
+        ex_pc := id_pc
+        ex_npc := id_npc
+        ex_ctrl := id_ctrl
+        ex_inst := idm.io.inst.bits
+        ex_reg_raddr := id_raddr
+        ex_reg_waddr := id_waddr
+        ex_rs := id_rs
+    } .otherwise {
+        ex_pc := pc_cntr_init
+        ex_npc := pc_next_init
+        ex_ctrl := nop_ctrl
+        ex_inst := inst_nop
+        ex_reg_raddr := VecInit(0.U, 0.U)
+        ex_reg_waddr := 0.U
+        ex_rs := VecInit(0.U, 0.U)
+    }
+    val ex_imm_i:   SInt = ImmGen(IMM_I,ex_inst)
+    val ex_imm_u:   SInt = ImmGen(IMM_U,ex_inst)
+    val ex_imm_s:   SInt = ImmGen(IMM_S,ex_inst)
+    val ex_imm_j:   SInt = ImmGen(IMM_J,ex_inst)
+    val ex_imm_b:   SInt = ImmGen(IMM_B,ex_inst)
+
+    val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
+    ))
+    val ex_reg_rs2_bypass: UInt = MuxCase(ex_rs(1), Seq(
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
+    ))
+
     // ALU OP1 selector
-    val ex_op1: UInt = MuxLookup(key = id_ctrl.alu_op1, default = 0.U(32.W),
+    val ex_op1: UInt = MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
         mapping = Seq(
-            OP1_RS1 -> val_rs(0).asUInt(),
-            OP1_PC  -> (pc_cntr - 4.U), // PC = pc_cntr-4.U
+            OP1_RS1 -> ex_reg_rs1_bypass,
+            OP1_PC  -> ex_pc,//(pc_cntr - 4.U), // PC = pc_cntr-4.U
             OP1_X -> 0.U(32.W)
         )
     )
+
     // ALU OP2 selector
-    val ex_op2: UInt = MuxLookup(key = id_ctrl.alu_op2, default = 0.U(32.W),
+    val ex_op2: UInt = MuxLookup(key = ex_ctrl.alu_op2, default = 0.U(32.W),
         mapping = Seq(
-            OP2_RS2 -> val_rs(1).asUInt,
-            OP2_IMI -> imm_i.asUInt,
-            OP2_IMS -> imm_s.asUInt, // immediate, S-type
-            OP2_IMU -> imm_u.asUInt, // immediate, U-type(insts_code[31:12])
-            OP2_IMJ -> imm_j.asUInt, // IMM J-type
+            OP2_RS2 -> ex_reg_rs2_bypass,
+            OP2_IMI -> ex_imm_i.asUInt,
+            OP2_IMS -> ex_imm_s.asUInt, // immediate, S-type
+            OP2_IMU -> ex_imm_u.asUInt, // immediate, U-type(insts_code[31:12])
+            OP2_IMJ -> ex_imm_j.asUInt, // IMM J-type
             OP2_IMZ -> 0.U(32.W), // zero-extended rs1 field, CSRI insts
             OP2_X -> 0.U(32.W)
         )
     )
 
     val alu: ALU    = Module(new ALU)
-    alu.io.alu_op   := id_ctrl.alu_func
+    alu.io.alu_op   := ex_ctrl.alu_func
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
 
-
-    // write data_mem
-    io.w_dmem_add.addr  := alu.io.out
-    io.r_dmem_add.addr  := alu.io.out
-
-    w_dreq := (id_ctrl.mem_wr === M_XWR) // write request
-    r_dreq := (id_ctrl.mem_wr =/= M_XWR) // read request
-    //todo: send cpubus data size
-    //io.w_dmem_dat.data  := val_rs(0)
-    when (r_dack){
-        r_ddat := io.r_dmem_dat.data
-    }
-    when(w_dack){
-        w_ddat := val_rs(1)
-    }
-
-    // register write back
-    val rf_wen: Bool = id_ctrl.rf_wen       // register write enable flag
-    val rd_addr:UInt = idm.io.inst.rd       // destination register
-
-    val rd_val: UInt = MuxLookup(id_ctrl.wb_sel, 0.U(32.W),
-        Seq(
-            WB_ALU -> alu.io.out,
-            WB_PC4 -> pc_cntr,           //pc_cntr = pc + 4
-            WB_CSR -> 0.U(32.W),
-            WB_MEM -> r_ddat,   //0.U(32.W),
-            WB_X   -> 0.U(32.W)
-        )
-    )
-    when (cond = rf_wen){
-        gram.write(rd_addr, rd_val)
-    }
-
-    // Branch type selector
-    val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
+    val ex_cmp_out: Bool = MuxLookup(key = id_ctrl.br_type, default = false.B,
         mapping = Seq(
-            BR_N   -> (pc_cntr + 4.U(32.W)), // Next
-            BR_NE  -> Mux(val_rs(0) =/= val_rs(1),              rd_val, pc_cntr + 4.U(32.W)),  // Branch on NotEqual
-            BR_EQ  -> Mux(val_rs(0) === val_rs(1),              rd_val, pc_cntr + 4.U(32.W)), // Branch on Equal
-            BR_GE  -> Mux(val_rs(0) >= val_rs(1),               rd_val, pc_cntr + 4.U(32.W)), // Branch on Greater/Equal
-            BR_GEU -> Mux(val_rs(0).asUInt >= val_rs(1).asUInt, rd_val, pc_cntr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
-            BR_LT  -> Mux(val_rs(0) < val_rs(1),                rd_val, pc_cntr + 4.U(32.W)), // Branch on Less Than
-            BR_LTU -> Mux(val_rs(0).asUInt < val_rs(1).asUInt,  rd_val, pc_cntr + 4.U(32.W)), // Branch on Less Than Unsigned
-            BR_JR  -> alu.io.out,//(val_rs(0) + imm_i).asUInt, //JALR: rs1 + imm
-            BR_J   -> alu.io.out,//(pc_cntr - 4.U + imm_j.asUInt), //JAL:pc += imm
-            BR_X   -> (pc_cntr + 4.U(32.W))//0.U(32.W) //
-    ))
+            BR_NE  -> (ex_reg_rs1_bypass =/= ex_reg_rs2_bypass),                // Branch on NotEqual
+            BR_EQ  -> (ex_reg_rs1_bypass === ex_reg_rs2_bypass),                // Branch on Equal
+            BR_GE  -> (ex_reg_rs1_bypass >= ex_reg_rs1_bypass),                 // Branch on Greater/Equal
+            BR_GEU -> (ex_reg_rs1_bypass.asUInt >= ex_reg_rs1_bypass.asUInt),   // Branch on Greater/Equal Unsigned
+            BR_LT  -> (ex_reg_rs1_bypass < ex_reg_rs1_bypass),                  // Branch on Less Than
+            BR_LTU -> (ex_reg_rs1_bypass.asUInt < ex_reg_rs1_bypass.asUInt)     // Branch on Less Than Unsigned
+        ))
+    // -------- END: EX Stage --------
+
+
+
+    // -------- START: MEM Stage --------
+    when (!jump_bubble) {
+        mem_pc := ex_pc
+        mem_npc := ex_npc
+        mem_ctrl := ex_ctrl
+        mem_inst := ex_inst
+        mem_reg_raddr := id_raddr
+        mem_reg_waddr := id_waddr
+        mem_rs(0) := ex_reg_rs1_bypass
+        mem_rs(1) := ex_reg_rs2_bypass
+        mem_alu_out := alu.io.out
+        mem_cmp_out := ex_cmp_out
+    } .otherwise {
+        mem_pc := pc_cntr_init
+        mem_npc := pc_next_init
+        mem_ctrl := nop_ctrl
+        mem_inst := inst_nop
+        mem_reg_raddr := VecInit(0.U, 0.U)
+        mem_reg_waddr := 0.U
+        mem_rs := VecInit(0.U, 0.U)
+        mem_alu_out := 0.U
+        mem_cmp_out := false.B
+    }
+
+    val mem_imm_i:   SInt = ImmGen(IMM_I,mem_inst)
+    val mem_imm_u:   SInt = ImmGen(IMM_U,mem_inst)
+    val mem_imm_s:   SInt = ImmGen(IMM_S,mem_inst)
+    val mem_imm_j:   SInt = ImmGen(IMM_J,mem_inst)
+    val mem_imm_b:   SInt = ImmGen(IMM_B,mem_inst)
+
+    io.w_dmem_add.addr := mem_alu_out
+    io.w_dmem_add.req  := (mem_ctrl.mem_wr === M_XWR)
+    //todo: send cpubus data size
+    // *************
+    io.w_dmem_dat.data := mem_rs(1)
+
+
 
     // bubble logic
-    switch (id_ctrl.br_type) {
-        is ( BR_N ) {
-            next_inst_is_valid := true.B
+    jump_bubble := (
+        mem_ctrl.br_type === BR_J   ||
+        mem_ctrl.br_type === BR_JR  ||
+        mem_ctrl.br_type =/= BR_N  && mem_cmp_out
+    )
+    // -------- END: MEM Stage --------
+
+
+    // -------- START: WB Stage --------
+    wb_npc := mem_npc
+    wb_ctrl := mem_ctrl
+    wb_reg_waddr:= mem_reg_waddr
+    wb_alu_out := mem_alu_out
+    wb_dmem_read_data := io.r_dmem_dat.data
+    //todo: wb_rs := mem_rs
+    val wb_rs: Vec[UInt] = mem_rs
+
+    // inverse clock
+    val invClk: Clock = Wire(new Clock)
+    invClk := (~(clock.asUInt)).asBool().asClock()
+    withClock(invClk){
+        val rf_wen: Bool = mem_ctrl.rf_wen       // register write enable flag
+        val rf_waddr: UInt = wb_reg_waddr
+        val rd_val: UInt = MuxCase(wb_npc,//wb_ctrl.wb_sel, 0.U(32.W),
+            Seq(
+                (wb_ctrl.wb_sel === WB_ALU) -> mem_alu_out,
+                (wb_ctrl.wb_sel === WB_PC4) -> wb_npc,           //pc_cntr = pc + 4
+                (wb_ctrl.wb_sel === WB_CSR) -> 0.U(32.W),
+                (wb_ctrl.wb_sel === WB_MEM) -> wb_dmem_read_data,   //0.U(32.W),
+                (wb_ctrl.wb_sel === WB_X  ) -> 0.U(32.W)
+            )
+        )
+        when (rf_wen === REN_1) {
+            reg_f.write(rf_waddr, rd_val)
         }
-        is ( BR_X ) {
-            next_inst_is_valid := true.B
-        }
-        is( BR_NE ) {
-            when(val_rs(0) =/= val_rs(1)) {
-                next_inst_is_valid.:=(false.B)} // NEQ = true: bubble next inst & branch
-            .otherwise {
-                next_inst_is_valid.:=(true.B) }
-        }
-        is( BR_EQ ) {
-            when(val_rs(0) === val_rs(1)) {
-                next_inst_is_valid.:=(false.B)}  // EQ = true: bubble next inst & branch
-            .otherwise {
-                next_inst_is_valid.:=(true.B) }
-        }
-        is( BR_GE ) {
-            when(val_rs(0) >= val_rs(1)) {
-                next_inst_is_valid.:=(false.B)} // GE = true: bubble next inst & branc
-            .otherwise {
-                next_inst_is_valid.:=(true.B) }
-        }
-        is( BR_GEU ) {
-            when(val_rs(0).asUInt >= val_rs(1).asUInt) {
-                next_inst_is_valid.:=(false.B)} // GE = true: bubble next inst & branch
-            .otherwise {
-                next_inst_is_valid.:=(true.B) }
-        }
-        is( BR_LT ) {
-            when(val_rs(0) < val_rs(1)){
-                next_inst_is_valid.:=(false.B)} // LT = true: bubble next inst & branch
-            .otherwise {
-                next_inst_is_valid.:=(true.B) }
-        }
-        is( BR_LTU ) {
-            when(val_rs(0).asUInt() < val_rs(1).asUInt) {
-                next_inst_is_valid.:=(false.B)} // LT = true: bubble next inst & branch
-            .otherwise {
-                next_inst_is_valid.:=(true.B) }
-        }
-        is( BR_J  ) { next_inst_is_valid.:=(false.B) }  // JAL
-        is( BR_JR ) { next_inst_is_valid.:=(false.B) }  // JALR
     }
+    // -------- END: WB Stage --------
+
+//    // Branch type selector
+//    val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
+//        mapping = Seq(
+//            BR_N   -> (pc_cntr + 4.U(32.W)), // Next
+//            BR_NE  -> Mux(val_rs(0) =/= val_rs(1),              rd_val, pc_cntr + 4.U(32.W)),  // Branch on NotEqual
+//            BR_EQ  -> Mux(val_rs(0) === val_rs(1),              rd_val, pc_cntr + 4.U(32.W)), // Branch on Equal
+//            BR_GE  -> Mux(val_rs(0) >= val_rs(1),               rd_val, pc_cntr + 4.U(32.W)), // Branch on Greater/Equal
+//            BR_GEU -> Mux(val_rs(0).asUInt >= val_rs(1).asUInt, rd_val, pc_cntr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
+//            BR_LT  -> Mux(val_rs(0) < val_rs(1),                rd_val, pc_cntr + 4.U(32.W)), // Branch on Less Than
+//            BR_LTU -> Mux(val_rs(0).asUInt < val_rs(1).asUInt,  rd_val, pc_cntr + 4.U(32.W)), // Branch on Less Than Unsigned
+//            BR_JR  -> alu.io.out,//(val_rs(0) + imm_i).asUInt, //JALR: rs1 + imm
+//            BR_J   -> alu.io.out,//(pc_cntr - 4.U + imm_j.asUInt), //JAL:pc += imm
+//            BR_X   -> (pc_cntr + 4.U(32.W))//0.U(32.W) //
+//    ))
+
+    // -------- START: PC update --------
+//    val mem_rd_val: UInt = MuxLookup(mem_ctrl.wb_sel, 0.U(32.W),
+//        Seq(
+//            WB_ALU -> mem_alu_out,
+//            WB_PC4 -> npc,           //pc_cntr = pc + 4
+//            WB_CSR -> 0.U(32.W),
+//            WB_MEM -> wb_dmem_read_data,   //0.U(32.W),
+//            WB_X   -> 0.U(32.W)
+//        )
+//    )
 
     when (io.sw.halt === false.B){
-        when(r_ack === true.B){
-            w_req   := false.B
-            r_req   := r_req
-            pc_cntr  := pc_incl // increase or jump program counter
-        }.otherwise {
-            w_req   := false.B
-            r_req   := true.B
-            pc_cntr  := pc_cntr//0.U(32.W)
+        when(!load_stall) {
+            w_req := false.B
+            r_req := r_req
+            pc_cntr := MuxCase(npc, Seq(
+                (mem_ctrl.br_type =/= BR_N && mem_cmp_out) ->  mem_alu_out,
+                (mem_ctrl.br_type === BR_J) ->  mem_alu_out,
+                (mem_ctrl.br_type === BR_JR) -> mem_alu_out
+            ))
         }
+
+            ////pc_incl // increase or jump program counter
+//        }.otherwise {
+//            w_req   := false.B
+//            r_req   := true.B
+//            pc_cntr  := pc_cntr//0.U(32.W)
+//        }
     }.otherwise { // halt mode
         // enable Write Operation
         w_addr := io.sw.w_add //w_addr + 4.U(32.W)
@@ -203,13 +349,13 @@ class Cpu extends Module {
     }
 
     // for test
-    io.sw.r_dat      := r_data
-    io.sw.r_add      := pc_cntr
-    io.sw.r_pc      := pc_cntr // program counter
+    io.sw.r_dat  := io.r_imem_dat.data//r_data
+    io.sw.r_add  := pc_cntr
+    io.sw.r_pc   := pc_cntr - 4.U// program counter
 
-    io.r_imem_add.addr   := pc_cntr
-    io.r_imem_add.req    := r_req
-    
+//    io.r_imem_add.addr   := pc_cntr
+//    io.r_imem_add.req    := r_req
+
     // write process
     io.w_imem_add.addr   := w_addr
     io.w_imem_dat.data   := w_data
@@ -217,11 +363,11 @@ class Cpu extends Module {
 
     // read process
     r_ack  := io.r_imem_dat.ack
-    r_data := io.r_imem_dat.data
+    //r_data := io.r_imem_dat.data
 
     // x0 - x31
     val v_radd = IndexedSeq(io.sw.g_add,0.U) // treat as 64bit-Addressed SRAM
-    val v_rs: IndexedSeq[UInt] = v_radd.map(gram.read)
+    val v_rs: IndexedSeq[UInt] = v_radd.map(reg_f.read _)
     io.sw.g_dat := v_rs(0)
 }
 
@@ -334,7 +480,7 @@ object Test extends App {
                 poke(signal = c.io.sw.w_add, value = addr)
                 step(1)
                 poke(signal = c.io.sw.w_dat, value = mem)
-                println(msg = f"write: r_add = 0x$addr%08X, data = 0x$mem%08X")
+                println(msg = f"write: addr = 0x$addr%08X, data = 0x$mem%08X")
                 step(1)
             }
 
@@ -346,9 +492,9 @@ object Test extends App {
             step(2)
 
             //for (lp <- memarray.indices by 1){
-            for (_ <- 0 until 100 by 1) {
+            for (_ <- 0 until 23 by 1) {
 
-                val a = peek(signal = c.io.sw.r_add)
+                val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)
                 step(1)
                 println(msg = f"read : addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
@@ -366,9 +512,9 @@ object Test extends App {
                 val d = {
                     peek(signal = c.io.sw.g_dat)
                 }
-
-                println(msg = f"read : x$lp%2d = 0x$d%08X") //peek(c.io.sw.data)
                 step(1)
+                println(msg = f"read : x$lp%2d = 0x$d%08X") //peek(c.io.sw.data)
+
             }
         }
     })

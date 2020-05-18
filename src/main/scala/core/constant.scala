@@ -12,10 +12,10 @@ object ScalarOpConstants {
    def X: UInt = 0.U(1.W)
 
    // PC Select Signal
-   def PC_4: UInt = 0.U(3.W)  // PC + 4
-   def PC_BR: UInt = 1.U(3.W) // branch_target
-   def PC_J: UInt = 2.U(3.W)  // jump_target
-   def PC_JR: UInt = 3.U(3.W) // jump_reg_target
+   def PC_4:   UInt = 0.U(3.W)  // PC + 4
+   def PC_BR:  UInt = 1.U(3.W) // branch_target
+   def PC_J:   UInt = 2.U(3.W)  // jump_target
+   def PC_JR:  UInt = 3.U(3.W) // jump_reg_target
    def PC_EXC: UInt = 4.U(3.W)// exception
 
    // Branch Type
@@ -82,16 +82,16 @@ object MemoryOpConstants
    def MEN_X: UInt = "b0".U
 
    // Memory Mask Type Signal
-   def MSK_B: UInt = 0.U(3.W)
+   def MSK_B:  UInt = 0.U(3.W)
    def MSK_BU: UInt = 1.U(3.W)
-   def MSK_H: UInt = 2.U(3.W)
+   def MSK_H:  UInt = 2.U(3.W)
    def MSK_HU: UInt = 3.U(3.W)
-   def MSK_W: UInt = 4.U(3.W)
-   def MSK_X: BitPat = BitPat("b???") //4.U(3.W)
+   def MSK_W:  UInt = 4.U(3.W)
+   def MSK_X:  BitPat = BitPat("b???") //4.U(3.W)
 
 
    // Cache Flushes & Sync Primitives
-   def M_N: UInt = 0.U(3.W)
+   def M_N:  UInt = 0.U(3.W)
    def M_SI: UInt = 1.U(3.W)   // synch instruction stream
    def M_SD: UInt = 2.U(3.W)   // synch data stream
    def M_FA: UInt = 3.U(3.W)   // flush all caches

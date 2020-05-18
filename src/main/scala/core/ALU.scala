@@ -49,6 +49,8 @@ class ALU extends Module {
         ALU_XOR     -> (io.op1 ^ io.op2),
         ALU_COPY1   -> io.op1,
         ALU_COPY2   -> io.op2))
+
+
     
     io.out := w_out
 }
