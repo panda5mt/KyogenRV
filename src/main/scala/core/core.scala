@@ -58,7 +58,7 @@ class Cpu extends Module {
     //val wb_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
     val wb_reg_waddr: UInt = RegInit(0.U(5.W))
     // todo: fix alu_op
-    val wb_alu_out = RegInit(0.U(32.W))
+    val wb_alu_out: UInt = RegInit(0.U(32.W))
     val wb_dmem_read_data: UInt = RegInit(0.U(32.W))
 
     // stall control
@@ -95,6 +95,7 @@ class Cpu extends Module {
 
 
     // --------　START: ID stage　--------
+    // iotesters: id_pc, id_inst
     when (!load_stall && !jump_bubble) {
         id_pc := pc_cntr
         id_npc := npc
@@ -111,20 +112,22 @@ class Cpu extends Module {
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
     // get rs1,rs2,rd address(x0 - x31)
-    val id_waddr: UInt = idm.io.inst.rd
-    // rd
-    val id_raddr: IndexedSeq[UInt] = IndexedSeq(idm.io.inst.rs1, idm.io.inst.rs2) // rs1,2 :treat as 64bit-Addressed SRAM
+    val id_raddr1: UInt = idm.io.inst.rs1
+    val id_raddr2: UInt = idm.io.inst.rs2
+    val id_raddr: IndexedSeq[UInt] = IndexedSeq(id_raddr1, id_raddr2) // rs1,2 :treat as 64bit-Addressed SRAM
+    val id_waddr: UInt = idm.io.inst.rd // rd
 
     // read register data
     val reg_f: RegRAM = new RegRAM
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read _)
 
     // judge if stall needed
-    load_stall := ((id_raddr(0) === ex_reg_waddr || id_raddr(1) === ex_reg_waddr) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD) //|| (io.r_imem_dat.ack === false.B)
+    load_stall := ((ex_reg_waddr === id_raddr(0) ||  ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD) //|| (io.r_imem_dat.ack === false.B)
     // -------- END: ID stage --------
 
 
     // -------- START: EX Stage --------
+    // iotesters:op1,op2,alu_op
     when (!load_stall && !jump_bubble) {
         ex_pc := id_pc
         ex_npc := id_npc
@@ -144,7 +147,7 @@ class Cpu extends Module {
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
-    val ex_req_rsx_bypass = for (i <- 0 until id_raddr.size) yield MuxCase(ex_rs(i), Seq(
+    val ex_req_rsx_bypass: Seq[UInt] = for (i <- 0 until id_raddr.size) yield MuxCase(ex_rs(i), Seq(
         (ex_reg_raddr(i) =/= 0.U && ex_reg_raddr(i) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(i) =/= 0.U && ex_reg_raddr(i) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
 
@@ -175,12 +178,16 @@ class Cpu extends Module {
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
 
-
+    // iotester
+    io.sw.r_ex_alu_op := ex_ctrl.alu_func
+    io.sw.r_ex_alu_op1 := ex_op1
+    io.sw.r_ex_alu_op2 := ex_op2
     // -------- END: EX Stage --------
 
 
 
     // -------- START: MEM Stage --------
+    // iotesters:  alu_out, rd
     when (!jump_bubble) {
         mem_pc := ex_pc
         mem_npc := ex_npc
@@ -214,10 +221,12 @@ class Cpu extends Module {
     jump_bubble := (
       (mem_ctrl.br_type =/= BR_N && mem_alu_cmp_out) || mem_ctrl.br_type === BR_JR || mem_ctrl.br_type === BR_J
     )
+
     // -------- END: MEM Stage --------
 
 
     // -------- START: WB Stage --------
+    // rd , alu_out  rd, address
     wb_npc := mem_npc
     wb_ctrl := mem_ctrl
     wb_reg_waddr := mem_reg_waddr
@@ -225,8 +234,8 @@ class Cpu extends Module {
     wb_dmem_read_data := io.r_dmem_dat.data
 
     val invClk: Clock = Wire(new Clock)
-    invClk := (~(clock.asUInt)).asBool().asClock()
-    withClock(invClk){
+    invClk := (~clock.asUInt).asBool().asClock()
+    //withClock(invClk){
         val rf_wen: Bool = wb_ctrl.rf_wen                       // register write enable flag
         val rf_waddr: UInt = wb_reg_waddr
         val rf_wdata: UInt = MuxLookup(wb_ctrl.wb_sel, wb_alu_out,    //wb_ctrl.wb_sel, 0.U(32.W),
@@ -241,7 +250,7 @@ class Cpu extends Module {
         when (rf_wen === REN_1) {
             reg_f.write(rf_waddr, rf_wdata)
         }
-    }
+    //}
     // -------- END: WB Stage --------
 
 
@@ -276,6 +285,7 @@ class Cpu extends Module {
     io.sw.r_add  := pc_cntr
     io.sw.r_pc   := pc_cntr - 4.U// program counter
 
+
     // write process
     io.w_imem_add.addr   := w_addr
     io.w_imem_dat.data   := w_data
@@ -288,7 +298,7 @@ class Cpu extends Module {
     // x0 - x31
     val v_radd = IndexedSeq(io.sw.g_add,0.U) // treat as 64bit-Addressed SRAM
     when (io.sw.halt === true.B){
-        val v_rs: IndexedSeq[UInt] = v_radd.map(reg_f.read _)
+        val v_rs: IndexedSeq[UInt] = v_radd.map(reg_f.read)
         io.sw.g_dat := v_rs(0)
     }.otherwise{
         io.sw.g_dat := 0.U
@@ -328,6 +338,10 @@ class CpuBus extends Module {
     io.sw.g_dat := cpu.io.sw.g_dat
     io.sw.r_pc  := cpu.io.sw.r_pc
 
+    io.sw.r_ex_alu_op := cpu.io.sw.r_ex_alu_op
+    io.sw.r_ex_alu_op1 := cpu.io.sw.r_ex_alu_op1
+    io.sw.r_ex_alu_op2 := cpu.io.sw.r_ex_alu_op2
+
     w_pc        := io.sw.w_pc
 
     cpu.io.sw.halt  := sw_halt
@@ -335,6 +349,8 @@ class CpuBus extends Module {
     cpu.io.sw.w_add := sw_waddr
     cpu.io.sw.g_add := sw_gaddr
     cpu.io.sw.w_pc  := w_pc
+
+
 
     // Read inst_mem
     inst_mem.io.r_imem_add.req  <> cpu.io.r_imem_add.req
@@ -420,8 +436,10 @@ object Test extends App {
 
                 val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)
+                val op1 = peek(c.io.sw.r_ex_alu_op1)
+                val op2 = peek(c.io.sw.r_ex_alu_op2)
                 step(1)
-                println(msg = f"read : addr = 0x$a%08X, data = 0x$d%08X") //peek(c.io.sw.data)
+                println(msg = f"read : addr = 0x$a%08X, data = 0x$d%08X, op1 = 0x$op1%08X, op2 = 0x$op2%08X") //peek(c.io.sw.data)
 
             }
 
@@ -436,8 +454,9 @@ object Test extends App {
                 val d = {
                     peek(signal = c.io.sw.g_dat)
                 }
+
                 step(1)
-                println(msg = f"read : x$lp%2d = 0x$d%08X") //peek(c.io.sw.data)
+                println(msg = f"read : x$lp%2d = 0x$d%08X ") //peek(c.io.sw.data)
 
             }
         }
