@@ -7,7 +7,6 @@ import chisel3.util._
 
 import chisel3.Clock
 
-
 import scala.io.{BufferedSource, Source}
 import _root_.core.ScalarOpConstants._
 import MemoryOpConstants._
@@ -44,15 +43,16 @@ class Cpu extends Module {
     // MEM stage pipeline register
     val mem_pc: UInt = RegInit(pc_cntr_init)
     val mem_npc: UInt = RegInit(pc_next_init)
-    val mem_inst: UInt = RegInit(inst_nop)
+    //val mem_inst: UInt = RegInit(inst_nop)
     val mem_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
-    val mem_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
+    val mem_imm: SInt = RegInit(0.S(32.W))
     val mem_reg_waddr: UInt = RegInit(0.U(5.W))
     val mem_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
     val mem_alu_out: UInt = RegInit(0.U(32.W))
-    val mem_cmp_out: Bool = RegInit(false.B)
+    val mem_alu_cmp_out: Bool = RegInit(false.B)
 
     // WB stage pipeline register
+    val wb_pc: UInt = RegInit(pc_cntr_init)
     val wb_npc: UInt = RegInit(pc_next_init)
     val wb_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
     //val wb_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
@@ -83,35 +83,13 @@ class Cpu extends Module {
     val w_ack:  Bool = RegInit(false.B)
     val w_addr: UInt = RegInit(0.U(32.W))
     val w_data: UInt = RegInit(0.U(32.W))
-//
-//    val next_inst_is_valid: Bool = RegInit(true.B)
-//
-//    // initialization(Data)
-//    val r_dack: Bool = RegInit(false.B)
-//    val r_ddat: UInt = RegInit(0.U(32.W))
-//    val r_dadd: UInt = RegInit(0.U(32.W))
-//    val r_dreq: Bool = RegInit(true.B)
-//    val w_dreq: Bool = RegInit(false.B)
-//
-//    val w_dack: Bool = RegInit(false.B)
-//    val w_ddat: UInt = RegInit(0.U(32.W))
-//    val w_dadd: UInt = RegInit(0.U(32.W))
-//
-//    io.r_dmem_add.addr  := r_dadd
-//    io.w_dmem_dat.data  := w_ddat
-//
-//    io.w_dmem_add.addr  := w_dadd
-    io.r_dmem_add.req   := RegInit(false.B)
-    io.r_dmem_add.addr   := RegInit(0.U(32.W))
-//    io.w_dmem_add.req   := w_dreq
-//    //w_dack := io.w_dmem_dat.ack
-//    r_dack := io.r_dmem_dat.ack
 
+    io.r_dmem_add.req   := RegInit(true.B)
+    io.r_dmem_add.addr   := RegInit(0.U(32.W))
 
     // --------　START: IF stage　-------
     io.r_imem_add.addr   := pc_cntr
     io.r_imem_add.req    := true.B
-
     // --------　END: IF stage　--------
 
 
@@ -128,22 +106,21 @@ class Cpu extends Module {
     }
     val idm: IDModule = Module(new IDModule)
     idm.io.imem := id_inst
-    
+
     // instruction decode
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
     // get rs1,rs2,rd address(x0 - x31)
-    val id_waddr: UInt = idm.io.inst.rd       // rd
-    val id_raddr: IndexedSeq[UInt] = IndexedSeq(idm.io.inst.rs1,idm.io.inst.rs2) // rs1,2 :treat as 64bit-Addressed SRAM
+    val id_waddr: UInt = idm.io.inst.rd
+    // rd
+    val id_raddr: IndexedSeq[UInt] = IndexedSeq(idm.io.inst.rs1, idm.io.inst.rs2) // rs1,2 :treat as 64bit-Addressed SRAM
 
     // read register data
     val reg_f: RegRAM = new RegRAM
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read _)
 
     // judge if stall needed
-    load_stall := ((id_rs(0) === ex_reg_waddr || id_rs(1) === ex_reg_waddr)
-      && (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || (io.r_imem_dat.ack === false.B)
-
+    load_stall := ((id_raddr(0) === ex_reg_waddr || id_raddr(1) === ex_reg_waddr) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD) //|| (io.r_imem_dat.ack === false.B)
     // -------- END: ID stage --------
 
 
@@ -165,39 +142,30 @@ class Cpu extends Module {
         ex_reg_waddr := 0.U
         ex_rs := VecInit(0.U, 0.U)
     }
-    val ex_imm_i:   SInt = ImmGen(IMM_I,ex_inst)
-    val ex_imm_u:   SInt = ImmGen(IMM_U,ex_inst)
-    val ex_imm_s:   SInt = ImmGen(IMM_S,ex_inst)
-    val ex_imm_j:   SInt = ImmGen(IMM_J,ex_inst)
-    val ex_imm_b:   SInt = ImmGen(IMM_B,ex_inst)
 
-    val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
-        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
+    val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
+    val ex_req_rsx_bypass = for (i <- 0 until id_raddr.size) yield MuxCase(ex_rs(i), Seq(
+        (ex_reg_raddr(i) =/= 0.U && ex_reg_raddr(i) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
+        (ex_reg_raddr(i) =/= 0.U && ex_reg_raddr(i) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
+
     ))
-    val ex_reg_rs2_bypass: UInt = MuxCase(ex_rs(1), Seq(
-        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
-    ))
+
 
     // ALU OP1 selector
     val ex_op1: UInt = MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
         mapping = Seq(
-            OP1_RS1 -> ex_reg_rs1_bypass,
-            OP1_PC  -> ex_pc,//(pc_cntr - 4.U), // PC = pc_cntr-4.U
-            OP1_X -> 0.U(32.W)
+            OP1_RS1 -> ex_req_rsx_bypass(0),
+            OP1_PC  -> ex_pc, // PC = pc_cntr-4.U
+            OP1_X   -> 0.U(32.W)
         )
     )
 
     // ALU OP2 selector
     val ex_op2: UInt = MuxLookup(key = ex_ctrl.alu_op2, default = 0.U(32.W),
         mapping = Seq(
-            OP2_RS2 -> ex_reg_rs2_bypass,
-            OP2_IMI -> ex_imm_i.asUInt,
-            OP2_IMS -> ex_imm_s.asUInt, // immediate, S-type
-            OP2_IMU -> ex_imm_u.asUInt, // immediate, U-type(insts_code[31:12])
-            OP2_IMJ -> ex_imm_j.asUInt, // IMM J-type
-            OP2_IMZ -> 0.U(32.W), // zero-extended rs1 field, CSRI insts
+            OP2_RS2 -> ex_req_rsx_bypass(1),
+            OP2_IMM -> ex_imm.asUInt, // IMM J-type
+            OP2_SZ  -> 4.U(32.W),
             OP2_X -> 0.U(32.W)
         )
     )
@@ -207,15 +175,7 @@ class Cpu extends Module {
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
 
-    val ex_cmp_out: Bool = MuxLookup(key = id_ctrl.br_type, default = false.B,
-        mapping = Seq(
-            BR_NE  -> (ex_reg_rs1_bypass =/= ex_reg_rs2_bypass),                // Branch on NotEqual
-            BR_EQ  -> (ex_reg_rs1_bypass === ex_reg_rs2_bypass),                // Branch on Equal
-            BR_GE  -> (ex_reg_rs1_bypass >= ex_reg_rs1_bypass),                 // Branch on Greater/Equal
-            BR_GEU -> (ex_reg_rs1_bypass.asUInt >= ex_reg_rs1_bypass.asUInt),   // Branch on Greater/Equal Unsigned
-            BR_LT  -> (ex_reg_rs1_bypass < ex_reg_rs1_bypass),                  // Branch on Less Than
-            BR_LTU -> (ex_reg_rs1_bypass.asUInt < ex_reg_rs1_bypass.asUInt)     // Branch on Less Than Unsigned
-        ))
+
     // -------- END: EX Stage --------
 
 
@@ -225,30 +185,22 @@ class Cpu extends Module {
         mem_pc := ex_pc
         mem_npc := ex_npc
         mem_ctrl := ex_ctrl
-        mem_inst := ex_inst
-        mem_reg_raddr := id_raddr
         mem_reg_waddr := id_waddr
-        mem_rs(0) := ex_reg_rs1_bypass
-        mem_rs(1) := ex_reg_rs2_bypass
+        mem_imm := ex_imm
+        mem_rs := ex_req_rsx_bypass
         mem_alu_out := alu.io.out
-        mem_cmp_out := ex_cmp_out
+        mem_alu_cmp_out := alu.io.cmp_out
     } .otherwise {
         mem_pc := pc_cntr_init
         mem_npc := pc_next_init
         mem_ctrl := nop_ctrl
-        mem_inst := inst_nop
-        mem_reg_raddr := VecInit(0.U, 0.U)
         mem_reg_waddr := 0.U
+        mem_imm := 0.S
         mem_rs := VecInit(0.U, 0.U)
         mem_alu_out := 0.U
-        mem_cmp_out := false.B
+        mem_alu_cmp_out := false.B
     }
 
-    val mem_imm_i:   SInt = ImmGen(IMM_I,mem_inst)
-    val mem_imm_u:   SInt = ImmGen(IMM_U,mem_inst)
-    val mem_imm_s:   SInt = ImmGen(IMM_S,mem_inst)
-    val mem_imm_j:   SInt = ImmGen(IMM_J,mem_inst)
-    val mem_imm_b:   SInt = ImmGen(IMM_B,mem_inst)
 
     io.w_dmem_add.addr := mem_alu_out
     io.w_dmem_add.req  := (mem_ctrl.mem_wr === M_XWR)
@@ -260,9 +212,7 @@ class Cpu extends Module {
 
     // bubble logic
     jump_bubble := (
-        mem_ctrl.br_type === BR_J   ||
-        mem_ctrl.br_type === BR_JR  ||
-        mem_ctrl.br_type =/= BR_N  && mem_cmp_out
+      (mem_ctrl.br_type =/= BR_N && mem_alu_cmp_out) || mem_ctrl.br_type === BR_JR || mem_ctrl.br_type === BR_J
     )
     // -------- END: MEM Stage --------
 
@@ -270,66 +220,39 @@ class Cpu extends Module {
     // -------- START: WB Stage --------
     wb_npc := mem_npc
     wb_ctrl := mem_ctrl
-    wb_reg_waddr:= mem_reg_waddr
+    wb_reg_waddr := mem_reg_waddr
     wb_alu_out := mem_alu_out
     wb_dmem_read_data := io.r_dmem_dat.data
-    //todo: wb_rs := mem_rs
-    val wb_rs: Vec[UInt] = mem_rs
 
-    // inverse clock
     val invClk: Clock = Wire(new Clock)
     invClk := (~(clock.asUInt)).asBool().asClock()
     withClock(invClk){
-        val rf_wen: Bool = mem_ctrl.rf_wen       // register write enable flag
+        val rf_wen: Bool = wb_ctrl.rf_wen                       // register write enable flag
         val rf_waddr: UInt = wb_reg_waddr
-        val rd_val: UInt = MuxCase(wb_npc,//wb_ctrl.wb_sel, 0.U(32.W),
+        val rf_wdata: UInt = MuxLookup(wb_ctrl.wb_sel, wb_alu_out,    //wb_ctrl.wb_sel, 0.U(32.W),
             Seq(
-                (wb_ctrl.wb_sel === WB_ALU) -> mem_alu_out,
-                (wb_ctrl.wb_sel === WB_PC4) -> wb_npc,           //pc_cntr = pc + 4
-                (wb_ctrl.wb_sel === WB_CSR) -> 0.U(32.W),
-                (wb_ctrl.wb_sel === WB_MEM) -> wb_dmem_read_data,   //0.U(32.W),
-                (wb_ctrl.wb_sel === WB_X  ) -> 0.U(32.W)
+                WB_ALU -> wb_alu_out,           // wb_alu_out,
+                WB_PC4 -> wb_npc,               // pc_cntr = pc + 4
+                WB_CSR -> 0.U(32.W),
+                WB_MEM -> wb_dmem_read_data,    //0.U(32.W),
+                WB_X -> 0.U(32.W)
             )
         )
         when (rf_wen === REN_1) {
-            reg_f.write(rf_waddr, rd_val)
+            reg_f.write(rf_waddr, rf_wdata)
         }
     }
     // -------- END: WB Stage --------
 
-//    // Branch type selector
-//    val pc_incl: UInt = MuxLookup(key = id_ctrl.br_type, default = 0.U(32.W),
-//        mapping = Seq(
-//            BR_N   -> (pc_cntr + 4.U(32.W)), // Next
-//            BR_NE  -> Mux(val_rs(0) =/= val_rs(1),              rd_val, pc_cntr + 4.U(32.W)),  // Branch on NotEqual
-//            BR_EQ  -> Mux(val_rs(0) === val_rs(1),              rd_val, pc_cntr + 4.U(32.W)), // Branch on Equal
-//            BR_GE  -> Mux(val_rs(0) >= val_rs(1),               rd_val, pc_cntr + 4.U(32.W)), // Branch on Greater/Equal
-//            BR_GEU -> Mux(val_rs(0).asUInt >= val_rs(1).asUInt, rd_val, pc_cntr + 4.U(32.W)), // Branch on Greater/Equal Unsigned
-//            BR_LT  -> Mux(val_rs(0) < val_rs(1),                rd_val, pc_cntr + 4.U(32.W)), // Branch on Less Than
-//            BR_LTU -> Mux(val_rs(0).asUInt < val_rs(1).asUInt,  rd_val, pc_cntr + 4.U(32.W)), // Branch on Less Than Unsigned
-//            BR_JR  -> alu.io.out,//(val_rs(0) + imm_i).asUInt, //JALR: rs1 + imm
-//            BR_J   -> alu.io.out,//(pc_cntr - 4.U + imm_j.asUInt), //JAL:pc += imm
-//            BR_X   -> (pc_cntr + 4.U(32.W))//0.U(32.W) //
-//    ))
 
     // -------- START: PC update --------
-//    val mem_rd_val: UInt = MuxLookup(mem_ctrl.wb_sel, 0.U(32.W),
-//        Seq(
-//            WB_ALU -> mem_alu_out,
-//            WB_PC4 -> npc,           //pc_cntr = pc + 4
-//            WB_CSR -> 0.U(32.W),
-//            WB_MEM -> wb_dmem_read_data,   //0.U(32.W),
-//            WB_X   -> 0.U(32.W)
-//        )
-//    )
-
     when (io.sw.halt === false.B){
         when(!load_stall) {
             w_req := false.B
             r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
-                (mem_ctrl.br_type =/= BR_N && mem_cmp_out) ->  mem_alu_out,
-                (mem_ctrl.br_type === BR_J) ->  mem_alu_out,
+                ((mem_ctrl.br_type =/= BR_N && mem_alu_cmp_out) ||
+                (mem_ctrl.br_type === BR_J)) ->  (mem_pc + mem_imm.asUInt()),
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
         }
@@ -353,9 +276,6 @@ class Cpu extends Module {
     io.sw.r_add  := pc_cntr
     io.sw.r_pc   := pc_cntr - 4.U// program counter
 
-//    io.r_imem_add.addr   := pc_cntr
-//    io.r_imem_add.req    := r_req
-
     // write process
     io.w_imem_add.addr   := w_addr
     io.w_imem_dat.data   := w_data
@@ -367,8 +287,12 @@ class Cpu extends Module {
 
     // x0 - x31
     val v_radd = IndexedSeq(io.sw.g_add,0.U) // treat as 64bit-Addressed SRAM
-    val v_rs: IndexedSeq[UInt] = v_radd.map(reg_f.read _)
-    io.sw.g_dat := v_rs(0)
+    when (io.sw.halt === true.B){
+        val v_rs: IndexedSeq[UInt] = v_radd.map(reg_f.read _)
+        io.sw.g_dat := v_rs(0)
+    }.otherwise{
+        io.sw.g_dat := 0.U
+    }
 }
 
 class CpuBus extends Module {
@@ -447,7 +371,7 @@ class RegRAM {
     }
     // write process
     def write(addr:UInt, data:UInt): WhenContext = {
-        when(addr =/= 0.U) {
+        when((addr > 0.U) && (addr < 32.U)) {
             ram(addr) := data
         }
     }

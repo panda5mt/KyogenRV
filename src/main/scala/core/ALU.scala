@@ -31,12 +31,14 @@ class ALU extends Module {
             val op2: UInt = Input(UInt(32.W))
             val alu_op: UInt = Input(UInt(4.W))
             val out: UInt = Output(UInt(32.W))
+            val cmp_out = Output(Bool())
         }
     }
     val shamt: UInt = io.op2(4,0).asUInt
-    val w_out: UInt = Wire(UInt(32.W))
+    //val w_out: UInt = Wire(UInt(32.W))
 
-    w_out := MuxLookup(io.alu_op, io.op2, Seq(
+
+    io.out := MuxLookup(io.alu_op, io.op2, Seq(
         ALU_ADD     -> (io.op1 + io.op2),
         ALU_SUB     -> (io.op1 - io.op2),
         ALU_SRA     -> (io.op1.asSInt >> shamt).asUInt,
@@ -48,9 +50,10 @@ class ALU extends Module {
         ALU_OR      -> (io.op1 | io.op2),
         ALU_XOR     -> (io.op1 ^ io.op2),
         ALU_COPY1   -> io.op1,
-        ALU_COPY2   -> io.op2))
+        ALU_COPY2   -> io.op2)).asUInt()
 
+    val sum: UInt = io.op1 + Mux(io.alu_op(0), -io.op2, io.op2)
+    io.cmp_out := Mux(io.op1(31) === io.op2(31), sum(31),
+        Mux(io.alu_op(1), io.op2(31), io.op1(31)))
 
-    
-    io.out := w_out
 }

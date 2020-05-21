@@ -2,6 +2,7 @@
 
 _start0:
     nop
+    addi x30, x1, 1
     addi x31, x0, 0xAA
 _label1:
     addi  x1,  x0, 1
@@ -11,8 +12,8 @@ _label1:
     addi  x5,  x0, 5    # x2 = x0 + 1 = 2
     addi  x6,  x0, 6    # x2 = x0 + 1 = 2
     addi  x7,  x0, 7    # x2 = x0 + 1 = 2
-    addi  x8,  x0, 8    # x2 = x0 + 1 = 2
-    jal   x4,  _label1
+    addi  x8,  x0, 9    # x2 = x0 + 1 = 2
+    jal   x7,  _label1
 
     addi  x10,  x0, 9    # x2 = x0 + 1 = 2
     nop

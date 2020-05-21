@@ -20,30 +20,27 @@ object ScalarOpConstants {
 
    // Branch Type
    def BR_N:   UInt = 1.U(4.W) // Next
-   def BR_NE:  UInt = 2.U(4.W) // Branch on NotEqual
-   def BR_EQ:  UInt = 3.U(4.W) // Branch on Equal
-   def BR_GE:  UInt = 4.U(4.W) // Branch on Greater/Equal
-   def BR_GEU: UInt = 5.U(4.W) // Branch on Greater/Equal Unsigned
-   def BR_LT:  UInt = 6.U(4.W) // Branch on Less Than
-   def BR_LTU: UInt = 7.U(4.W) // Branch on Less Than Unsigned
-   def BR_J:   UInt = 8.U(4.W) // Jump
-   def BR_JR:  UInt = 9.U(4.W) // Jump Register
+   def BR_J:   UInt = 2.U(4.W) // Jump
+   def BR_JR:  UInt = 3.U(4.W) // Jump Register
+   def BR_NE:  UInt = 4.U(4.W) // Branch on NotEqual
+   def BR_EQ:  UInt = 5.U(4.W) // Branch on Equal
+   def BR_GE:  UInt = 6.U(4.W) // Branch on Greater/Equal
+   def BR_GEU: UInt = 7.U(4.W) // Branch on Greater/Equal Unsigned
+   def BR_LT:  UInt = 8.U(4.W) // Branch on Less Than
+   def BR_LTU: UInt = 9.U(4.W) // Branch on Less Than Unsigned
+
    def BR_X:   UInt = 0.U(4.W)
 
    // RS1 Operand Select Signal
-   def OP1_RS1: UInt = 0.U(1.W) // Register Source #1
-   def OP1_PC:  UInt = 1.U(1.W) // PC
-   def OP1_X:   UInt = 0.U(1.W)
+   def OP1_RS1: UInt = 1.U(2.W) // Register Source #1
+   def OP1_PC:  UInt = 2.U(2.W) // PC
+   def OP1_X:   UInt = 0.U(2.W)
 
    // RS2 Operand Select Signal
-   def OP2_RS2: UInt = 0.U(3.W) // Register Source #2
-   def OP2_IMI: UInt = 1.U(3.W) // immediate, I-type
-   def OP2_IMS: UInt = 2.U(3.W) // immediate, S-type
-   def OP2_IMU: UInt = 3.U(3.W) // immediate, U-type
-   def OP2_IMJ: UInt = 4.U(3.W) // immediate, J-type
-   def OP2_IMB: UInt = 5.U(3.W) // immediate, B-type
-   def OP2_IMZ: UInt = 6.U(3.W) // Zero-extended rs1 field of inst, for CSRI instructions
-   def OP2_X:   UInt = 0.U(3.W)
+   def OP2_RS2: UInt = 1.U(2.W) // Register Source #2
+   def OP2_IMM: UInt = 2.U(2.W) // immediate, I-type
+   def OP2_SZ : UInt = 3.U(2.W)
+   def OP2_X:   UInt = 0.U(2.W)
 
    // Register File Write Enable Signal
    def REN_0: UInt = "b0".U
@@ -51,9 +48,9 @@ object ScalarOpConstants {
    def REN_X: UInt = "b0".U
 
    // Writeback Select Signal
-   def WB_ALU: UInt = 0.U(2.W)
-   def WB_MEM: UInt = 1.U(2.W)
-   def WB_PC4: UInt = 2.U(2.W)
+   def WB_PC4: UInt = 0.U(2.W)
+   def WB_ALU: UInt = 1.U(2.W)
+   def WB_MEM: UInt = 2.U(2.W)
    def WB_CSR: UInt = 3.U(2.W)
    def WB_X:   UInt = 0.U(2.W)
 
