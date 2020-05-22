@@ -294,7 +294,7 @@ class Cpu extends Module {
     // for test
     io.sw.r_dat  := io.r_imem_dat.data//r_data
     io.sw.r_add  := pc_cntr
-    io.sw.r_pc   := ex_pc// program counter
+    io.sw.r_pc   := pc_cntr// program counter
 
 
     // write process
