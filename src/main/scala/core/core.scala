@@ -118,7 +118,7 @@ class Cpu extends Module {
 
     // read register data
     val reg_f: RegRAM = new RegRAM
-    val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read _)
+    val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read)
 
     // judge if stall needed
     load_stall := ((mem_reg_waddr === id_raddr(0) || mem_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD) //|| (io.r_imem_dat.ack === false.B)
@@ -146,17 +146,19 @@ class Cpu extends Module {
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
-    val ex_req_rsx_bypass: Seq[UInt] = for (i <- 0 until id_raddr.size) yield MuxCase(ex_rs(i), Seq(
-        (ex_reg_raddr(i) =/= 0.U && ex_reg_raddr(i) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-        (ex_reg_raddr(i) =/= 0.U && ex_reg_raddr(i) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
-
+    val ex_req_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
     ))
-
+    val ex_req_rs2_bypass: UInt = MuxCase(ex_rs(1), Seq(
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
+    ))
 
     // ALU OP1 selector
     val ex_op1: UInt = MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
         mapping = Seq(
-            OP1_RS1 -> ex_req_rsx_bypass(0),
+            OP1_RS1 -> ex_req_rs1_bypass(0),
             OP1_PC  -> ex_pc, // PC = pc_cntr-4.U
             OP1_X   -> 0.U(32.W)
         )
@@ -165,7 +167,7 @@ class Cpu extends Module {
     // ALU OP2 selector
     val ex_op2: UInt = MuxLookup(key = ex_ctrl.alu_op2, default = 0.U(32.W),
         mapping = Seq(
-            OP2_RS2 -> ex_req_rsx_bypass(1),
+            OP2_RS2 -> ex_req_rs2_bypass(1),
             OP2_IMM -> ex_imm.asUInt, // IMM
             OP2_SZ  -> 4.U(32.W),
             OP2_X -> 0.U(32.W)
@@ -198,7 +200,8 @@ class Cpu extends Module {
         mem_ctrl := ex_ctrl
         mem_reg_waddr := ex_reg_waddr
         mem_imm := ex_imm
-        mem_rs := ex_req_rsx_bypass
+        mem_rs(0) := ex_req_rs1_bypass
+        mem_rs(1) := ex_req_rs2_bypass
         mem_alu_out := alu.io.out
         mem_alu_cmp_out := alu.io.cmp_out
     } .otherwise {
