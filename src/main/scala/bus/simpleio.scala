@@ -18,11 +18,26 @@ class CtrlSwChannel extends Bundle {
 
     val r_pc: UInt = Output(UInt(32.W))    // Program Counter Read register
     val w_pc: UInt = Input(UInt(32.W))     // Program Counter Write register
+//
+//
+//    val r_ex_alu_op: UInt = Output(UInt(32.W))
+//    val r_ex_alu_op1: UInt = Output(UInt(32.W))
+//    val r_ex_alu_op2: UInt = Output(UInt(32.W))
+    // EX stage iotester
+    val r_ex_raddr1:UInt = Output(UInt(32.W))
+    val r_ex_raddr2:UInt = Output(UInt(32.W))
+    val r_ex_rs1:UInt = Output(UInt(32.W))
+    val r_ex_rs2:UInt = Output(UInt(32.W))
+    val r_ex_imm:UInt = Output(UInt(32.W))
 
+    // MEM Stage
+    val r_mem_alu_out:UInt = Output(UInt(32.W))
+    // r_mem_alu_out_cmp
 
-    val r_ex_alu_op: UInt = Output(UInt(32.W))
-    val r_ex_alu_op1: UInt = Output(UInt(32.W))
-    val r_ex_alu_op2: UInt = Output(UInt(32.W))
+    // WB stage
+    val r_wb_alu_out:UInt = Output(UInt(32.W))
+    val r_wb_rf_wdata:UInt = Output(UInt(32.W))
+    val r_wb_rf_waddr:UInt = Output(UInt(32.W))
 
 
 

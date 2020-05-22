@@ -57,7 +57,6 @@ class Cpu extends Module {
     val wb_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
     //val wb_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
     val wb_reg_waddr: UInt = RegInit(0.U(5.W))
-    // todo: fix alu_op
     val wb_alu_out: UInt = RegInit(0.U(32.W))
     val wb_dmem_read_data: UInt = RegInit(0.U(32.W))
 
@@ -122,7 +121,7 @@ class Cpu extends Module {
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read _)
 
     // judge if stall needed
-    load_stall := ((ex_reg_waddr === id_raddr(0) ||  ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD) //|| (io.r_imem_dat.ack === false.B)
+    load_stall := ((mem_reg_waddr === id_raddr(0) || mem_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD) //|| (io.r_imem_dat.ack === false.B)
     // -------- END: ID stage --------
 
 
@@ -167,7 +166,7 @@ class Cpu extends Module {
     val ex_op2: UInt = MuxLookup(key = ex_ctrl.alu_op2, default = 0.U(32.W),
         mapping = Seq(
             OP2_RS2 -> ex_req_rsx_bypass(1),
-            OP2_IMM -> ex_imm.asUInt, // IMM J-type
+            OP2_IMM -> ex_imm.asUInt, // IMM
             OP2_SZ  -> 4.U(32.W),
             OP2_X -> 0.U(32.W)
         )
@@ -179,9 +178,14 @@ class Cpu extends Module {
     alu.io.op2      := ex_op2
 
     // iotester
-    io.sw.r_ex_alu_op := ex_ctrl.alu_func
-    io.sw.r_ex_alu_op1 := ex_op1
-    io.sw.r_ex_alu_op2 := ex_op2
+//    io.sw.r_ex_alu_op := ex_ctrl.alu_func
+//    io.sw.r_ex_alu_op1 := ex_op1
+//    io.sw.r_ex_alu_op2 := ex_op2
+    io.sw.r_ex_raddr1 := ex_reg_raddr(0)
+    io.sw.r_ex_raddr2 := ex_reg_raddr(1)
+    io.sw.r_ex_rs1 := ex_rs(0)
+    io.sw.r_ex_rs2 := ex_rs(1)
+    io.sw.r_ex_imm := ex_imm.asUInt
     // -------- END: EX Stage --------
 
 
@@ -192,7 +196,7 @@ class Cpu extends Module {
         mem_pc := ex_pc
         mem_npc := ex_npc
         mem_ctrl := ex_ctrl
-        mem_reg_waddr := id_waddr
+        mem_reg_waddr := ex_reg_waddr
         mem_imm := ex_imm
         mem_rs := ex_req_rsx_bypass
         mem_alu_out := alu.io.out
@@ -207,7 +211,8 @@ class Cpu extends Module {
         mem_alu_out := 0.U
         mem_alu_cmp_out := false.B
     }
-
+    // iotesters
+    io.sw.r_mem_alu_out := mem_alu_out
 
     io.w_dmem_add.addr := mem_alu_out
     io.w_dmem_add.req  := (mem_ctrl.mem_wr === M_XWR)
@@ -251,6 +256,10 @@ class Cpu extends Module {
             reg_f.write(rf_waddr, rf_wdata)
         }
     //}
+    // iotesters
+    io.sw.r_wb_alu_out := wb_alu_out
+    io.sw.r_wb_rf_waddr:= rf_waddr
+    io.sw.r_wb_rf_wdata:= rf_wdata
     // -------- END: WB Stage --------
 
 
@@ -264,6 +273,8 @@ class Cpu extends Module {
                 (mem_ctrl.br_type === BR_J)) ->  (mem_pc + mem_imm.asUInt()),
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
+        }.otherwise {
+            pc_cntr := pc_cntr
         }
 
             ////pc_incl // increase or jump program counter
@@ -283,7 +294,7 @@ class Cpu extends Module {
     // for test
     io.sw.r_dat  := io.r_imem_dat.data//r_data
     io.sw.r_add  := pc_cntr
-    io.sw.r_pc   := pc_cntr - 4.U// program counter
+    io.sw.r_pc   := ex_pc// program counter
 
 
     // write process
@@ -338,9 +349,23 @@ class CpuBus extends Module {
     io.sw.g_dat := cpu.io.sw.g_dat
     io.sw.r_pc  := cpu.io.sw.r_pc
 
-    io.sw.r_ex_alu_op := cpu.io.sw.r_ex_alu_op
-    io.sw.r_ex_alu_op1 := cpu.io.sw.r_ex_alu_op1
-    io.sw.r_ex_alu_op2 := cpu.io.sw.r_ex_alu_op2
+    // IOTESTERS: EX Stage
+//    io.sw.r_ex_alu_op   := cpu.io.sw.r_ex_alu_op
+//    io.sw.r_ex_alu_op1  := cpu.io.sw.r_ex_alu_op1
+//    io.sw.r_ex_alu_op2  := cpu.io.sw.r_ex_alu_op2
+    io.sw.r_ex_raddr1   := cpu.io.sw.r_ex_raddr1
+    io.sw.r_ex_raddr2   := cpu.io.sw.r_ex_raddr2
+    io.sw.r_ex_rs1      := cpu.io.sw.r_ex_rs1
+    io.sw.r_ex_rs2      := cpu.io.sw.r_ex_rs2
+    io.sw.r_ex_imm      := cpu.io.sw.r_ex_imm
+
+    //IOTESTERS: MEM Stage
+    io.sw.r_mem_alu_out := cpu.io.sw.r_mem_alu_out
+
+    //IOTESTERS: WB Stage
+    io.sw.r_wb_alu_out := cpu.io.sw.r_wb_alu_out
+    io.sw.r_wb_rf_wdata := cpu.io.sw.r_wb_rf_wdata
+    io.sw.r_wb_rf_waddr := cpu.io.sw.r_wb_rf_waddr
 
     w_pc        := io.sw.w_pc
 
@@ -430,16 +455,24 @@ object Test extends App {
             step(1) // fetch pc
             poke(signal = c.io.sw.halt, value = false.B)
             step(2)
+            println(msg = f"count\tINST\t|\tEX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t|\tALU out\t\t|\tWB:ALU out")
 
             //for (lp <- memarray.indices by 1){
             for (_ <- 0 until 23 by 1) {
 
                 val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)
-                val op1 = peek(c.io.sw.r_ex_alu_op1)
-                val op2 = peek(c.io.sw.r_ex_alu_op2)
+                val exraddr1 = peek(c.io.sw.r_ex_raddr1)
+                val exraddr2 = peek(c.io.sw.r_ex_raddr2)
+                val exrs1 = peek(c.io.sw.r_ex_rs1)
+                val exrs2 = peek(c.io.sw.r_ex_rs2)
+                val eximm = peek(c.io.sw.r_ex_imm)
+                val memaluo = peek(c.io.sw.r_mem_alu_out)
+                val wbaluo  = peek(c.io.sw.r_wb_alu_out)
+                val wbaddr  = peek(c.io.sw.r_wb_rf_waddr)
+                val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
                 step(1)
-                println(msg = f"read : addr = 0x$a%08X, data = 0x$d%08X, op1 = 0x$op1%08X, op2 = 0x$op2%08X") //peek(c.io.sw.data)
+                println(msg = f"$a%d,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t|\t0x$memaluo%08X\t|\t0x$wbaluo%08X\tx($wbaddr%d)\t<= 0x$wbdata%08X") //peek(c.io.sw.data)
 
             }
 
