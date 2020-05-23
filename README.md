@@ -1,5 +1,6 @@
 Tiny RISC-V KyogenRV(響玄RV) in chisel3 based on RV32I.
 =======================
+## 5-Stage Pipelined soft-core CPU for mid-rage FPGAs.
 ### Basically Logic 
 #### 1.Instruction Fetch Stage(IF)  
 ```
