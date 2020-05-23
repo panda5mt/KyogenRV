@@ -9,7 +9,7 @@ object ScalarOpConstants {
    // Control Signals
    def Y: UInt = 1.U(1.W)
    def N: UInt = 0.U(1.W)
-   def X: UInt = 0.U(1.W)
+   def X: BitPat = BitPat("b?")
 
    // PC Select Signal
    def PC_4:   UInt = 0.U(3.W)  // PC + 4
@@ -29,7 +29,7 @@ object ScalarOpConstants {
    def BR_LT:  UInt = 8.U(4.W) // Branch on Less Than
    def BR_LTU: UInt = 9.U(4.W) // Branch on Less Than Unsigned
 
-   def BR_X:   UInt = 0.U(4.W)
+   def BR_X:   BitPat = BitPat("b????")
 
    // RS1 Operand Select Signal
    def OP1_RS1: UInt = 1.U(2.W) // Register Source #1
@@ -37,25 +37,25 @@ object ScalarOpConstants {
    def OP1_X:   UInt = 0.U(2.W)
 
    // RS2 Operand Select Signal
-   def OP2_RS2: UInt = 1.U(2.W) // Register Source #2
-   def OP2_IMM: UInt = 2.U(2.W) // immediate, I-type
-   def OP2_SZ : UInt = 3.U(2.W)
+   def OP2_RS2: UInt = 0.U(2.W) // Register Source #2
+   def OP2_IMM: UInt = 1.U(2.W) // immediate, I-type
+   def OP2_SZ : UInt = 2.U(2.W)
    def OP2_X:   UInt = 0.U(2.W)
 
    // Register File Write Enable Signal
    def REN_0: UInt = "b0".U
    def REN_1: UInt = "b1".U
-   def REN_X: UInt = "b0".U
+   def REN_X: BitPat = BitPat("b?")
 
    // Writeback Select Signal
    def WB_PC4: UInt = 0.U(2.W)
    def WB_ALU: UInt = 1.U(2.W)
    def WB_MEM: UInt = 2.U(2.W)
    def WB_CSR: UInt = 3.U(2.W)
-   def WB_X:   UInt = 0.U(2.W)
+   def WB_X: BitPat =BitPat("b??")
 
    // imm Type
-   def IMM_X: UInt = 0.U(3.W)
+   def IMM_X: BitPat = BitPat("b???")
    def IMM_I: UInt = 0.U(3.W)
    def IMM_S: UInt = 1.U(3.W)
    def IMM_B: UInt = 2.U(3.W)
@@ -76,7 +76,7 @@ object MemoryOpConstants
    // Memory Enable Signal
    def MEN_0: UInt = "b0".U
    def MEN_1: UInt = "b1".U
-   def MEN_X: UInt = "b0".U
+   def MEN_X: BitPat = BitPat("b?")
 
    // Memory Mask Type Signal
    def MSK_B:  UInt = 0.U(3.W)

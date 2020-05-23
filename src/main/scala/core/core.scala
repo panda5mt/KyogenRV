@@ -244,29 +244,29 @@ class Cpu extends Module {
 
     val invClk: Clock = Wire(new Clock)
     invClk := (~clock.asUInt).asBool().asClock()
-
+    //withClock(invClk) {
     val rf_wen: Bool = wb_ctrl.rf_wen                       // register write enable flag
     val rf_waddr: UInt = wb_reg_waddr
     val rf_wdata: UInt = MuxLookup(wb_ctrl.wb_sel, wb_alu_out,    //wb_ctrl.wb_sel, 0.U(32.W),
         Seq(
-            WB_ALU -> wb_alu_out,           // wb_alu_out,
-            WB_PC4 -> wb_npc,               // pc_cntr = pc + 4
+            WB_ALU -> wb_alu_out,   // wb_alu_out,
+            WB_PC4 -> wb_npc,       // pc_cntr = pc + 4
             WB_CSR -> 0.U(32.W),
-            WB_MEM -> wb_dmem_read_data,    //0.U(32.W),
-            WB_X -> 0.U(32.W)
+            WB_MEM -> wb_dmem_read_data    //0.U(32.W),
         )
     )
 
-    withClock(invClk){
-        when (rf_wen === REN_1) {
+
+        when(rf_wen === REN_1) {
             reg_f.write(rf_waddr, rf_wdata)
         }
-    }
 
-    // iotesters
-    io.sw.r_wb_alu_out := wb_alu_out
-    io.sw.r_wb_rf_waddr:= rf_waddr
-    io.sw.r_wb_rf_wdata:= rf_wdata
+
+        // iotesters
+        io.sw.r_wb_alu_out := wb_alu_out
+        io.sw.r_wb_rf_waddr := rf_waddr
+        io.sw.r_wb_rf_wdata := rf_wdata
+    //}
     // -------- END: WB Stage --------
 
 
@@ -277,7 +277,7 @@ class Cpu extends Module {
             r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 ((mem_ctrl.br_type =/= BR_N && mem_alu_cmp_out) ||
-                (mem_ctrl.br_type === BR_J)) ->  (mem_pc + mem_imm.asUInt()),
+                (mem_ctrl.br_type === BR_J)) -> mem_alu_out,
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
         }.otherwise {
