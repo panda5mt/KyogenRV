@@ -181,9 +181,6 @@ class Cpu extends Module {
     alu.io.op2      := ex_op2
 
     // iotester
-//    io.sw.r_ex_alu_op := ex_ctrl.alu_func
-//    io.sw.r_ex_alu_op1 := ex_op1
-//    io.sw.r_ex_alu_op2 := ex_op2
     io.sw.r_ex_raddr1 := ex_reg_raddr(0)
     io.sw.r_ex_raddr2 := ex_reg_raddr(1)
     io.sw.r_ex_rs1 := ex_rs(0)
@@ -301,7 +298,7 @@ class Cpu extends Module {
     // for test
     io.sw.r_dat  := io.r_imem_dat.data//r_data
     io.sw.r_add  := pc_cntr
-    io.sw.r_pc   := pc_cntr// program counter
+    io.sw.r_pc   := id_pc//pc_cntr// program counter
 
 
     // write process
@@ -462,7 +459,7 @@ object Test extends App {
             step(1) // fetch pc
             poke(signal = c.io.sw.halt, value = false.B)
             step(2)
-            println(msg = f"count\tINST\t|\tEX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t|\tALU out\t\t|\tWB:ALU out")
+            println(msg = f"count\tINST\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd")
 
             //for (lp <- memarray.indices by 1){
             for (_ <- 0 until 23 by 1) {
@@ -479,7 +476,7 @@ object Test extends App {
                 val wbaddr  = peek(c.io.sw.r_wb_rf_waddr)
                 val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
                 step(1)
-                println(msg = f"$a%d,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t|\t0x$memaluo%08X\t|\t0x$wbaluo%08X\tx($wbaddr%d)\t<= 0x$wbdata%08X") //peek(c.io.sw.data)
+                println(msg = f"$a%d,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X") //peek(c.io.sw.data)
 
             }
 
