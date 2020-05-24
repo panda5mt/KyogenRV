@@ -275,13 +275,6 @@ class Cpu extends Module {
         }.otherwise {
             pc_cntr := pc_cntr
         }
-
-            ////pc_incl // increase or jump program counter
-//        }.otherwise {
-//            w_req   := false.B
-//            r_req   := true.B
-//            pc_cntr  := pc_cntr//0.U(32.W)
-//        }
     }.otherwise { // halt mode
         // enable Write Operation
         w_addr := io.sw.w_add //w_addr + 4.U(32.W)
@@ -444,7 +437,7 @@ object Test extends App {
                 poke(signal = c.io.sw.w_add, value = addr)
                 step(1)
                 poke(signal = c.io.sw.w_dat, value = mem)
-                println(msg = f"write: addr = 0x$addr%08X, data = 0x$mem%08X")
+                println(msg = f"write: addr = $addr%d,\tdata = 0x$mem%08X")
                 step(1)
             }
 

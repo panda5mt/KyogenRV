@@ -78,7 +78,7 @@ class IDecode {
 
     JAL     ->  List(Y,  BR_J  , OP1_PC , OP2_IMM , IMM_J  , ALU_ADD ,  WB_PC4, REN_1, MEN_0, M_X  , MT_X /*,CSR.N*/),
     JALR    ->  List(Y,  BR_JR , OP1_RS1, OP2_IMM , IMM_I  , ALU_ADD ,  WB_PC4, REN_1, MEN_0, M_X  , MT_X /*,CSR.N*/),
-    BEQ     ->  List(Y,  BR_EQ , OP1_PC , OP2_IMM , IMM_B  , ALU_ADD ,  WB_ALU, REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/),
+    BEQ     ->  List(Y,  BR_EQ , OP1_PC , OP2_IMM , IMM_B  , ALU_SEQ ,  WB_ALU, REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/),
     BNE     ->  List(Y,  BR_NE , OP1_PC , OP2_IMM , IMM_B  , ALU_ADD ,  WB_ALU, REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/),
     BLT     ->  List(Y,  BR_LT , OP1_PC , OP2_IMM , IMM_B  , ALU_ADD ,  WB_ALU, REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/),
     BGE     ->  List(Y,  BR_GE , OP1_PC , OP2_IMM , IMM_B  , ALU_ADD ,  WB_ALU, REN_0, MEN_0, M_X  , MT_X /*,CSR.N*/),
