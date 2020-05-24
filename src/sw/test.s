@@ -1,8 +1,6 @@
 # sample assemble file
 
-_start0:
-    addi x29, x0, 10    # x29 = x0 + 10 = 10
-    addi x31, x29, 0xAA # x31 = x29 + 0xAA = 180 (= 0xB4)
+
 _label1:
     addi  x1,  x0, 1    # x1 = x0 + 1 = 1
     addi  x2,  x0, 2    # x2 = x0 + 2 = 2
@@ -23,5 +21,11 @@ _label4:
     addi x12, x0, 12      # x12= 0x0C
     jalr x5,  x4, 4      # x5 => _label5, jump x4+4 (= _label2+4)
 _label5:
-    jal  x0, _label5    # forever loop
+    addi x13, x0 ,3    # x13 = 3
+    addi x14, x0 ,3    # x14 = 3
+    beq  x13, x14, _label6  # if(x13 == x14) jump1
+    addi x15 ,x0 ,0xAA
+    addi x16, x0, 0xBB
+_label6:
+    jal  x0, _label6    # forever loop
     nop
