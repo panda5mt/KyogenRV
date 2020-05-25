@@ -409,7 +409,12 @@ class RegRAM {
 
 //noinspection ScalaStyle
 object kyogenrv extends App {
-    chisel3.Driver.execute(args, () => new Cpu())
+    val name = "cpu"
+
+    (new stage.ChiselStage).execute(
+        Array("-td=fpga/chisel_generated", s"-o=$name"),
+        Seq(chisel3.stage.ChiselGeneratorAnnotation(
+            () => new Cpu())))
 }
 
 object Test extends App {
