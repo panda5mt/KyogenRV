@@ -2,8 +2,8 @@
 
 _label1:
     addi x13,  x0, 3        # x13 = 3
-    addi x14,  x0, 3        # x14 = 3
-    bne  x13, x14, _label2  # if(x13 == x14) jump to label6
+    addi x14,  x0, 2        # x14 = 2
+    bne  x13, x14, _label2  # if(x13 != x14) jump to label6
     addi x15,  x0, 0xAA
     addi x16,  x0, 0xBB
 
