@@ -30,8 +30,6 @@ object ALU {
     def isCmpI(op: UInt): Bool = op(0)              // need inverse for compare?
     //noinspection ScalaStyle
     def isCmpEq(op: UInt): Bool = !op(3)            // EQ or NEQ compare operation?
-
-
 }
 
 import ALU._
