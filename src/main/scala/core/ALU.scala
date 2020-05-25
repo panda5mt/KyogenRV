@@ -5,26 +5,26 @@ import chisel3._
 import chisel3.util._
 
 object ALU {
-    def ALU_ADD:    UInt = 0.U(5.W)
-    def ALU_SLL:    UInt = 1.U(5.W)
-    def ALU_SEQ:    UInt = 2.U(5.W)
-    def ALU_SNE:    UInt = 3.U(5.W)
-    def ALU_XOR:    UInt = 4.U(5.W)
-    def ALU_SRL:    UInt = 5.U(5.W)
-    def ALU_OR:     UInt = 6.U(5.W)
-    def ALU_AND:    UInt = 7.U(5.W)
-    def ALU_COPY1:  UInt = 8.U(5.W)
-    def ALU_COPY2:  UInt = 9.U(5.W)
-    def ALU_SUB:    UInt = 10.U(5.W)
-    def ALU_SRA:    UInt = 11.U(5.W)
-    def ALU_SLT:    UInt = 12.U(5.W)
-    def ALU_SGE:    UInt = 13.U(5.W)
-    def ALU_SLTU:   UInt = 14.U(5.W)
-    def ALU_SGEU:   UInt = 15.U(5.W)
+    def ALU_ADD:    UInt = 0.U(4.W)
+    def ALU_SLL:    UInt = 1.U(4.W)
+    def ALU_SEQ:    UInt = 2.U(4.W)
+    def ALU_SNE:    UInt = 3.U(4.W)
+    def ALU_XOR:    UInt = 4.U(4.W)
+    def ALU_SRL:    UInt = 5.U(4.W)
+    def ALU_OR:     UInt = 6.U(4.W)
+    def ALU_AND:    UInt = 7.U(4.W)
+    def ALU_COPY1:  UInt = 8.U(4.W)
+    def ALU_COPY2:  UInt = 9.U(4.W)
+    def ALU_SUB:    UInt = 10.U(4.W)
+    def ALU_SRA:    UInt = 11.U(4.W)
+    def ALU_SLT:    UInt = 12.U(4.W)
+    def ALU_SGE:    UInt = 13.U(4.W)
+    def ALU_SLTU:   UInt = 14.U(4.W)
+    def ALU_SGEU:   UInt = 15.U(4.W)
 
-    def ALU_X:      UInt = 0.U(5.W) // BitPat("b????")
+    def ALU_X:      UInt = 0.U(4.W) // BitPat("b????")
 
-    def isSub(op: UInt): Bool = op >= ALU_COPY2     // need sub?
+    def isSub(op: UInt): Bool = op(3)     // need sub?
     def isCmp(op: UInt): Bool = op >=ALU_SLT        // Compare op?
     def isCmpU(op: UInt): Bool = op >= ALU_SLTU     // Compare unsigned?
     def isCmpI(op: UInt): Bool = op(0)              // need inverse for compare?
@@ -42,7 +42,7 @@ class ALU extends Module {
         new Bundle {
             val op1: UInt = Input(UInt(32.W))
             val op2: UInt = Input(UInt(32.W))
-            val alu_op: UInt = Input(UInt(5.W))
+            val alu_op: UInt = Input(UInt(4.W))
             val out: UInt = Output(UInt(32.W))
             val cmp_out: Bool = Output(Bool())
         }
