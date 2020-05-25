@@ -33,6 +33,24 @@ make test
 ```
 #### 4.Branch (PC update)
 ```
+git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.3 --depth 1 
+cd KyogenRV/
+```
+
+write asm file and save to <code>[src/sw/test.s](src/sw/test.s)</code>
+then build as follows 
+
+```
+make clean
+make asm
+```
+you'll get <code>[src/sw/test.hex](src/sw/test.hex)</code>
+then build test module in chisel project as follows
+```
+make test
+```
+#### 5.5-staged pipeline
+```
 git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.10 --depth 1 
 cd KyogenRV/
 ```
@@ -49,7 +67,7 @@ then build test module in chisel project as follows
 ```
 make test
 ```
-when you modified <code>[src/sw/test.hex](src/sw/test.hex)</code>,just type as follows
+when you modified <code>[src/sw/test.hex](src/sw/test.hex)</code>, just type as follows
 ```
 make test
 ```
