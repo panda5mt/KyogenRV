@@ -212,7 +212,7 @@ class Cpu extends Module {
         mem_alu_cmp_out := false.B
     }
     // iotesters
-    io.sw.r_mem_alu_out := alu.io.cmp_out.asUInt()//mem_alu_out
+    io.sw.r_mem_alu_out := mem_alu_out
 
     io.w_dmem_add.addr := mem_alu_out
     io.w_dmem_add.req  := (mem_ctrl.mem_wr === M_XWR)
