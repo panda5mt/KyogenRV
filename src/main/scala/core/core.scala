@@ -59,6 +59,7 @@ class Cpu extends Module {
     val wb_reg_waddr: UInt = RegInit(0.U(5.W))
     val wb_alu_out: UInt = RegInit(0.U(32.W))
     val wb_dmem_read_data: UInt = RegInit(0.U(32.W))
+    val wb_dmem_read_ack: Bool = RegInit(false.B)
 
     // stall control
     val load_stall: Bool = Wire(Bool())
@@ -126,7 +127,6 @@ class Cpu extends Module {
 
 
     // -------- START: EX Stage --------
-    // iotesters:op1,op2,alu_op
     when (!load_stall && !jump_bubble) {
         ex_pc := id_pc
         ex_npc := id_npc
@@ -179,7 +179,7 @@ class Cpu extends Module {
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
 
-    // iotester
+    // iotesters
     io.sw.r_ex_raddr1 := ex_reg_raddr(0)
     io.sw.r_ex_raddr2 := ex_reg_raddr(1)
     io.sw.r_ex_rs1 := ex_rs(0)
@@ -190,7 +190,6 @@ class Cpu extends Module {
 
 
     // -------- START: MEM Stage --------
-    // iotesters:  alu_out, rd
     when (!jump_bubble) {
         mem_pc := ex_pc
         mem_npc := ex_npc
@@ -211,11 +210,18 @@ class Cpu extends Module {
         mem_alu_out := 0.U
         mem_alu_cmp_out := false.B
     }
+    val r_dmem_data = RegInit(0.U(32.W))
+//    when (io.r_dmem_dat.ack){
+        r_dmem_data := io.r_dmem_dat.data
+//    }
+
     // iotesters
     io.sw.r_mem_alu_out := mem_alu_out
 
     io.w_dmem_add.addr := mem_alu_out
-    io.w_dmem_add.req  := (mem_ctrl.mem_wr === M_XWR)
+    io.r_dmem_add.req  := (mem_ctrl.mem_wr === M_XRD).asBool()
+    io.r_dmem_add.addr := mem_alu_out
+    io.w_dmem_add.req  := (mem_ctrl.mem_wr === M_XWR).asBool()
     //todo: send cpubus data size
     // *************
     io.w_dmem_dat.data := mem_rs(1)
@@ -229,23 +235,23 @@ class Cpu extends Module {
 
     // -------- END: MEM Stage --------
 
-
     // -------- START: WB Stage --------
     // rd , alu_out  rd, address
     wb_npc := mem_npc
     wb_ctrl := mem_ctrl
     wb_reg_waddr := mem_reg_waddr
     wb_alu_out := mem_alu_out
+    //wb_dmem_read_ack := io.r_dmem_dat.ack
     wb_dmem_read_data := io.r_dmem_dat.data
 
-    val rf_wen: Bool = wb_ctrl.rf_wen                       // register write enable flag
+    val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
     val rf_waddr: UInt = wb_reg_waddr
-    val rf_wdata: UInt = MuxLookup(wb_ctrl.wb_sel, wb_alu_out,    //wb_ctrl.wb_sel, 0.U(32.W),
+    val rf_wdata: UInt = MuxLookup(wb_ctrl.wb_sel, wb_alu_out, //wb_ctrl.wb_sel, 0.U(32.W),
         Seq(
-            WB_ALU -> wb_alu_out,   // wb_alu_out,
-            WB_PC4 -> wb_npc,       // pc_cntr = pc + 4
+            WB_ALU -> wb_alu_out, // wb_alu_out,
+            WB_PC4 -> wb_npc, // pc_cntr = pc + 4
             WB_CSR -> 0.U(32.W),
-            WB_MEM -> wb_dmem_read_data    //0.U(32.W),
+            WB_MEM -> wb_dmem_read_data //0.U(32.W),
         )
     )
 

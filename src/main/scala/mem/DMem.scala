@@ -27,14 +27,18 @@ class DMem extends Module {
   io.r_dmem_dat.ack   := i_ack
   when(io.r_dmem_add.req === true.B) {
     i_ack := true.B
-  }.otherwise(
+  }/*.otherwise(
     i_ack := false.B
-  )
+  )*/
+
+
 
   // write operation
   when(io.w_dmem_add.req === true.B) {
     mem.write(io.w_dmem_add.addr, io.w_dmem_dat.data)
     w_ack := true.B
+  }.otherwise{
+    w_ack := false.B
   }
 
   io.w_dmem_dat.ack    := w_ack

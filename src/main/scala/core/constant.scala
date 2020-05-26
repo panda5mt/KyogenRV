@@ -88,8 +88,8 @@ object MemoryOpConstants
 
    // Cache Flushes & Sync Primitives
    def M_N:  UInt = 0.U(3.W)
-   def M_SI: UInt = 1.U(3.W)   // synch instruction stream
-   def M_SD: UInt = 2.U(3.W)   // synch data stream
+   def M_SI: UInt = 1.U(3.W)   // sync instruction stream
+   def M_SD: UInt = 2.U(3.W)   // sync data stream
    def M_FA: UInt = 3.U(3.W)   // flush all caches
    def M_FD: UInt = 4.U(3.W)   // flush data cache
 
