@@ -4,11 +4,11 @@ _label1:
         addi x13,  x0, 10       # x13 = 10
         addi x14,  x0, 14        # x14 = 14
         bge  x13, x14, _label2  # if(x13 >= x14) jump to label2
-        addi x15,  x0, 0xAA
+        addi x15,  x0, 0xDD
         addi x16,  x0, 0xBB  # 書き込まれるのはWBステージ
-        nop                  # nop３ついじょうかかkないとだめ　
-        nop
-        nop
+        #nop
+        #nop
+        #nop
         sw x16, 12(x31)     #   書き込みが発生するのはMEMステージ(wbステージのアドレスがidステージで存在したらストール)
         lw x17, 12(x31)
  _label2:

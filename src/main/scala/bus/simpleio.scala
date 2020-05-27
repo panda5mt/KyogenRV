@@ -18,8 +18,11 @@ class CtrlSwChannel extends Bundle {
 
     val r_pc: UInt = Output(UInt(32.W))    // Program Counter Read register
     val w_pc: UInt = Input(UInt(32.W))     // Program Counter Write register
-//
-//
+
+    // dmem
+//    val r_dadd: UInt = Output(UInt(32.W))    // for debug: data address dump
+//    val r_ddat: UInt = Output(UInt(32.W))    // for test: data memory dump
+
 
     // EX stage iotester
     val r_ex_raddr1:UInt = Output(UInt(32.W))
@@ -37,6 +40,8 @@ class CtrlSwChannel extends Bundle {
     val r_wb_rf_wdata:UInt = Output(UInt(32.W))
     val r_wb_rf_waddr:UInt = Output(UInt(32.W))
 
+    // load stall
+    val r_load_Stall:UInt = Output(UInt(32.W))
 
 
 }

@@ -122,8 +122,12 @@ class Cpu extends Module {
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read)
 
     // judge if stall needed
-    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD) //|| (io.r_imem_dat.ack === false.B)
+    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && (ex_ctrl.mem_wr === M_XRD || ex_ctrl.mem_wr === M_XWR))
+    //load_stall := false.B
+    //||((wb_reg_waddr === id_raddr(0) || wb_reg_waddr === id_raddr(1)) && wb_ctrl.mem_en === MEN_1 && wb_ctrl.mem_wr === M_XWR)
+    io.sw.r_load_Stall := load_stall
     // -------- END: ID stage --------
+
 
 
     // -------- START: EX Stage --------
@@ -286,15 +290,20 @@ class Cpu extends Module {
         w_data := io.sw.w_dat
         w_req  := true.B
         pc_cntr := io.sw.w_pc
+
+//        io.sw.r_dadd :=
+//        io.sw.r_ddat :=
     }
 
-    // for test
+    // for imem test
     io.sw.r_dat  := io.r_imem_dat.data//r_data
     io.sw.r_add  := pc_cntr
     io.sw.r_pc   := id_pc//pc_cntr// program counter
 
 
-    // write process
+
+
+      // write process
     io.w_imem_add.addr   := w_addr
     io.w_imem_dat.data   := w_data
     io.w_imem_add.req    := w_req
@@ -335,14 +344,21 @@ class CpuBus extends Module {
     sw_halt     := io.sw.halt
     sw_data     := inst_mem.io.r_imem_dat.data
     sw_addr     := inst_mem.io.r_imem_add.addr
-    
+
+    // imem
     sw_wdata    := io.sw.w_dat // data to write inst_mem
     sw_waddr    := io.sw.w_add
     sw_gaddr    := io.sw.g_add
-
     io.sw.r_dat := sw_data
     io.sw.r_add := sw_addr
-    
+
+    // dmem
+//    io.sw.r_dadd := cpu.io.sw.r_dadd
+//    io.sw.r_ddat := cpu.io.sw.r_ddat
+
+
+
+
     io.sw.g_dat := cpu.io.sw.g_dat
     io.sw.r_pc  := cpu.io.sw.r_pc
 
@@ -363,6 +379,9 @@ class CpuBus extends Module {
     io.sw.r_wb_alu_out := cpu.io.sw.r_wb_alu_out
     io.sw.r_wb_rf_wdata := cpu.io.sw.r_wb_rf_wdata
     io.sw.r_wb_rf_waddr := cpu.io.sw.r_wb_rf_waddr
+
+    //IOTESTERS: load stall
+    io.sw.r_load_Stall := cpu.io.sw.r_load_Stall
 
     w_pc        := io.sw.w_pc
 
@@ -473,8 +492,9 @@ object Test extends App {
                 val wbaluo  = peek(c.io.sw.r_wb_alu_out)
                 val wbaddr  = peek(c.io.sw.r_wb_rf_waddr)
                 val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
+                val l_stall = peek(c.io.sw.r_load_Stall)
                 step(1)
-                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X") //peek(c.io.sw.data)
+                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, ls= $l_stall%d") //peek(c.io.sw.data)
 
             }
 
