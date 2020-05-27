@@ -122,7 +122,7 @@ class Cpu extends Module {
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read)
 
     // judge if stall needed
-    load_stall := ((mem_reg_waddr === id_raddr(0) || mem_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD) //|| (io.r_imem_dat.ack === false.B)
+    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD) //|| (io.r_imem_dat.ack === false.B)
     // -------- END: ID stage --------
 
 
@@ -219,9 +219,11 @@ class Cpu extends Module {
     io.sw.r_mem_alu_out := mem_alu_out
 
     io.w_dmem_add.addr := mem_alu_out
-    io.r_dmem_add.req  := (mem_ctrl.mem_wr === M_XRD).asBool()
-    io.r_dmem_add.addr := mem_alu_out
     io.w_dmem_add.req  := (mem_ctrl.mem_wr === M_XWR).asBool()
+
+    io.r_dmem_add.addr := mem_alu_out
+    io.r_dmem_add.req  := (mem_ctrl.mem_wr === M_XRD).asBool()
+
     //todo: send cpubus data size
     // *************
     io.w_dmem_dat.data := mem_rs(1)
@@ -458,7 +460,7 @@ object Test extends App {
             println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd")
 
             //for (lp <- memarray.indices by 1){
-            for (_ <- 0 until 100 by 1) {
+            for (_ <- 0 until 30 by 1) {
 
                 val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)
