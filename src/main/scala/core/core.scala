@@ -122,10 +122,10 @@ class Cpu extends Module {
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read)
 
     // judge if stall needed
-    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && (ex_ctrl.mem_wr === M_XRD || ex_ctrl.mem_wr === M_XWR))
+    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && (ex_ctrl.mem_wr === M_XRD /*|| ex_ctrl.mem_wr === M_XWR*/))
     //load_stall := false.B
     //||((wb_reg_waddr === id_raddr(0) || wb_reg_waddr === id_raddr(1)) && wb_ctrl.mem_en === MEN_1 && wb_ctrl.mem_wr === M_XWR)
-    io.sw.r_load_Stall := load_stall
+    io.sw.r_load_Stall :=  (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_0 && mem_ctrl.mem_en === MEN_1 && mem_ctrl.mem_wr === M_XWR)
     // -------- END: ID stage --------
 
 
@@ -153,12 +153,16 @@ class Cpu extends Module {
 
     val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 && wb_ctrl.mem_wr === M_XRD) -> io.r_dmem_dat.data
+        //(ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_0 && wb_ctrl.mem_en === MEN_1) -> "hFF".U//mem_alu_out//mem_rs(1)// io.w_dmem_dat.data
     ))
     val ex_reg_rs2_bypass: UInt = MuxCase(ex_rs(1), Seq(
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 ) -> io.r_dmem_dat.data
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data//,
+        //(ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_0 && wb_ctrl.mem_en === MEN_1 && wb_ctrl.mem_wr === M_XWR) -> "hFF".U//mem_alu_out//mem_rs(1)//io.w_dmem_dat.data
     ))
+
+
 
     // ALU OP1 selector
     val ex_op1: UInt = MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
@@ -186,8 +190,8 @@ class Cpu extends Module {
     // iotesters
     io.sw.r_ex_raddr1 := ex_reg_raddr(0)
     io.sw.r_ex_raddr2 := ex_reg_raddr(1)
-    io.sw.r_ex_rs1 := ex_rs(0)
-    io.sw.r_ex_rs2 := ex_rs(1)
+    io.sw.r_ex_rs1 := ex_reg_rs1_bypass//ex_rs(0)
+    io.sw.r_ex_rs2 := ex_reg_rs2_bypass//ex_rs(1)
     io.sw.r_ex_imm := ex_imm.asUInt
     // -------- END: EX Stage --------
 
@@ -250,25 +254,30 @@ class Cpu extends Module {
     //wb_dmem_read_ack := io.r_dmem_dat.ack
     wb_dmem_read_data := io.r_dmem_dat.data
 
-    val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
-    val rf_waddr: UInt = wb_reg_waddr
-    val rf_wdata: UInt = MuxLookup(wb_ctrl.wb_sel, wb_alu_out, //wb_ctrl.wb_sel, 0.U(32.W),
-        Seq(
-            WB_ALU -> wb_alu_out, // wb_alu_out,
-            WB_PC4 -> wb_npc, // pc_cntr = pc + 4
-            WB_CSR -> 0.U(32.W),
-            WB_MEM -> wb_dmem_read_data //0.U(32.W),
+
+    val revClock = Wire(new Clock)
+    revClock := (~clock.asUInt).asBool.asClock()
+    withClock(revClock) {
+        val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
+        val rf_waddr: UInt = wb_reg_waddr
+        val rf_wdata: UInt = MuxLookup(wb_ctrl.wb_sel, wb_alu_out, //wb_ctrl.wb_sel, 0.U(32.W),
+            Seq(
+                WB_ALU -> wb_alu_out, // wb_alu_out,
+                WB_PC4 -> wb_npc, // pc_cntr = pc + 4
+                WB_CSR -> 0.U(32.W),
+                WB_MEM -> wb_dmem_read_data //0.U(32.W),
+            )
         )
-    )
 
-    when(rf_wen === REN_1) {
-        reg_f.write(rf_waddr, rf_wdata)
+        when(rf_wen === REN_1) {
+            reg_f.write(rf_waddr, rf_wdata)
+        }
+
+        // iotesters
+        io.sw.r_wb_alu_out := wb_alu_out
+        io.sw.r_wb_rf_waddr := rf_waddr
+        io.sw.r_wb_rf_wdata := rf_wdata
     }
-
-    // iotesters
-    io.sw.r_wb_alu_out := wb_alu_out
-    io.sw.r_wb_rf_waddr := rf_waddr
-    io.sw.r_wb_rf_wdata := rf_wdata
 
     // -------- END: WB Stage --------
 
