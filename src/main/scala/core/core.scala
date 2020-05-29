@@ -123,9 +123,6 @@ class Cpu extends Module {
 
     // judge if stall needed
     load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD)
-    //load_stall := false.B
-    //||((wb_reg_waddr === id_raddr(0) || wb_reg_waddr === id_raddr(1)) && wb_ctrl.mem_en === MEN_1 && wb_ctrl.mem_wr === M_XWR)
-    io.sw.r_load_Stall :=  (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_0 && mem_ctrl.mem_en === MEN_1 && mem_ctrl.mem_wr === M_XWR)
     // -------- END: ID stage --------
 
 
@@ -151,16 +148,19 @@ class Cpu extends Module {
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
 
+
     val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data
     ))
     val ex_reg_rs2_bypass: UInt = MuxCase(ex_rs(1), Seq(
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data//,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out
     ))
 
 
+    io.sw.r_load_Stall := (id_raddr(1) =/= 0.U && id_raddr(1) === mem_reg_waddr && id_ctrl.rf_wen === REN_0 && id_ctrl.mem_en === MEN_1) //(ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1)
 
     // ALU OP1 selector
     val ex_op1: UInt = MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
@@ -298,8 +298,7 @@ class Cpu extends Module {
         w_req  := true.B
         pc_cntr := io.sw.w_pc
 
-//        io.sw.r_dadd :=
-//        io.sw.r_ddat :=
+
     }
 
     // for imem test
