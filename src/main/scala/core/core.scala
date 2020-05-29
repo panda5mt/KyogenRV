@@ -159,9 +159,6 @@ class Cpu extends Module {
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out
     ))
 
-
-    io.sw.r_load_Stall := (id_raddr(1) =/= 0.U && id_raddr(1) === mem_reg_waddr && id_ctrl.rf_wen === REN_0 && id_ctrl.mem_en === MEN_1) //(ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1)
-
     // ALU OP1 selector
     val ex_op1: UInt = MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
         mapping = Seq(
@@ -385,9 +382,6 @@ class CpuBus extends Module {
     io.sw.r_wb_alu_out := cpu.io.sw.r_wb_alu_out
     io.sw.r_wb_rf_wdata := cpu.io.sw.r_wb_rf_wdata
     io.sw.r_wb_rf_waddr := cpu.io.sw.r_wb_rf_waddr
-
-    //IOTESTERS: load stall
-    io.sw.r_load_Stall := cpu.io.sw.r_load_Stall
 
     w_pc        := io.sw.w_pc
 
