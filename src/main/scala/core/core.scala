@@ -122,7 +122,7 @@ class Cpu extends Module {
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read)
 
     // judge if stall needed
-    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && (ex_ctrl.mem_wr === M_XRD /*|| ex_ctrl.mem_wr === M_XWR*/))
+    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD)
     //load_stall := false.B
     //||((wb_reg_waddr === id_raddr(0) || wb_reg_waddr === id_raddr(1)) && wb_ctrl.mem_en === MEN_1 && wb_ctrl.mem_wr === M_XWR)
     io.sw.r_load_Stall :=  (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_0 && mem_ctrl.mem_en === MEN_1 && mem_ctrl.mem_wr === M_XWR)
@@ -153,13 +153,11 @@ class Cpu extends Module {
 
     val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 && wb_ctrl.mem_wr === M_XRD) -> io.r_dmem_dat.data
-        //(ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_0 && wb_ctrl.mem_en === MEN_1) -> "hFF".U//mem_alu_out//mem_rs(1)// io.w_dmem_dat.data
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data
     ))
     val ex_reg_rs2_bypass: UInt = MuxCase(ex_rs(1), Seq(
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data//,
-        //(ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_0 && wb_ctrl.mem_en === MEN_1 && wb_ctrl.mem_wr === M_XWR) -> "hFF".U//mem_alu_out//mem_rs(1)//io.w_dmem_dat.data
     ))
 
 
@@ -255,9 +253,9 @@ class Cpu extends Module {
     wb_dmem_read_data := io.r_dmem_dat.data
 
 
-    val revClock = Wire(new Clock)
-    revClock := (~clock.asUInt).asBool.asClock()
-    withClock(revClock) {
+    val invClock = Wire(new Clock)
+    invClock := (~clock.asUInt).asBool.asClock()
+    withClock(invClock) {
         val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
         val rf_waddr: UInt = wb_reg_waddr
         val rf_wdata: UInt = MuxLookup(wb_ctrl.wb_sel, wb_alu_out, //wb_ctrl.wb_sel, 0.U(32.W),
@@ -488,7 +486,7 @@ object Test extends App {
             println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd")
 
             //for (lp <- memarray.indices by 1){
-            for (_ <- 0 until 30 by 1) {
+            for (_ <- 0 until 15 by 1) {
 
                 val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)
