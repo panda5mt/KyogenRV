@@ -213,7 +213,7 @@ class Cpu extends Module {
         mem_alu_out := 0.U
         mem_alu_cmp_out := false.B
     }
-    val r_dmem_data = RegInit(0.U(32.W))
+    val r_dmem_data: UInt = RegInit(0.U(32.W))
 //    when (io.r_dmem_dat.ack){
         r_dmem_data := io.r_dmem_dat.data
 //    }
@@ -250,7 +250,7 @@ class Cpu extends Module {
     wb_dmem_read_data := io.r_dmem_dat.data
 
 
-    val invClock = Wire(new Clock)
+    val invClock: Clock = Wire(new Clock)
     invClock := (~clock.asUInt).asBool.asClock()
     withClock(invClock) {
         val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
@@ -492,9 +492,8 @@ object Test extends App {
                 val wbaluo  = peek(c.io.sw.r_wb_alu_out)
                 val wbaddr  = peek(c.io.sw.r_wb_rf_waddr)
                 val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
-                val l_stall = peek(c.io.sw.r_load_Stall)
                 step(1)
-                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, ls= $l_stall%d") //peek(c.io.sw.data)
+                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X") //peek(c.io.sw.data)
 
             }
 
