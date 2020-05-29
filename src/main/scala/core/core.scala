@@ -251,7 +251,7 @@ class Cpu extends Module {
 
 
     val invClock: Clock = Wire(new Clock)
-    invClock := (~clock.asUInt).asBool.asClock()
+    invClock := (~clock.asUInt()(0)).asBool.asClock()
     withClock(invClock) {
         val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
         val rf_waddr: UInt = wb_reg_waddr
@@ -283,7 +283,7 @@ class Cpu extends Module {
             w_req := false.B
             r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
-                ((mem_ctrl.br_type =/= BR_N) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),//
+                ((mem_ctrl.br_type =/= BR_N) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
