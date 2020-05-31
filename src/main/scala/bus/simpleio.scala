@@ -40,6 +40,9 @@ class CtrlSwChannel extends Bundle {
     val r_wb_rf_wdata:UInt = Output(UInt(32.W))
     val r_wb_rf_waddr:UInt = Output(UInt(32.W))
 
+    // load_stall
+    val r_load_stall: UInt = Output(UInt(32.W))
+
 
 }
 

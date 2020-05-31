@@ -122,7 +122,8 @@ class Cpu extends Module {
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read)
 
     // judge if stall needed
-    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && ex_ctrl.mem_en === MEN_1 && ex_ctrl.mem_wr === M_XRD)
+    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.wb_sel === WB_MEM)).asBool()
+    io.sw.r_load_stall := (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.wb_sel === WB_MEM)//load_stall //:= false.B
     // -------- END: ID stage --------
 
 
@@ -152,11 +153,14 @@ class Cpu extends Module {
     val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data
+       // (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && ex_ctrl.wb_sel === WB_MEM) -> io.r_dmem_dat.data
     ))
     val ex_reg_rs2_bypass: UInt = MuxCase(ex_rs(1), Seq(
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.wb_sel === WB_MEM)
+       // (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.wb_sel === WB_MEM) -> io.r_dmem_dat.data
     ))
 
     // ALU OP1 selector
@@ -383,6 +387,10 @@ class CpuBus extends Module {
     io.sw.r_wb_rf_wdata := cpu.io.sw.r_wb_rf_wdata
     io.sw.r_wb_rf_waddr := cpu.io.sw.r_wb_rf_waddr
 
+    //IOTESTERS: load_stall
+    io.sw.r_load_stall := cpu.io.sw.r_load_stall
+
+
     w_pc        := io.sw.w_pc
 
     cpu.io.sw.halt  := sw_halt
@@ -479,7 +487,7 @@ object Test extends App {
             println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd")
 
             //for (lp <- memarray.indices by 1){
-            for (_ <- 0 until 15 by 1) {
+            for (_ <- 0 until 100 by 1) {
 
                 val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)
@@ -492,8 +500,9 @@ object Test extends App {
                 val wbaluo  = peek(c.io.sw.r_wb_alu_out)
                 val wbaddr  = peek(c.io.sw.r_wb_rf_waddr)
                 val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
+                val lstall = peek(c.io.sw.r_load_stall)
                 step(1)
-                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X") //peek(c.io.sw.data)
+                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X,ls = $lstall%d") //peek(c.io.sw.data)
 
             }
 
