@@ -108,10 +108,10 @@ object MemoryOpConstants
    def MT_HU: UInt = 6.U(3.W)
    def MT_WU: UInt = 7.U(3.W)
 
-   val M_SZ: Width = 1.W
-   def M_X: UInt = "b0".U(1.W)
-   def M_XRD: UInt = "b0".U(1.W) // int load
-   def M_XWR: UInt = "b1".U(1.W) // int store
+   val M_SZ: Width = 2.W
+   def M_X: UInt = "b00".U(2.W)
+   def M_XRD: UInt = "b01".U(2.W) // int load
+   def M_XWR: UInt = "b10".U(2.W) // int store
 
    def DPORT = 0
    def IPORT = 1

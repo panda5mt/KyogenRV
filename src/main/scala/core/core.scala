@@ -17,6 +17,8 @@ import mem._
 class Cpu extends Module {
     val io: HostIf = IO(new HostIf)
 
+    val invClock: Clock = Wire(new Clock)
+    invClock := (~clock.asUInt()(0)).asBool.asClock()
     // ------- START: pipeline registers --------
     // program counter init
     val pc_cntr_init: UInt = "h0000_0000".U(32.W)         // pc start address
@@ -52,7 +54,7 @@ class Cpu extends Module {
     val mem_alu_cmp_out: Bool = RegInit(false.B)
 
     // WB stage pipeline register
-    val wb_pc: UInt = RegInit(pc_cntr_init)
+    //val wb_pc: UInt = RegInit(pc_cntr_init)
     val wb_npc: UInt = RegInit(pc_next_init)
     val wb_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
     //val wb_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
@@ -84,7 +86,7 @@ class Cpu extends Module {
     val w_addr: UInt = RegInit(0.U(32.W))
     val w_data: UInt = RegInit(0.U(32.W))
 
-    io.r_dmem_add.req   := RegInit(true.B)
+    io.r_dmem_add.req   := RegInit(false.B)
     io.r_dmem_add.addr   := RegInit(0.U(32.W))
 
     // --------　START: IF stage　-------
@@ -102,9 +104,10 @@ class Cpu extends Module {
         id_inst := io.r_imem_dat.data// r_data
     } .elsewhen(jump_bubble) {
         id_pc := pc_cntr_init
-        id_npc := npc
+        id_npc := pc_next_init
         id_inst := inst_nop
     }
+
     val idm: IDModule = Module(new IDModule)
     idm.io.imem := id_inst
 
@@ -122,8 +125,16 @@ class Cpu extends Module {
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read)
 
     // judge if stall needed
-    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.wb_sel === WB_MEM)).asBool()
-    io.sw.r_load_stall := (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.wb_sel === WB_MEM)//load_stall //:= false.B
+    var mem_stall = RegInit(false.B)
+    when (ex_ctrl.mem_wr === M_XRD) {
+        mem_stall := true.B
+    } .elsewhen(io.r_dmem_dat.ack === true.B) {
+        mem_stall := false.B
+    }
+
+    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || (mem_stall)
+    io.sw.r_load_stall := mem_stall  //:= false.B
+
     // -------- END: ID stage --------
 
 
@@ -152,14 +163,14 @@ class Cpu extends Module {
 
     val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data
-       // (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && ex_ctrl.wb_sel === WB_MEM) -> io.r_dmem_dat.data
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 /*&& wb_ctrl.mem_en === MEN_1*/) -> io.r_dmem_dat.data,
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out
     ))
     val ex_reg_rs2_bypass: UInt = MuxCase(ex_rs(1), Seq(
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 /*&& wb_ctrl.mem_en === MEN_1*/) -> io.r_dmem_dat.data,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out
-        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.wb_sel === WB_MEM)
+        //(ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.wb_sel === WB_MEM)
        // (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.wb_sel === WB_MEM) -> io.r_dmem_dat.data
     ))
 
@@ -225,11 +236,13 @@ class Cpu extends Module {
     // iotesters
     io.sw.r_mem_alu_out := mem_alu_out
 
+
+
     io.w_dmem_add.addr := mem_alu_out
-    io.w_dmem_add.req  := (mem_ctrl.mem_wr === M_XWR).asBool()
+    io.w_dmem_add.req  := (mem_ctrl.mem_wr === M_XWR)
 
     io.r_dmem_add.addr := mem_alu_out
-    io.r_dmem_add.req  := (mem_ctrl.mem_wr === M_XRD).asBool()
+    io.r_dmem_add.req  := (mem_ctrl.mem_wr === M_XRD)
 
     //todo: send cpubus data size
     // *************
@@ -239,23 +252,21 @@ class Cpu extends Module {
 
     // bubble logic
     jump_bubble := (
-      ((mem_ctrl.br_type =/= BR_N) && mem_alu_cmp_out) || mem_ctrl.br_type === BR_JR || mem_ctrl.br_type === BR_J
+      ((mem_ctrl.br_type =/= BR_N) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J)
     )
 
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
-    // rd , alu_out  rd, address
     wb_npc := mem_npc
     wb_ctrl := mem_ctrl
     wb_reg_waddr := mem_reg_waddr
     wb_alu_out := mem_alu_out
-    //wb_dmem_read_ack := io.r_dmem_dat.ack
+    wb_dmem_read_ack := io.r_dmem_dat.ack
     wb_dmem_read_data := io.r_dmem_dat.data
 
 
-    val invClock: Clock = Wire(new Clock)
-    invClock := (~clock.asUInt()(0)).asBool.asClock()
+
     withClock(invClock) {
         val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
         val rf_waddr: UInt = wb_reg_waddr

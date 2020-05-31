@@ -27,9 +27,9 @@ class DMem extends Module {
   io.r_dmem_dat.ack   := i_ack
   when(io.r_dmem_add.req === true.B) {
     i_ack := true.B
-  }/*.otherwise(
+  }.otherwise(
     i_ack := false.B
-  )*/
+  )
 
 
 
