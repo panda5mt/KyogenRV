@@ -131,9 +131,8 @@ class Cpu extends Module {
     } .elsewhen(io.r_dmem_dat.ack === true.B) {
         mem_stall := false.B
     }
-
-    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall
-    io.sw.r_load_stall := mem_stall  //:= false.B
+    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
+      (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall
 
     // -------- END: ID stage --------
 
@@ -395,8 +394,6 @@ class CpuBus extends Module {
     io.sw.r_wb_rf_wdata := cpu.io.sw.r_wb_rf_wdata
     io.sw.r_wb_rf_waddr := cpu.io.sw.r_wb_rf_waddr
 
-    //IOTESTERS: load_stall
-    io.sw.r_load_stall := cpu.io.sw.r_load_stall
 
 
     w_pc        := io.sw.w_pc
@@ -508,9 +505,8 @@ object Test extends App {
                 val wbaluo  = peek(c.io.sw.r_wb_alu_out)
                 val wbaddr  = peek(c.io.sw.r_wb_rf_waddr)
                 val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
-                val lstall = peek(c.io.sw.r_load_stall)
                 step(1)
-                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X,ls = $lstall%d") //peek(c.io.sw.data)
+                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X") //peek(c.io.sw.data)
 
             }
 
