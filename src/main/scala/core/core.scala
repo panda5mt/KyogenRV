@@ -268,8 +268,8 @@ class Cpu extends Module {
         val rf_waddr: UInt = wb_reg_waddr
         val rf_wdata: UInt = MuxLookup(wb_ctrl.wb_sel, wb_alu_out, //wb_ctrl.wb_sel, 0.U(32.W),
             Seq(
-                WB_ALU -> wb_alu_out, // wb_alu_out,
-                WB_PC4 -> wb_npc, // pc_cntr = pc + 4
+                WB_ALU -> wb_alu_out,   // wb_alu_out,
+                WB_PC4 -> wb_npc,       // pc_cntr = pc + 4
                 WB_CSR -> 0.U(32.W),
                 WB_MEM -> wb_dmem_read_data //0.U(32.W),
             )
