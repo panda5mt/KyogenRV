@@ -67,7 +67,6 @@ class ALU extends Module {
         Mux(io.alu_op === ALU_XOR, io.op1 ^ io.op2,
         Mux(io.alu_op === ALU_COPY1, io.op1 , io.op2))))))))
 
-
 //    w_out := MuxLookup(io.alu_op, io.op2, Seq(
 //        ALU_ADD     -> (io.op1 + io.op2),
 //        ALU_SLL     -> (io.op1 << shamt),
