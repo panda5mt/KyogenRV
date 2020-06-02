@@ -12,11 +12,13 @@ _label1:
         sw      x4, 12(x31)        # dmem[x31 + 12] = x4 = 0xAA
         lw      x5, 12(x31)        # x5 = dmem[x31 + 12] = 0xAA
 
-        beq    x4, x5, _label2　　　# x4 = x5 なら_label2へジャンプ
+
+        beq     x4, x5,  _label2    # x4 = x5 なら_label2へジャンプ
         addi    x10, x0, 0x44
         addi    x11, x0, 0x55
 
 
 
  _label2:
-        jal x0, _label2             # 無限ループ
+        lw      x6, 12(x31)
+        jal     x0, _label2         # 無限ループ
