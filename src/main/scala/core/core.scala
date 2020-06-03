@@ -21,21 +21,21 @@ class Cpu extends Module {
     invClock := (~clock.asUInt()(0)).asBool.asClock()
     // ------- START: pipeline registers --------
     // program counter init
-    val pc_cntr_init: UInt = "h0000_0000".U(32.W)         // pc start address
-    val pc_next_init: UInt = pc_cntr_init + 4.U(32.W)     // pc next
-    val inst_nop: UInt = "h0000_0013".U(32.W)             // NOP instruction (addi x0, x0, 0)
+    val pc_ini: UInt = "h0000_0000".U(32.W)         // pc start address
+    val npc_ini: UInt =  pc_ini + 4.U(32.W)     // pc next
+    val inst_nop: UInt = Instructions.NOP             // NOP instruction (addi x0, x0, 0)
     val nop_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(inst_nop, (new IDecode).table)
 
     // IF stage
 
     // ID stage pipeline register
     val id_inst: UInt = RegInit(inst_nop)
-    val id_pc: UInt = RegInit(pc_cntr_init)
-    val id_npc: UInt = RegInit(pc_next_init)
+    val id_pc: UInt = RegInit( pc_ini)
+    val id_npc: UInt = RegInit( npc_ini)
 
     // EX stage pipeline register
-    val ex_pc: UInt = RegInit(pc_cntr_init)
-    val ex_npc: UInt = RegInit(pc_next_init)
+    val ex_pc: UInt = RegInit( pc_ini)
+    val ex_npc: UInt = RegInit( npc_ini)
     val ex_inst: UInt = RegInit(inst_nop)
     val ex_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
     val ex_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
@@ -43,8 +43,8 @@ class Cpu extends Module {
     val ex_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
 
     // MEM stage pipeline register
-    val mem_pc: UInt = RegInit(pc_cntr_init)
-    val mem_npc: UInt = RegInit(pc_next_init)
+    val mem_pc: UInt = RegInit( pc_ini)
+    val mem_npc: UInt = RegInit( npc_ini)
     //val mem_inst: UInt = RegInit(inst_nop)
     val mem_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
     val mem_imm: SInt = RegInit(0.S(32.W))
@@ -54,8 +54,8 @@ class Cpu extends Module {
     val mem_alu_cmp_out: Bool = RegInit(false.B)
 
     // WB stage pipeline register
-    //val wb_pc: UInt = RegInit(pc_cntr_init)
-    val wb_npc: UInt = RegInit(pc_next_init)
+    //val wb_pc: UInt = RegInit( pc_ini)
+    val wb_npc: UInt = RegInit( npc_ini)
     val wb_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
     //val wb_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
     val wb_reg_waddr: UInt = RegInit(0.U(5.W))
@@ -64,7 +64,7 @@ class Cpu extends Module {
     val wb_dmem_read_ack: Bool = RegInit(false.B)
 
     // stall control
-    val load_stall: Bool = Wire(Bool())
+    val stall: Bool = Wire(Bool())
 
     // branch control
     val jump_bubble: Bool = Wire(Bool())
@@ -89,22 +89,22 @@ class Cpu extends Module {
     io.r_dmem_add.req   := RegInit(false.B)
     io.r_dmem_add.addr   := RegInit(0.U(32.W))
 
-    // --------　START: IF stage　-------
+    // -------- START: IF stage -------
     io.r_imem_add.addr   := pc_cntr
     io.r_imem_add.req    := true.B
-    // --------　END: IF stage　--------
+    // -------- END: IF stage --------
 
 
 
-    // --------　START: ID stage　--------
+    // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
-    when (!load_stall && !jump_bubble) {
+    when (!stall && !jump_bubble) {
         id_pc := pc_cntr
         id_npc := npc
         id_inst := io.r_imem_dat.data// r_data
     } .elsewhen(jump_bubble) {
-        id_pc := pc_cntr_init
-        id_npc := pc_next_init
+        id_pc :=  pc_ini
+        id_npc :=  npc_ini
         id_inst := inst_nop
     }
 
@@ -131,7 +131,7 @@ class Cpu extends Module {
     } .elsewhen(io.r_dmem_dat.ack === true.B) {
         mem_stall := false.B
     }
-    load_stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
+    stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
       (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall
 
     // -------- END: ID stage --------
@@ -139,7 +139,7 @@ class Cpu extends Module {
 
 
     // -------- START: EX Stage --------
-    when (!load_stall && !jump_bubble) {
+    when (!stall && !jump_bubble) {
         ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
@@ -148,8 +148,8 @@ class Cpu extends Module {
         ex_reg_waddr := id_waddr
         ex_rs := id_rs
     } .otherwise {
-        ex_pc := pc_cntr_init
-        ex_npc := pc_next_init
+        ex_pc :=  pc_ini
+        ex_npc :=  npc_ini
         ex_ctrl := nop_ctrl
         ex_inst := inst_nop
         ex_reg_raddr := VecInit(0.U, 0.U)
@@ -215,8 +215,8 @@ class Cpu extends Module {
         mem_alu_out := alu.io.out
         mem_alu_cmp_out := alu.io.cmp_out
     } .otherwise {
-        mem_pc := pc_cntr_init
-        mem_npc := pc_next_init
+        mem_pc :=  pc_ini
+        mem_npc :=  npc_ini
         mem_ctrl := nop_ctrl
         mem_reg_waddr := 0.U
         mem_imm := 0.S
@@ -290,7 +290,7 @@ class Cpu extends Module {
 
     // -------- START: PC update --------
     when (io.sw.halt === false.B){
-        when(!load_stall) {
+        when(!stall) {
             w_req := false.B
             r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
