@@ -12,4 +12,4 @@ hdl:
 test: $(ASM_DIR)/$(ASM_TARGET).hex
 	$(SBT) 'runMain core.Test'
 clean:
-	rm -rf $(TARGET)/*.json $(TARGET)/*.fir $(TARGET)/*.v $(ASM_DIR)/$(ASM_TARGET).o $(ASM_DIR)/$(ASM_TARGET).bin $(ASM_DIR)/$(ASM_TARGET).hex
+	rm -rf $(TARGET)/*.json $(TARGET)/*.fir $(TARGET)/*.v $(ASM_DIR)/$(ASM_TARGET).elf $(ASM_DIR)/$(ASM_TARGET).bin $(ASM_DIR)/$(ASM_TARGET).hex
