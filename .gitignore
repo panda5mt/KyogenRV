@@ -143,6 +143,7 @@ src_managed/
 project/boot/
 .history
 .cache
+riscv-tests/
 ### Emacs template
 # -*- mode: gitignore; -*-
 *~

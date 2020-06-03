@@ -492,7 +492,7 @@ object Test extends App {
             println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd")
 
             //for (lp <- memarray.indices by 1){
-            for (_ <- 0 until 100 by 1) {
+            for (_ <- 0 until 400 by 1) {
 
                 val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)
