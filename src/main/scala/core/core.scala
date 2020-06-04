@@ -491,7 +491,7 @@ object Test extends App {
             step(1) // fetch pc
             poke(signal = c.io.sw.halt, value = false.B)
             step(2)
-            println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd\t\tstall")
+            println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd\t\t\t\tstall")
 
             //for (lp <- memarray.indices by 1){
             for (_ <- 0 until 400 by 1) {
