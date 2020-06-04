@@ -19,6 +19,6 @@ _label1:
 
  _label2:
         lw      x6, 12(x31)
-        jal     x20, _label2
+        jal     x0, _label2
         nop
         nop
