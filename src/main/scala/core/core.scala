@@ -67,7 +67,7 @@ class Cpu extends Module {
     val stall: Bool = Wire(Bool())
 
     // branch control
-    val jump_bubble: Bool = Wire(Bool())
+    val inst_kill: Bool = Wire(Bool())
     // ------- END: pipeline registers --------
 
 
@@ -98,11 +98,11 @@ class Cpu extends Module {
 
     // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
-    when (!stall && !jump_bubble) {
+    when (!stall && !inst_kill) {
         id_pc := pc_cntr
         id_npc := npc
         id_inst := io.r_imem_dat.data// r_data
-    } .elsewhen(jump_bubble) {
+    } .elsewhen(inst_kill) {
         id_pc :=  pc_ini
         id_npc :=  npc_ini
         id_inst := inst_nop
@@ -142,7 +142,7 @@ class Cpu extends Module {
 
 
     // -------- START: EX Stage --------
-    when (!stall && !jump_bubble) {
+    when (!stall && !inst_kill) {
         ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
@@ -207,7 +207,7 @@ class Cpu extends Module {
 
 
     // -------- START: MEM Stage --------
-    when (!jump_bubble) {
+    when (!inst_kill) {
         mem_pc := ex_pc
         mem_npc := ex_npc
         mem_ctrl := ex_ctrl
@@ -248,7 +248,7 @@ class Cpu extends Module {
 
 
     // bubble logic
-    jump_bubble := (
+    inst_kill := (
       ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J)
     )
 
