@@ -5,7 +5,7 @@ _label1:
         addi    x2,  x1, 0x00       #  x2 = x1
 
         sw      x2, 12(x31)         #  dmem[x31 + 12] = x2 = 0x8004
-        lw      x3, 12(x31)         #  x3 = dmem[x31 + 12] => 0x8004になっているべき
+        lw      x3, 12(x31)         #  x3 = dmem[x31 + 12] => 0x8004
 
 
         addi    x4, x0, 0xAA        # x4 = 0xAA
@@ -13,12 +13,12 @@ _label1:
         lw      x5, 12(x31)         # x5 = dmem[x31 + 12] = 0xAA
 
 
-        beq     x4, x5,  _label2    # x4 = x5 なら_label2へジャンプ
+        beq     x4, x5,  _label2    # if(x4 == x5) goto _label2
         addi    x10, x0, 0x44
         addi    x11, x0, 0x55
 
-
-
  _label2:
         lw      x6, 12(x31)
-        jal     x0, _label2         # 無限ループ
+        jal     x20, _label2
+        nop
+        nop

@@ -40,6 +40,8 @@ class CtrlSwChannel extends Bundle {
     val r_wb_rf_wdata:UInt = Output(UInt(32.W))
     val r_wb_rf_waddr:UInt = Output(UInt(32.W))
 
+    // STALL Signal
+    val r_stall_sig:UInt = Output(UInt(32.W))
 }
 
 // address channel bundle
