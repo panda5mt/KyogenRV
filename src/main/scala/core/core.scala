@@ -18,15 +18,16 @@ class Cpu extends Module {
     val io: HostIf = IO(new HostIf)
 
     val invClock: Clock = Wire(new Clock)
-    invClock := (~clock.asUInt()(0)).asBool.asClock()
+    invClock := (~clock.asUInt()(0)).asBool.asClock() // Clock reversed
     // ------- START: pipeline registers --------
     // program counter init
-    val pc_ini: UInt = "h0000_0000".U(32.W)         // pc start address
+    val pc_ini: UInt = "h0000_0000".U(32.W)     // pc start address
     val npc_ini: UInt =  pc_ini + 4.U(32.W)     // pc next
-    val inst_nop: UInt = Instructions.NOP             // NOP instruction (addi x0, x0, 0)
+    val inst_nop: UInt = Instructions.NOP       // NOP instruction (addi x0, x0, 0)
     val nop_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(inst_nop, (new IDecode).table)
 
-    // IF stage
+    // IF stage pipeline register
+    // -> none
 
     // ID stage pipeline register
     val id_inst: UInt = RegInit(inst_nop)
@@ -368,11 +369,8 @@ class CpuBus extends Module {
     io.sw.r_add := sw_addr
 
     // dmem
-//    io.sw.r_dadd := cpu.io.sw.r_dadd
-//    io.sw.r_ddat := cpu.io.sw.r_ddat
-
-
-
+    //    io.sw.r_dadd := cpu.io.sw.r_dadd
+    //    io.sw.r_ddat := cpu.io.sw.r_ddat
 
     io.sw.g_dat <> cpu.io.sw.g_dat
     io.sw.r_pc  <> cpu.io.sw.r_pc
