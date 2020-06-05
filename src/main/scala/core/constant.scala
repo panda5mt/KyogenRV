@@ -5,6 +5,10 @@ import chisel3._
 import chisel3.internal.firrtl.Width
 import chisel3.util._
 
+object PC_INITS {
+   val PC_START = 0x000    // start address
+   val PC_EVEC  = 0x100    // interrupt address
+}
 object ScalarOpConstants {
    // Control Signals
    def Y: UInt = 1.U(1.W)

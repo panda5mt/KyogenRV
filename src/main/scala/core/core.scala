@@ -9,6 +9,7 @@ import chisel3.Clock
 
 import scala.io.{BufferedSource, Source}
 import _root_.core.ScalarOpConstants._
+
 import MemoryOpConstants._
 import bus.{HostIf, TestIf}
 import mem._
@@ -21,7 +22,7 @@ class Cpu extends Module {
     invClock := (~clock.asUInt()(0)).asBool.asClock() // Clock reversed
     // ------- START: pipeline registers --------
     // program counter init
-    val pc_ini: UInt = "h0000_0000".U(32.W)     // pc start address
+    val pc_ini: UInt = PC_INITS.PC_START.U(32.W)     // pc start address
     val npc_ini: UInt =  pc_ini + 4.U(32.W)     // pc next
     val inst_nop: UInt = Instructions.NOP       // NOP instruction (addi x0, x0, 0)
     val nop_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(inst_nop, (new IDecode).table)
