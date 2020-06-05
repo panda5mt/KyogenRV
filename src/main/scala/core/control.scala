@@ -123,7 +123,7 @@ class IDecode {
     CSRRS   ->  List(Y,  BR_N  , OP1_RS1, OP2_X   , IMM_X  , ALU_COPY1, WB_CSR, REN_1, MEN_0, M_X ,  MT_X ,CSR.S),
     CSRRC   ->  List(Y,  BR_N  , OP1_RS1, OP2_X   , IMM_X  , ALU_COPY1, WB_CSR, REN_1, MEN_0, M_X ,  MT_X ,CSR.C),
     ECALL   ->  List(Y,  BR_N  , OP1_X  , OP2_X  ,  IMM_X  , ALU_X    , WB_X  , REN_0, MEN_0, M_X ,  MT_X ,CSR.I),
-    //MRET    ->  List(Y , BR_N  , OP1_X  , OP2_X   IMM_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.I),
+    MRET    ->  List(Y , BR_N  , OP1_X  , OP2_X  ,  IMM_X  ,  ALU_X   , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.M),
     //DRET    ->  List(Y , BR_N  , OP1_X  , OP2_X   IMM_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.I),
     EBREAK  ->  List(Y,  BR_N  , OP1_X  , OP2_X  ,  IMM_X  , ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.I),
     //WFI     ->  List(Y , BR_N  , OP1_X  , OP2_X   IMM_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.N),

@@ -25,5 +25,6 @@ object CSR
   val C = 3.U(SZ)
   val I = 4.U(SZ)
   val R = 5.U(SZ)
+  val M = 6.U(SZ)
 
 }
