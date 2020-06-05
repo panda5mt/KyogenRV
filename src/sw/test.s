@@ -19,6 +19,8 @@ _label1:
 
  _label2:
         lw      x6, 12(x31)
-        jal     x0, _label2
+        sw      x6, 11(x31)
         nop
-        nop
+        lw      x7, 11(x31)
+        jal     x20, _label2
+

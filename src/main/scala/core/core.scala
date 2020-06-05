@@ -374,36 +374,33 @@ class CpuBus extends Module {
 
 
 
-    io.sw.g_dat := cpu.io.sw.g_dat
-    io.sw.r_pc  := cpu.io.sw.r_pc
+    io.sw.g_dat <> cpu.io.sw.g_dat
+    io.sw.r_pc  <> cpu.io.sw.r_pc
 
     // IOTESTERS: EX Stage
-//    io.sw.r_ex_alu_op   := cpu.io.sw.r_ex_alu_op
-//    io.sw.r_ex_alu_op1  := cpu.io.sw.r_ex_alu_op1
-//    io.sw.r_ex_alu_op2  := cpu.io.sw.r_ex_alu_op2
-    io.sw.r_ex_raddr1   := cpu.io.sw.r_ex_raddr1
-    io.sw.r_ex_raddr2   := cpu.io.sw.r_ex_raddr2
-    io.sw.r_ex_rs1      := cpu.io.sw.r_ex_rs1
-    io.sw.r_ex_rs2      := cpu.io.sw.r_ex_rs2
-    io.sw.r_ex_imm      := cpu.io.sw.r_ex_imm
+    io.sw.r_ex_raddr1   <> cpu.io.sw.r_ex_raddr1
+    io.sw.r_ex_raddr2   <> cpu.io.sw.r_ex_raddr2
+    io.sw.r_ex_rs1      <> cpu.io.sw.r_ex_rs1
+    io.sw.r_ex_rs2      <> cpu.io.sw.r_ex_rs2
+    io.sw.r_ex_imm      <> cpu.io.sw.r_ex_imm
 
     //IOTESTERS: MEM Stage
-    io.sw.r_mem_alu_out := cpu.io.sw.r_mem_alu_out
+    io.sw.r_mem_alu_out <> cpu.io.sw.r_mem_alu_out
 
     //IOTESTERS: WB Stage
-    io.sw.r_wb_alu_out := cpu.io.sw.r_wb_alu_out
-    io.sw.r_wb_rf_wdata := cpu.io.sw.r_wb_rf_wdata
-    io.sw.r_wb_rf_waddr := cpu.io.sw.r_wb_rf_waddr
+    io.sw.r_wb_alu_out <> cpu.io.sw.r_wb_alu_out
+    io.sw.r_wb_rf_wdata <> cpu.io.sw.r_wb_rf_wdata
+    io.sw.r_wb_rf_waddr <> cpu.io.sw.r_wb_rf_waddr
 
     //IOTESTERS: STALL
-    io.sw.r_stall_sig := cpu.io.sw.r_stall_sig
+    io.sw.r_stall_sig <> cpu.io.sw.r_stall_sig
 
     w_pc        := io.sw.w_pc
 
-    cpu.io.sw.halt  := sw_halt
-    cpu.io.sw.w_dat := sw_wdata
-    cpu.io.sw.w_add := sw_waddr
-    cpu.io.sw.g_add := sw_gaddr
+    cpu.io.sw.halt  <> sw_halt
+    cpu.io.sw.w_dat <> sw_wdata
+    cpu.io.sw.w_add <> sw_waddr
+    cpu.io.sw.g_add <> sw_gaddr
     cpu.io.sw.w_pc  := w_pc
 
 
