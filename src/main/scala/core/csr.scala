@@ -16,13 +16,17 @@ object CSR {
   val W: UInt = 1.U(SZ)
   val S: UInt = 2.U(SZ)
   val C: UInt = 3.U(SZ)
-  val I: UInt = 4.U(SZ)
+  val P: UInt = 4.U(SZ)
   val R: UInt = 5.U(SZ)
   val M: UInt = 6.U(SZ)
+  val I: UInt = 7.U(SZ)
 }
+
 
 object Prv {
   val U: UInt = 0x0.U(2.W)  // User Mode
+  val S: UInt = 0x1.U(2.W)  // SV mode
+  val H: UInt = 0x2.U(2.W)  // Reserved (ex-"HV mode")
   val M: UInt = 0x3.U(2.W)  // Machine Mode
 }
 
@@ -48,7 +52,7 @@ object CsrAddr {
   // Infomation reg
   val mcpuid:     UInt = 0xf00.U(SZ)
   val mimpid:     UInt = 0xf01.U(SZ)
-  val mhartid:    UInt = 0xf10.U(SZ)
+  val mhartid:    UInt = 0xf14.U(SZ)
   
   // Trap Setup
   val mstatus:    UInt = 0x300.U(SZ)
@@ -71,7 +75,7 @@ object CsrAddr {
   val mtohost:    UInt = 0x780.U(SZ)
   val mfromhost:  UInt = 0x781.U(SZ)
 
-  val regs = List(
+  val regs: Seq[UInt] = List(
       cycle, time, instret, cycleh, timeh, instreth,
       cyclew, timew, instretw, cyclehw, timehw, instrethw,
       mcpuid, mimpid, mhartid, mtvec, mtdeleg, mie,
@@ -91,66 +95,63 @@ object Cause {
 
 class CsrIO extends Bundle {
 
-  val stall:    Bool = Input(Bool())
-  val cmd:      UInt = Input(UInt(3.W))
-  val in:       UInt = Input(UInt(32.W))
-  val out:      UInt = Output(UInt(32.W))
+  val addr:   UInt = Input(UInt(32.W))    // addr
+  val out:   UInt = Output(UInt(32.W))   // csrdata
 
   // Excpetion
-  val pc:       UInt = Input(UInt(32.W))
-  val addr:     UInt = Input(UInt(32.W))
-  val inst:     UInt = Input(UInt(32.W))
-  val illegal:  Bool = Input(Bool())
-  val st_type:  UInt = Input(UInt(2.W))
-  val ld_type:  UInt = Input(UInt(3.W))
-  val pc_check: Bool = Input(Bool())
-  val expt:     Bool = Output(Bool())
-  val evec:     UInt = Output(UInt(32.W))
-  val epc:      UInt = Output(UInt(32.W))
+//  val pc:       UInt = Input(UInt(32.W))
+//  val addr:     UInt = Input(UInt(32.W))
+//  val inst:     UInt = Input(UInt(32.W))
+//  val illegal:  Bool = Input(Bool())
+//  val st_type:  UInt = Input(UInt(2.W))
+//  val ld_type:  UInt = Input(UInt(3.W))
+//  val pc_check: Bool = Input(Bool())
+//  val expt:     Bool = Output(Bool())
+//  val evec:     UInt = Output(UInt(32.W))
+//  val epc:      UInt = Output(UInt(32.W))
   // HTIF
 }
 
 class CSR extends Module {
   val io = IO(new CsrIO)
 
-  val csr_addr: UInt = io.inst(31, 20)
-  val rs1_addr: UInt = io.inst(19, 15)
-  
   // user counters
-  val time: UInt = RegInit(0.U(32.W))
-  val timeh: UInt = RegInit(0.U(32.W))
-  val cycle: UInt = RegInit(0.U(32.W))
-  val cycleh: UInt = RegInit(0.U(32.W))
-  val instret: UInt = RegInit(0.U(32.W))
+  val time:     UInt = RegInit(0.U(32.W))
+  val timeh:    UInt = RegInit(0.U(32.W))
+  val cycle:    UInt = RegInit(0.U(32.W))
+  val cycleh:   UInt = RegInit(0.U(32.W))
+  val instret:  UInt = RegInit(0.U(32.W))
   val instreth: UInt = RegInit(0.U(32.W))
   
-  val mcpuid: UInt = Cat(0.U(2.W) /* RV32I */, 0.U((32-28).W),
+  val mcpuid:   UInt = Cat(0.U(2.W) /* RV32I */, 0.U((32-28).W),
     (1 << ('I' - 'A') /* Base ISA */|
       1 << ('U' - 'A') /* User Mode */).U(26.W))
-  val mimpid: UInt = 0.U(32.W) // not implemented
-  val mhartid: UInt = 0.U(32.W) // only one hart
+  val mimpid:   UInt = 0.U(32.W) // not implemented
+  val mhartid:  UInt = 0.U(32.W) // only one hart
   
   // interrupt enable stack
-  val PRV: UInt = RegInit(Prv.M)
-  val PRV1: UInt = RegInit(Prv.M)
-  val PRV2: UInt = 0.U(2.W)
-  val PRV3: UInt = 0.U(2.W)
-  val IE: Bool = RegInit(false.B)
-  val IE1: Bool = RegInit(false.B)
-  val IE2: Bool = false.B
-  val IE3: Bool = false.B
+  val PRV:    UInt = RegInit(Prv.M)
+  val PRV1:   UInt = RegInit(Prv.M)
+  val PRV2:   UInt = 0.U(2.W)
+  val PRV3:   UInt = 0.U(2.W)
+  val IE:     Bool = RegInit(false.B)
+  val IE1:    Bool = RegInit(false.B)
+  val IE2:    Bool = false.B
+  val IE3:    Bool = false.B
 
   // virtualization management field
-  val VM: UInt = 0.U(5.W)
+  val VM:       UInt = 0.U(5.W)
+
   // memory privilege
-  val MPRV = false.B
+  val MPRV:     Bool = false.B
+
   // extention context status
-  val XS: UInt = 0.U(2.W)
-  val FS: UInt = 0.U(2.W)
-  val SD: UInt = 0.U(1.W)
-  val mstatus: UInt = Cat(SD, 0.U((32-23).W), VM, MPRV, XS, FS, PRV3, IE3, PRV2, IE2, PRV1, IE1, PRV, IE)
-  val mtvec: UInt = PC_INITS.PC_EVEC.U(32.W) // see constant.scala
-  val mtdeleg: UInt = 0x0.U(32.W)
+  val XS:       UInt = 0.U(2.W)
+  val FS:       UInt = 0.U(2.W)
+  val SD:       UInt = 0.U(1.W)
+  val mstatus:  UInt = Cat(SD, 0.U((32-23).W), VM, MPRV, XS, FS, PRV3, IE3, PRV2, IE2, PRV1, IE1, PRV, IE)
+  val mtvec:    UInt = PC_INITS.PC_EVEC.U(32.W) // see constant.scala
+  val mtdeleg:  UInt = 0x0.U(32.W)
   
   // interrupt registers
   val MTIP: Bool = RegInit(false.B)
@@ -165,19 +166,19 @@ class CSR extends Module {
   val MSIE: Bool = RegInit(false.B)
   val HSIE: Bool = false.B
   val SSIE: Bool = false.B
-  val mip: UInt = Cat(0.U((32-8).W), MTIP, HTIP, STIP, false.B, MSIP, HSIP, SSIP, false.B)
-  val mie: UInt = Cat(0.U((32-8).W), MTIE, HTIE, STIE, false.B, MSIE, HSIE, SSIE, false.B)
+  val mip:  UInt = Cat(0.U((32-8).W), MTIP, HTIP, STIP, false.B, MSIP, HSIP, SSIP, false.B)
+  val mie:  UInt = Cat(0.U((32-8).W), MTIE, HTIE, STIE, false.B, MSIE, HSIE, SSIE, false.B)
   
-  val mtimecmp: UInt = Reg(UInt(32.W))
+  val mtimecmp:   UInt = Reg(UInt(32.W))
+  val mscratch:   UInt = Reg(UInt(32.W))
   
-  val mscratch: UInt = Reg(UInt(32.W))
+  val mepc:       UInt = Reg(UInt(32.W))
+  val mcause:     UInt = Reg(UInt(32.W))
+  val mbadaddr:   UInt = Reg(UInt(32.W))
   
-  val mepc: UInt = Reg(UInt(32.W))
-  val mcause: UInt = Reg(UInt(32.W))
-  val mbadaddr: UInt = Reg(UInt(32.W))
-  
-  val mtohost: UInt = RegInit(0.U(32.W))
-  val mfromhost: UInt = Reg(UInt(32.W))
+  val mtohost:    UInt = RegInit(0.U(32.W))
+  val mfromhost:  UInt = Reg(UInt(32.W))
+
 //  io.host.tohost := mtohost
 //  when(io.host.fromhost.valid) {
 //    mfromhost := io.host.fromhost.bits
@@ -215,10 +216,14 @@ class CSR extends Module {
       BitPat(CsrAddr.mstatus)   -> mstatus
   )
 
-  io.out := Lookup(csr_addr, 0.U,
-    csrFile
-  ).asUInt
-  
+  io.out := Lookup(io.addr, 0.U, csrFile).asUInt()
+
+
+// Counters
+  time := time + 1.U
+  when(time.andR) { timeh := timeh + 1.U }
+  cycle := cycle + 1.U
+  when(cycle.andR) { cycleh := cycleh + 1.U }
 
 }
 

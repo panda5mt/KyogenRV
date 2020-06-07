@@ -34,7 +34,7 @@ class Cpu extends Module {
     val id_inst: UInt = RegInit(inst_nop)
     val id_pc: UInt = RegInit( pc_ini)
     val id_npc: UInt = RegInit( npc_ini)
-    val id_csr_wbcsr: UInt = RegInit(0.U)
+    //val id_csr_addr: UInt = RegInit(0.U)
 
     // EX stage pipeline register
     val ex_pc: UInt = RegInit( pc_ini)
@@ -44,8 +44,7 @@ class Cpu extends Module {
     val ex_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
     val ex_reg_waddr: UInt = RegInit(0.U(5.W))
     val ex_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
-    val ex_csr_wbcsr = RegInit(0.U)
-    //val ex_csr_in = RegInit(0.U(32.W))
+    val ex_csr_addr = RegInit(0.U(32.W))
 
     // MEM stage pipeline register
     val mem_pc: UInt = RegInit( pc_ini)
@@ -57,7 +56,8 @@ class Cpu extends Module {
     val mem_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
     val mem_alu_out: UInt = RegInit(0.U(32.W))
     val mem_alu_cmp_out: Bool = RegInit(false.B)
-    val mem_csr_wbcsr = RegInit(0.U)
+    val mem_csr_addr = RegInit(0.U(32.W))
+    val mem_csr_data = RegInit(0.U(32.W))
 
 
     // WB stage pipeline register
@@ -67,7 +67,8 @@ class Cpu extends Module {
     val wb_alu_out: UInt = RegInit(0.U(32.W))
     val wb_dmem_read_data: UInt = RegInit(0.U(32.W))
     val wb_dmem_read_ack: Bool = RegInit(false.B)
-    val wb_csr_wbcsr = RegInit(0.U)
+    val wb_csr_addr: UInt = RegInit(0.U(32.W))
+    val wb_csr_data: UInt = RegInit(0.U(32.W))
 
     // stall control
     val stall: Bool = Wire(Bool())
@@ -106,9 +107,10 @@ class Cpu extends Module {
         id_pc   := pc_cntr
         id_npc  := npc
         id_inst := io.r_imem_dat.data
+
     } .elsewhen(inst_kill) {
-        id_pc   :=  pc_ini
-        id_npc  :=  npc_ini
+        id_pc   := pc_ini
+        id_npc  := npc_ini
         id_inst := inst_nop
     }
 
@@ -119,15 +121,16 @@ class Cpu extends Module {
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
     // csr
-    val id_mret_wbcsr:  UInt = id_ctrl.csr_cmd
-    val id_mret_en:     Bool = (id_mret_wbcsr === CSR.M) // CSR.MRET
-    val id_ecall_en:    Bool = (id_mret_wbcsr === CSR.I) // CSR.INST
+    //val id_mret_wbcsr:  UInt = id_ctrl.csr_cmd
+    //val id_mret_en:     Bool = (id_mret_wbcsr === CSR.M) // CSR.MRET
+    //val id_ecall_en:    Bool = (id_mret_wbcsr === CSR.I) // CSR.INST
 
     // get rs1,rs2,rd address(x0 - x31)
-    val id_raddr1: UInt = idm.io.inst.rs1
-    val id_raddr2: UInt = idm.io.inst.rs2
+    val id_raddr1:      UInt = idm.io.inst.rs1
+    val id_raddr2:      UInt = idm.io.inst.rs2
     val id_raddr: IndexedSeq[UInt] = IndexedSeq(id_raddr1, id_raddr2) // rs1,2 :treat as 64bit-Addressed SRAM
-    val id_waddr: UInt = idm.io.inst.rd // rd
+    val id_waddr:       UInt = idm.io.inst.rd // rd
+    val id_csr_addr:    UInt = idm.io.inst.csr // csr address
 
     // read register data
     val reg_f: RegRAM = new RegRAM
@@ -159,7 +162,7 @@ class Cpu extends Module {
         ex_reg_raddr := id_raddr
         ex_reg_waddr := id_waddr
         ex_rs := id_rs
-        ex_csr_wbcsr := id_csr_wbcsr
+        ex_csr_addr := id_csr_addr
     } .otherwise {
         ex_pc :=  pc_ini
         ex_npc :=  npc_ini
@@ -168,7 +171,7 @@ class Cpu extends Module {
         ex_reg_raddr := VecInit(0.U, 0.U)
         ex_reg_waddr := 0.U
         ex_rs := VecInit(0.U, 0.U)
-        ex_csr_wbcsr := 0.U
+        ex_csr_addr := 0.U
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
@@ -176,11 +179,13 @@ class Cpu extends Module {
     val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data,
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0) -> wb_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out
     ))
     val ex_reg_rs2_bypass: UInt = MuxCase(ex_rs(1), Seq(
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0) -> wb_alu_out,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out//,
         //(ex_csr_wbcsr =/= CSR.X) -> csr_io_rw_rdata.asSInt
     ))
@@ -208,6 +213,10 @@ class Cpu extends Module {
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
 
+    val csr = Module(new CSR)
+    csr.io.addr := ex_csr_addr
+
+
     // iotesters
     io.sw.r_ex_raddr1 := ex_reg_raddr(0)
     io.sw.r_ex_raddr2 := ex_reg_raddr(1)
@@ -229,7 +238,8 @@ class Cpu extends Module {
         mem_rs(1) := ex_reg_rs2_bypass
         mem_alu_out := alu.io.out
         mem_alu_cmp_out := alu.io.cmp_out
-        mem_csr_wbcsr := ex_csr_wbcsr
+        mem_csr_addr := ex_csr_addr
+        mem_csr_data := csr.io.out
     } .otherwise {
         mem_pc :=  pc_ini
         mem_npc :=  npc_ini
@@ -239,7 +249,8 @@ class Cpu extends Module {
         mem_rs := VecInit(0.U, 0.U)
         mem_alu_out := 0.U
         mem_alu_cmp_out := false.B
-        mem_csr_wbcsr := 0.U
+        mem_csr_addr := 0.U
+        mem_csr_data := 0.U
     }
 
     val r_dmem_data: UInt = RegInit(0.U(32.W))
@@ -275,8 +286,8 @@ class Cpu extends Module {
     wb_alu_out := mem_alu_out
     wb_dmem_read_ack := io.r_dmem_dat.ack
     wb_dmem_read_data := io.r_dmem_dat.data
-    wb_csr_wbcsr := mem_csr_wbcsr
-
+    wb_csr_addr := mem_csr_addr
+    wb_csr_data := mem_csr_data
 
 
     withClock(invClock) {
@@ -286,7 +297,7 @@ class Cpu extends Module {
             Seq(
                 WB_ALU -> wb_alu_out,   // wb_alu_out,
                 WB_PC4 -> wb_npc,       // pc_cntr = pc + 4
-                WB_CSR -> 0.U(32.W),
+                WB_CSR -> wb_csr_data,
                 WB_MEM -> wb_dmem_read_data //0.U(32.W),
             )
         )
@@ -474,7 +485,7 @@ object kyogenrv extends App {
 object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
         new PeekPokeTester(c) {
-            // read from binary file
+            // read from binarcd y file
             val s: BufferedSource = Source.fromFile("src/sw/test.hex")
             var buffs: Array[String] = _
             try {
@@ -506,7 +517,7 @@ object Test extends App {
             println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd\t\t\t\tstall")
 
             //for (lp <- memarray.indices by 1){
-            for (_ <- 0 until 400 by 1) {
+            for (_ <- 0 until 500 by 1) {
 
                 val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)

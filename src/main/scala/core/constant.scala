@@ -55,7 +55,7 @@ object ScalarOpConstants {
    def WB_ALU: UInt = 1.U(2.W)
    def WB_MEM: UInt = 2.U(2.W)
    def WB_CSR: UInt = 3.U(2.W)
-   def WB_X: BitPat =BitPat("b??")
+   def WB_X: BitPat = BitPat("b??")
 
    // imm Type
    def IMM_X: BitPat = BitPat("b???")

@@ -27,8 +27,7 @@ class ElementOfInstruction extends Bundle{
     val rd: UInt    = UInt(5.W)     // rd or imm[4:0]
     val rs1: UInt   = UInt(5.W)     // rs
     val rs2: UInt   = UInt(5.W)     // or shamt
-    //val imm115    = UInt(7.W)     //
-    //val imm: UInt   = UInt(12.W)    // imm[11:0]
+    val csr: UInt   = UInt(12.W)     //
 }
 
 class CDecoder(x: UInt){
@@ -39,9 +38,8 @@ class CDecoder(x: UInt){
         //fct3:   UInt = x(14, 12),
         rd: UInt    = x(11, 7),
         rs1: UInt   = x(19, 15),
-        rs2: UInt   = x(24, 20)
-        //imm115: UInt = x(31, 25),
-        //imm: UInt   = x(31, 20)
+        rs2: UInt   = x(24, 20),
+        csr: UInt   = x(31, 20)
         ): ElementOfInstruction =
     {
         val res = Wire(new ElementOfInstruction)
@@ -52,7 +50,7 @@ class CDecoder(x: UInt){
         res.rs1     := rs1
         res.rs2     := rs2
         //res.imm115  := imm115
-        //res.imm     := imm
+        res.csr     := csr
         res // return (res)
     }
 }
@@ -70,66 +68,65 @@ class IDModule extends Module{
 // See also instructions.scala and constant.scala
 class IDecode {
     val table: Array[(BitPat, List[BitPat])] = Array(
-                /* 1bit | 4bit   |  2bit  |   2bit  | IMM_X  |  4bit   |  2bit  | 1bit | 1bit | 1bit | 3bit |  3bit */
-                /* val  |  BR    |  op1   |   op2   | imm    |  ALU    |  wb    | rf   | mem  | mem  | mask |  csr  */
-                /* inst | type   |  sel   |   sel   | type   |  fcn    |  sel   | wen  |  en  |  wr  | type |  cmd  */
-    LUI     ->  List(Y,  BR_N  , OP1_X  , OP2_IMM , IMM_U  , ALU_COPY2, WB_ALU, REN_1, MEN_0, M_X ,  MT_X ,CSR.N),
-    AUIPC   ->  List(Y,  BR_N  , OP1_PC , OP2_IMM , IMM_U  , ALU_ADD ,  WB_ALU, REN_1, MEN_0, M_X ,  MT_X ,CSR.N),
+                /* 1bit | 4bit |  2bit  |   2bit  | IMM_X |  4bit   |  2bit  | 1bit | 1bit | 1bit| 3bit |  3bit */
+                /* val  |  BR  |  op1   |   op2   | imm   |  ALU    |  wb    | rf   | mem  | mem | mask |  csr  */
+                /* inst | type |  sel   |   sel   | type  |  fcn    |  sel   | wen  |  en  |  wr | type |  cmd  */
+    LUI     ->  List(Y,  BR_N  , OP1_X  , OP2_IMM , IMM_U , ALU_COPY2, WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    AUIPC   ->  List(Y,  BR_N  , OP1_PC , OP2_IMM , IMM_U , ALU_ADD ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
 
-    JAL     ->  List(Y,  BR_J  , OP1_PC , OP2_IMM , IMM_J  , ALU_ADD ,  WB_PC4, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    JALR    ->  List(Y,  BR_JR , OP1_RS1, OP2_IMM , IMM_I  , ALU_ADD ,  WB_PC4, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    BEQ     ->  List(Y,  BR_EQ , OP1_RS1, OP2_RS2 , IMM_B  , ALU_SEQ ,  WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.N),
-    BNE     ->  List(Y,  BR_NE , OP1_RS1, OP2_RS2 , IMM_B  , ALU_SNE ,  WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.N),
-    BLT     ->  List(Y,  BR_LT , OP1_RS1, OP2_RS2 , IMM_B  , ALU_SLT ,  WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.N),
-    BGE     ->  List(Y,  BR_GE , OP1_RS1, OP2_RS2 , IMM_B  , ALU_SGE ,  WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.N),
-    BLTU    ->  List(Y,  BR_LTU, OP1_RS1, OP2_RS2 , IMM_B  , ALU_SLTU,  WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.N),
-    BGEU    ->  List(Y,  BR_GEU, OP1_RS1, OP2_RS2 , IMM_B  , ALU_SGEU,  WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.N),
+    JAL     ->  List(Y,  BR_J  , OP1_PC , OP2_IMM , IMM_J , ALU_ADD ,  WB_PC4, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    JALR    ->  List(Y,  BR_JR , OP1_RS1, OP2_IMM , IMM_I , ALU_ADD ,  WB_PC4, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    BEQ     ->  List(Y,  BR_EQ , OP1_RS1, OP2_RS2 , IMM_B , ALU_SEQ ,  WB_X  , REN_0, MEN_0, M_X , MT_X ,CSR.N),
+    BNE     ->  List(Y,  BR_NE , OP1_RS1, OP2_RS2 , IMM_B , ALU_SNE ,  WB_X  , REN_0, MEN_0, M_X , MT_X ,CSR.N),
+    BLT     ->  List(Y,  BR_LT , OP1_RS1, OP2_RS2 , IMM_B , ALU_SLT ,  WB_X  , REN_0, MEN_0, M_X , MT_X ,CSR.N),
+    BGE     ->  List(Y,  BR_GE , OP1_RS1, OP2_RS2 , IMM_B , ALU_SGE ,  WB_X  , REN_0, MEN_0, M_X , MT_X ,CSR.N),
+    BLTU    ->  List(Y,  BR_LTU, OP1_RS1, OP2_RS2 , IMM_B , ALU_SLTU,  WB_X  , REN_0, MEN_0, M_X , MT_X ,CSR.N),
+    BGEU    ->  List(Y,  BR_GEU, OP1_RS1, OP2_RS2 , IMM_B , ALU_SGEU,  WB_X  , REN_0, MEN_0, M_X , MT_X ,CSR.N),
 
-    LB      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_ADD ,  WB_MEM, REN_1, MEN_1, M_XRD, MT_B ,CSR.N),
-    LH      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_ADD ,  WB_MEM, REN_1, MEN_1, M_XRD, MT_H ,CSR.N),
-    LW      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_ADD ,  WB_MEM, REN_1, MEN_1, M_XRD, MT_W ,CSR.N),
-    LBU     ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_ADD ,  WB_MEM, REN_1, MEN_1, M_XRD, MT_BU ,CSR.N),
-    LHU     ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_ADD ,  WB_MEM, REN_1, MEN_1, M_XRD, MT_HU ,CSR.N),
-    SB      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_S  , ALU_ADD ,  WB_X  , REN_0, MEN_1, M_XWR, MT_B ,CSR.N),
-    SH      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_S  , ALU_ADD ,  WB_X  , REN_0, MEN_1, M_XWR, MT_H ,CSR.N),
-    SW      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_S  , ALU_ADD ,  WB_X  , REN_0, MEN_1, M_XWR, MT_W ,CSR.N),
+    LB      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_ADD ,  WB_MEM, REN_1, MEN_1,M_XRD, MT_B ,CSR.N),
+    LH      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_ADD ,  WB_MEM, REN_1, MEN_1,M_XRD, MT_H ,CSR.N),
+    LW      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_ADD ,  WB_MEM, REN_1, MEN_1,M_XRD, MT_W ,CSR.N),
+    LBU     ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_ADD ,  WB_MEM, REN_1, MEN_1,M_XRD, MT_BU,CSR.N),
+    LHU     ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_ADD ,  WB_MEM, REN_1, MEN_1,M_XRD, MT_HU,CSR.N),
+    SB      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_S , ALU_ADD ,  WB_X  , REN_0, MEN_1,M_XWR, MT_B ,CSR.N),
+    SH      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_S , ALU_ADD ,  WB_X  , REN_0, MEN_1,M_XWR, MT_H ,CSR.N),
+    SW      ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_S , ALU_ADD ,  WB_X  , REN_0, MEN_1,M_XWR, MT_W ,CSR.N),
 
-    ADDI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_ADD ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SLTI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_SLT ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SLTIU   ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_SLTU,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    XORI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_XOR ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    ORI     ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_OR  ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    ANDI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_AND ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SLLI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_SLL ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SRLI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_SRL ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SRAI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I  , ALU_SRA ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
+    ADDI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_ADD ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SLTI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_SLT ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SLTIU   ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_SLTU,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    XORI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_XOR ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    ORI     ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_OR  ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    ANDI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_AND ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SLLI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_SLL ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SRLI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_SRL ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SRAI    ->  List(Y,  BR_N  , OP1_RS1, OP2_IMM , IMM_I , ALU_SRA ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
 
-    ADD     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X  , ALU_ADD ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SUB     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X  , ALU_SUB ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SLL     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X  , ALU_SLL ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SLT     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X  , ALU_SLT ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SLTU    ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X  , ALU_SLTU,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    XOR     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X  , ALU_XOR ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SRL     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X  , ALU_SRL ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    SRA     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X  , ALU_SRA ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    OR      ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X  , ALU_OR  ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
-    AND     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X  , ALU_AND ,  WB_ALU, REN_1, MEN_0, M_X  , MT_X ,CSR.N),
+    ADD     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X , ALU_ADD ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SUB     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X , ALU_SUB ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SLL     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X , ALU_SLL ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SLT     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X , ALU_SLT ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SLTU    ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X , ALU_SLTU,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    XOR     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X , ALU_XOR ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SRL     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X , ALU_SRL ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    SRA     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X , ALU_SRA ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    OR      ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X , ALU_OR  ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
+    AND     ->  List(Y,  BR_N  , OP1_RS1, OP2_RS2 , IMM_X , ALU_AND ,  WB_ALU, REN_1, MEN_0, M_X , MT_X ,CSR.N),
 
-    CSRRWI  ->  List(Y,  BR_N  , OP1_X  , OP2_IMM , IMM_Z  , ALU_X   , WB_CSR, REN_1, MEN_0, M_X ,   MT_X ,CSR.W),
-    CSRRSI  ->  List(Y,  BR_N  , OP1_X  , OP2_IMM , IMM_Z  , ALU_X   , WB_CSR, REN_1, MEN_0, M_X ,   MT_X ,CSR.S),
-    CSRRCI  ->  List(Y,  BR_N  , OP1_X  , OP2_IMM , IMM_Z  , ALU_X   , WB_CSR, REN_1, MEN_0, M_X ,   MT_X ,CSR.C),
-
-    CSRRW   ->  List(Y,  BR_N  , OP1_RS1, OP2_X   , IMM_X  , ALU_COPY1, WB_CSR, REN_1, MEN_0, M_X ,  MT_X ,CSR.W),
-    CSRRS   ->  List(Y,  BR_N  , OP1_RS1, OP2_X   , IMM_X  , ALU_COPY1, WB_CSR, REN_1, MEN_0, M_X ,  MT_X ,CSR.S),
-    CSRRC   ->  List(Y,  BR_N  , OP1_RS1, OP2_X   , IMM_X  , ALU_COPY1, WB_CSR, REN_1, MEN_0, M_X ,  MT_X ,CSR.C),
-    ECALL   ->  List(Y,  BR_N  , OP1_X  , OP2_X  ,  IMM_X  , ALU_X    , WB_X  , REN_0, MEN_0, M_X ,  MT_X ,CSR.I),
-    MRET    ->  List(Y , BR_N  , OP1_X  , OP2_X  ,  IMM_X  ,  ALU_X   , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.M),
-    //DRET    ->  List(Y , BR_N  , OP1_X  , OP2_X   IMM_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.I),
-    EBREAK  ->  List(Y,  BR_N  , OP1_X  , OP2_X  ,  IMM_X  , ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.I),
-    //WFI     ->  List(Y , BR_N  , OP1_X  , OP2_X   IMM_X  ,  ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.N),
+    CSRRWI  ->  List(Y,  BR_N  , OP1_X  , OP2_IMM , IMM_Z , ALU_X   ,  WB_CSR, REN_1, MEN_0, M_X , MT_X ,CSR.W),
+    CSRRSI  ->  List(Y,  BR_N  , OP1_X  , OP2_IMM , IMM_Z , ALU_X   ,  WB_CSR, REN_1, MEN_0, M_X , MT_X ,CSR.S),
+    CSRRCI  ->  List(Y,  BR_N  , OP1_X  , OP2_IMM , IMM_Z , ALU_X   ,  WB_CSR, REN_1, MEN_0, M_X , MT_X ,CSR.C) ,
+    CSRRW   ->  List(Y,  BR_N  , OP1_RS1, OP2_X   , IMM_X , ALU_COPY1, WB_CSR, REN_1, MEN_0, M_X , MT_X ,CSR.W),
+    CSRRS   ->  List(Y,  BR_N  , OP1_RS1, OP2_X   , IMM_X , ALU_COPY1, WB_CSR, REN_1, MEN_0, M_X , MT_X ,CSR.S),
+    CSRRC   ->  List(Y,  BR_N  , OP1_RS1, OP2_X   , IMM_X , ALU_COPY1, WB_CSR, REN_1, MEN_0, M_X , MT_X ,CSR.C),
+    ECALL   ->  List(Y,  BR_N  , OP1_X  , OP2_X  ,  IMM_X , ALU_X    ,  WB_X , REN_0, MEN_0, M_X , MT_X ,CSR.I),
+    MRET    ->  List(Y , BR_N  , OP1_X  , OP2_X  ,  IMM_X ,  ALU_X   ,  WB_X , REN_0, MEN_0, M_X , MT_X ,CSR.M),
+    //DRET    ->  List(Y , BR_N  , OP1_X  , OP2_X   IMM_X ,  ALU_X     , WB_X , REN_0, MEN_0, M_X  , MT_X ,CSR.I),
+    EBREAK  ->  List(Y,  BR_N  , OP1_X  , OP2_X  ,  IMM_X , ALU_X    ,  WB_X , REN_0, MEN_0, M_X , MT_X ,CSR.I),
+    //WFI     ->  List(Y , BR_N  , OP1_X  , OP2_X   IMM_X ,  ALU_X     , WB_X , REN_0, MEN_0, M_X , MT_X ,CSR.N),
     // implemented as a  NOP IMM_X  ,
-    FENCE_I ->  List(Y,  BR_N  , OP1_X  , OP2_X  ,  IMM_X  , ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.N),
-    FENCE   ->  List(Y,  BR_N  , OP1_X  , OP2_X  ,  IMM_X  , ALU_X    , WB_X  , REN_0, MEN_1, M_X  , MT_X ,CSR.N)
+    FENCE_I ->  List(Y,  BR_N  , OP1_X  , OP2_X  ,  IMM_X , ALU_X    , WB_X  , REN_0, MEN_0, M_X  , MT_X ,CSR.N),
+    FENCE   ->  List(Y,  BR_N  , OP1_X  , OP2_X  ,  IMM_X , ALU_X    , WB_X  , REN_0, MEN_1, M_X  , MT_X ,CSR.N)
     // we are already sequentially consistent, so no need to honor the fence instruction
     )
 }
@@ -152,7 +149,7 @@ class IntCtrlSigs extends Bundle {
 
     val mem_wr:     UInt = Bits(M_SZ)
     val mask_type:  UInt = Bits(MT_SZ)
-    val csr_cmd:   UInt = Bits(CSR.N.getWidth.W)
+    val csr_cmd:    UInt = Bits(CSR.N.getWidth.W)
 
     def default: List[BitPat] = {
         List(X, BR_X, OP1_X, OP2_X, IMM_X, ALU_X, WB_X, REN_X, MEN_X, M_X, MT_X ,CSR.N)
