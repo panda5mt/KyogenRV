@@ -7,7 +7,7 @@ import chisel3.util._
 
 object PC_INITS {
    val PC_START = 0x000    // start address
-   val PC_EVEC  = 0x100    // interrupt address
+   val PC_EVEC  = 0x1c0    // interrupt address
 }
 object ScalarOpConstants {
    // Control Signals

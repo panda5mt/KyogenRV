@@ -11,15 +11,11 @@ import scala.collection.immutable._
 object CSR {
   // commands
   val SZ: Width = 3.W
-  val X: UInt = 0.U(SZ)
-  val N: UInt = 0.U(SZ)
-  val W: UInt = 1.U(SZ)
-  val S: UInt = 2.U(SZ)
-  val C: UInt = 3.U(SZ)
-  val P: UInt = 4.U(SZ)
-  val R: UInt = 5.U(SZ)
-  val M: UInt = 6.U(SZ)
-  val I: UInt = 7.U(SZ)
+  val N = 0.U(3.W)
+  val W = 1.U(3.W)
+  val S = 2.U(3.W)
+  val C = 3.U(3.W)
+  val P = 4.U(3.W)
 }
 
 
@@ -95,25 +91,24 @@ object Cause {
 
 class CsrIO extends Bundle {
 
-  val addr:   UInt = Input(UInt(32.W))    // addr
-  val out:   UInt = Output(UInt(32.W))   // csrdata
+  val addr: UInt = Input(UInt(32.W))    // csr_addr
+  val wdata: UInt = Input(UInt(32.W))   // write to CSR
+  val out:  UInt = Output(UInt(32.W))   // csrdata
+  val cmd:  UInt = Input(UInt(32.W))    // csr_cmd
 
   // Excpetion
-//  val pc:       UInt = Input(UInt(32.W))
-//  val addr:     UInt = Input(UInt(32.W))
-//  val inst:     UInt = Input(UInt(32.W))
-//  val illegal:  Bool = Input(Bool())
-//  val st_type:  UInt = Input(UInt(2.W))
-//  val ld_type:  UInt = Input(UInt(3.W))
-//  val pc_check: Bool = Input(Bool())
-//  val expt:     Bool = Output(Bool())
-//  val evec:     UInt = Output(UInt(32.W))
-//  val epc:      UInt = Output(UInt(32.W))
-  // HTIF
+  val expt: Bool = Output(Bool())
+  val evec: UInt = Output(UInt(32.W))
+  val epc: UInt = Output(UInt(32.W))
+
 }
 
 class CSR extends Module {
   val io = IO(new CsrIO)
+
+  // variables
+  val csr_addr: UInt = io.addr
+  val wdata: UInt = io.wdata
 
   // user counters
   val time:     UInt = RegInit(0.U(32.W))
@@ -211,8 +206,6 @@ class CSR extends Module {
       BitPat(CsrAddr.mcause)    -> mcause,
       BitPat(CsrAddr.mbadaddr)  -> mbadaddr,
       BitPat(CsrAddr.mip)       -> mip,
-      BitPat(CsrAddr.mtohost)   -> mtohost,
-      BitPat(CsrAddr.mfromhost) -> mfromhost,
       BitPat(CsrAddr.mstatus)   -> mstatus
   )
 
@@ -225,5 +218,53 @@ class CSR extends Module {
   cycle := cycle + 1.U
   when(cycle.andR) { cycleh := cycleh + 1.U }
 
-}
+  //noinspection ScalaStyle
+  val privValid:  Bool = csr_addr(9, 8) <= PRV
+  val privInst:   Bool = io.cmd === CSR.P
+  val isEcall:    Bool = privInst && !csr_addr(0) && !csr_addr(8)
+  val isEbreak:   Bool = privInst &&  csr_addr(0) && !csr_addr(8)
+  val wen:        Bool = io.cmd === CSR.W || io.cmd(1)
 
+  io.expt := isEcall // exception
+  io.evec := mtvec + (PRV << 6).asUInt()
+  io.epc  := mepc
+
+  when(io.expt) {
+    //mepc   := io.pc >> 2 << 2
+
+    mcause := Mux(isEcall,  Cause.Ecall + PRV, 0.U)
+    PRV  := Prv.M
+    IE   := false.B
+    PRV1 := PRV
+    IE1  := IE
+    //when(iaddrInvalid || laddrInvalid || saddrInvalid) { mbadaddr := io.addr }
+  }.elsewhen(wen) {
+    when(csr_addr === CsrAddr.mstatus) {
+    PRV1 := wdata(5, 4)
+    IE1  := wdata(3)
+    PRV  := wdata(2, 1)
+    IE   := wdata(0)
+    }.elsewhen(csr_addr === CsrAddr.mip) {
+      MTIP := wdata(7)
+      MSIP := wdata(3)
+    }.elsewhen(csr_addr === CsrAddr.mie) {
+      MTIE := wdata(7)
+      MSIE := wdata(3)
+    }.elsewhen(csr_addr === CsrAddr.mtime) { time := wdata }
+    .elsewhen(csr_addr === CsrAddr.mtimeh) { timeh := wdata }
+    .elsewhen(csr_addr === CsrAddr.mtimecmp) { mtimecmp := wdata }
+    .elsewhen(csr_addr === CsrAddr.mscratch) { mscratch := wdata }
+    .elsewhen(csr_addr === CsrAddr.mepc) { mepc := wdata >> 2.U << 2.U }
+    .elsewhen(csr_addr === CsrAddr.mcause) { mcause := wdata & (BigInt(1) << (32-1) | 0xf).U }
+    .elsewhen(csr_addr === CsrAddr.mbadaddr) { mbadaddr := wdata }
+    .elsewhen(csr_addr === CsrAddr.mtohost) { mtohost := wdata }
+    .elsewhen(csr_addr === CsrAddr.mfromhost) { mfromhost := wdata }
+    .elsewhen(csr_addr === CsrAddr.cyclew) { cycle := wdata }
+    .elsewhen(csr_addr === CsrAddr.timew) { time := wdata }
+    .elsewhen(csr_addr === CsrAddr.instretw) { instret := wdata }
+    .elsewhen(csr_addr === CsrAddr.cyclehw) { cycleh := wdata }
+    .elsewhen(csr_addr === CsrAddr.timehw) { timeh := wdata }
+    .elsewhen(csr_addr === CsrAddr.instrethw) { instreth := wdata }
+  }
+
+}

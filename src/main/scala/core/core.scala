@@ -45,6 +45,7 @@ class Cpu extends Module {
     val ex_reg_waddr: UInt = RegInit(0.U(5.W))
     val ex_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
     val ex_csr_addr = RegInit(0.U(32.W))
+    val ex_csr_cmd = RegInit(0.U(32.W))
 
     // MEM stage pipeline register
     val mem_pc: UInt = RegInit( pc_ini)
@@ -163,6 +164,7 @@ class Cpu extends Module {
         ex_reg_waddr := id_waddr
         ex_rs := id_rs
         ex_csr_addr := id_csr_addr
+        ex_csr_cmd := id_ctrl.csr_cmd
     } .otherwise {
         ex_pc :=  pc_ini
         ex_npc :=  npc_ini
@@ -172,6 +174,7 @@ class Cpu extends Module {
         ex_reg_waddr := 0.U
         ex_rs := VecInit(0.U, 0.U)
         ex_csr_addr := 0.U
+        ex_csr_cmd := 0.U
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
@@ -215,6 +218,8 @@ class Cpu extends Module {
 
     val csr = Module(new CSR)
     csr.io.addr := ex_csr_addr
+    csr.io.cmd  := ex_csr_cmd
+    csr.io.wdata := 0.U // todo:fix this
 
 
     // iotesters
