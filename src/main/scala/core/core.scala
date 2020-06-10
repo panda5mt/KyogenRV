@@ -178,7 +178,7 @@ class Cpu extends Module {
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
-    val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(), ex_rs(0).asUInt())
+
 
     val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
@@ -193,6 +193,7 @@ class Cpu extends Module {
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out//,
         //(ex_csr_wbcsr =/= CSR.X) -> csr_io_rw_rdata.asSInt
     ))
+    val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(), ex_reg_rs1_bypass.asUInt())
 
     // ALU OP1 selector
     val ex_op1: UInt = MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
