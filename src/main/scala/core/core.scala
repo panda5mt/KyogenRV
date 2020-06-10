@@ -178,6 +178,7 @@ class Cpu extends Module {
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
+    val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(), ex_rs(0).asUInt())
 
     val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
@@ -219,8 +220,8 @@ class Cpu extends Module {
     val csr = Module(new CSR)
     csr.io.addr := ex_csr_addr
     csr.io.cmd  := ex_csr_cmd
-    csr.io.wdata := 0.U // todo:fix this
-
+    csr.io.in   := csr_in
+   // csr_in Mux(ex_ctrl.imm_type === IMM_Z, ex_imm, ex_rs(0))
 
     // iotesters
     io.sw.r_ex_raddr1 := ex_reg_raddr(0)

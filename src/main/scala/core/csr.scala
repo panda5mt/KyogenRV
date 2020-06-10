@@ -47,14 +47,19 @@ object CsrAddr {
   // Machine-level
   // Infomation reg
   val mcpuid:     UInt = 0xf00.U(SZ)
-  val mimpid:     UInt = 0xf01.U(SZ)
+  val mvendorid:  UInt = 0xf11.U(SZ)
+  val marchid:    UInt = 0xf12.U(SZ)
+  val mimpid:     UInt = 0xf13.U(SZ)
   val mhartid:    UInt = 0xf14.U(SZ)
   
-  // Trap Setup
+  // Machine Trap Setup
   val mstatus:    UInt = 0x300.U(SZ)
-  val mtvec:      UInt = 0x301.U(SZ)
-  val mtdeleg:    UInt = 0x302.U(SZ)
+  val misa:       UInt = 0x301.U(SZ)
+  val medeleg:    UInt = 0x302.U(SZ)
+  val mideleg:    UInt = 0x303.U(SZ)
   val mie:        UInt = 0x304.U(SZ)
+  val mtvec:      UInt = 0x305.U(SZ)
+
   val mtimecmp:   UInt = 0x321.U(SZ)
   
   // Timers and Counters
@@ -74,7 +79,7 @@ object CsrAddr {
   val regs: Seq[UInt] = List(
       cycle, time, instret, cycleh, timeh, instreth,
       cyclew, timew, instretw, cyclehw, timehw, instrethw,
-      mcpuid, mimpid, mhartid, mtvec, mtdeleg, mie,
+      mcpuid, mimpid, mhartid, mtvec, medeleg, mie,
       mtimecmp, mtime, mtimeh, mscratch, mepc, mcause, mbadaddr, mip,
       mtohost, mfromhost, mstatus
   )
@@ -92,14 +97,15 @@ object Cause {
 class CsrIO extends Bundle {
 
   val addr: UInt = Input(UInt(32.W))    // csr_addr
-  val wdata: UInt = Input(UInt(32.W))   // write to CSR
-  val out:  UInt = Output(UInt(32.W))   // csrdata
+  val in:   UInt = Input(UInt(32.W))    // rs1 or imm_z
+  val out:  UInt = Output(UInt(32.W))   // csrdata -> rd
   val cmd:  UInt = Input(UInt(32.W))    // csr_cmd
 
   // Excpetion
   val expt: Bool = Output(Bool())
   val evec: UInt = Output(UInt(32.W))
   val epc: UInt = Output(UInt(32.W))
+
 
 }
 
@@ -108,8 +114,11 @@ class CSR extends Module {
 
   // variables
   val csr_addr: UInt = io.addr
-  val wdata: UInt = io.wdata
-
+  val wdata: UInt = MuxLookup(io.cmd, 0.U, Seq(
+    CSR.W -> io.in,
+    CSR.S -> (io.out | io.in),
+    CSR.C -> (io.out.asUInt() & (~io.in).asUInt())
+  ))
   // user counters
   val time:     UInt = RegInit(0.U(32.W))
   val timeh:    UInt = RegInit(0.U(32.W))
@@ -145,8 +154,8 @@ class CSR extends Module {
   val FS:       UInt = 0.U(2.W)
   val SD:       UInt = 0.U(1.W)
   val mstatus:  UInt = Cat(SD, 0.U((32-23).W), VM, MPRV, XS, FS, PRV3, IE3, PRV2, IE2, PRV1, IE1, PRV, IE)
-  val mtvec:    UInt = PC_INITS.PC_EVEC.U(32.W) // see constant.scala
-  val mtdeleg:  UInt = 0x0.U(32.W)
+  val mtvec:    UInt = RegInit(PC_INITS.PC_EVEC.U(32.W)) // see constant.scala
+  val medeleg:  UInt = 0x0.U(32.W)
   
   // interrupt registers
   val MTIP: Bool = RegInit(false.B)
@@ -179,6 +188,8 @@ class CSR extends Module {
 //    mfromhost := io.host.fromhost.bits
 //  }
 
+  //val w_out = RegInit(mtvec)
+
   val csrFile: Seq[(BitPat, UInt)] = Seq(
       BitPat(CsrAddr.cycle)     -> cycle,
       BitPat(CsrAddr.time)      -> time,
@@ -196,7 +207,7 @@ class CSR extends Module {
       BitPat(CsrAddr.mimpid)    -> mimpid,
       BitPat(CsrAddr.mhartid)   -> mhartid,
       BitPat(CsrAddr.mtvec)     -> mtvec,
-      BitPat(CsrAddr.mtdeleg)   -> mtdeleg,
+      BitPat(CsrAddr.medeleg)   -> medeleg,
       BitPat(CsrAddr.mie)       -> mie,
       BitPat(CsrAddr.mtimecmp)  -> mtimecmp,
       BitPat(CsrAddr.mtime)     -> time,
@@ -250,9 +261,11 @@ class CSR extends Module {
     }.elsewhen(csr_addr === CsrAddr.mie) {
       MTIE := wdata(7)
       MSIE := wdata(3)
-    }.elsewhen(csr_addr === CsrAddr.mtime) { time := wdata }
+    }.elsewhen(csr_addr === CsrAddr.mtime) {
+      time := wdata }
     .elsewhen(csr_addr === CsrAddr.mtimeh) { timeh := wdata }
     .elsewhen(csr_addr === CsrAddr.mtimecmp) { mtimecmp := wdata }
+    .elsewhen(csr_addr === CsrAddr.mtvec) {mtvec := wdata}
     .elsewhen(csr_addr === CsrAddr.mscratch) { mscratch := wdata }
     .elsewhen(csr_addr === CsrAddr.mepc) { mepc := wdata >> 2.U << 2.U }
     .elsewhen(csr_addr === CsrAddr.mcause) { mcause := wdata & (BigInt(1) << (32-1) | 0xf).U }
