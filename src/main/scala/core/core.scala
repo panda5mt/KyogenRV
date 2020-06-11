@@ -215,8 +215,9 @@ class Cpu extends Module {
 
     // CSR
     val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),
-        Mux(ex_reg_raddr(0) === mem_reg_waddr, mem_csr_data,
-            Mux(ex_reg_raddr(0) === wb_reg_waddr, wb_csr_data, ex_rs(0).asUInt())
+        Mux(ex_reg_raddr(0) === mem_reg_waddr, Mux(mem_ctrl.csr_cmd =/= CSR.N, mem_csr_data, mem_alu_out),// todo: mem_alu_out -> rf_wdata
+            Mux(ex_reg_raddr(0) === wb_reg_waddr, Mux(wb_ctrl.csr_cmd =/= CSR.N, wb_csr_data, wb_alu_out),// todo: wb_alu_out -> rf_wdata
+                ex_reg_rs1_bypass.asUInt())
         )
     )
 

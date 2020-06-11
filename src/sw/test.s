@@ -1,11 +1,11 @@
 
 _label1:
         addi    x10, x0, 0x1
-        addi    x11, x10, 0x2
+        addi    x11, x10, 0x4
 
         csrrw   x1, mtvec, x10
         csrrw   x2, mtvec, x1
-        csrrw   x3, mtvec, x1
+        csrrw   x3, mtvec, x2
         csrrwi  x4, mtvec, 0x3
         csrrw   x5, mtvec, x0
 _label3:
