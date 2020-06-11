@@ -118,6 +118,7 @@ class CSR extends Module {
     CSR.S -> (io.out | io.in),
     CSR.C -> (io.out.asUInt() & (~io.in).asUInt())
   ))
+
   // user counters
   val time:     UInt = RegInit(0.U(32.W))
   val timeh:    UInt = RegInit(0.U(32.W))
