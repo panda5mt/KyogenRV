@@ -124,6 +124,6 @@ object Instructions {
   // def RDCYCLEH:          BitPat = BitPat("b11001000000000000010?????1110011")
   // def RDTIMEH:           BitPat = BitPat("b11001000000100000010?????1110011")
   // def RDINSTRETH:        BitPat = BitPat("b11001000001000000010?????1110011")
-  def NOP: UInt =BitPat.bitPatToUInt(BitPat("b00000000000000000000000000010011"))
+  def NOP: UInt = BitPat.bitPatToUInt(BitPat("b00000000000000000000000000010011"))
 }
 

@@ -193,6 +193,7 @@ class Cpu extends Module {
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out//,
         //(ex_csr_wbcsr =/= CSR.X) -> csr_io_rw_rdata.asSInt
     ))
+
     val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(), ex_reg_rs1_bypass.asUInt())
 
     // ALU OP1 selector
@@ -222,7 +223,7 @@ class Cpu extends Module {
     csr.io.addr := ex_csr_addr
     csr.io.cmd  := ex_csr_cmd
     csr.io.in   := csr_in
-   // csr_in Mux(ex_ctrl.imm_type === IMM_Z, ex_imm, ex_rs(0))
+
 
     // iotesters
     io.sw.r_ex_raddr1 := ex_reg_raddr(0)

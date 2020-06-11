@@ -106,7 +106,6 @@ class CsrIO extends Bundle {
   val evec: UInt = Output(UInt(32.W))
   val epc: UInt = Output(UInt(32.W))
 
-
 }
 
 class CSR extends Module {
