@@ -1,12 +1,13 @@
 
 _label1:
-        li      ra, 1
-        li      sp, 1
-        add     a4,ra,sp
-        li      t2,2
-        li      gp,3
-        bne     a4,t2, _label3
-        addi    x30, x0, 5
+        addi    x10, x0, 0x1
+        addi    x11, x10, 0x2
+
+        csrrw   x1, mtvec, x10
+        csrrw   x2, mtvec, x1
+        csrrw   x3, mtvec, x1
+        csrrwi  x4, mtvec, 0x3
+        csrrw   x5, mtvec, x0
 _label3:
         addi      x31, x0, 5
 

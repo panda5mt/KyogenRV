@@ -44,8 +44,8 @@ class Cpu extends Module {
     val ex_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
     val ex_reg_waddr: UInt = RegInit(0.U(5.W))
     val ex_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
-    val ex_csr_addr = RegInit(0.U(32.W))
-    val ex_csr_cmd = RegInit(0.U(32.W))
+    val ex_csr_addr: UInt = RegInit(0.U(32.W))
+    val ex_csr_cmd: UInt = RegInit(0.U(32.W))
 
     // MEM stage pipeline register
     val mem_pc: UInt = RegInit( pc_ini)
@@ -57,8 +57,8 @@ class Cpu extends Module {
     val mem_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
     val mem_alu_out: UInt = RegInit(0.U(32.W))
     val mem_alu_cmp_out: Bool = RegInit(false.B)
-    val mem_csr_addr = RegInit(0.U(32.W))
-    val mem_csr_data = RegInit(0.U(32.W))
+    val mem_csr_addr: UInt = RegInit(0.U(32.W))
+    val mem_csr_data: UInt = RegInit(0.U(32.W))
 
 
     // WB stage pipeline register
@@ -191,10 +191,15 @@ class Cpu extends Module {
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0) -> wb_alu_out,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out//,
-        //(ex_csr_wbcsr =/= CSR.X) -> csr_io_rw_rdata.asSInt
+
     ))
 
-    val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(), ex_reg_rs1_bypass.asUInt())
+    val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),
+        Mux(ex_reg_raddr(0) === mem_reg_waddr, mem_csr_data,
+            Mux(ex_reg_raddr(0) === wb_reg_waddr, wb_csr_data, ex_rs(0).asUInt())
+        )
+     )
+
 
     // ALU OP1 selector
     val ex_op1: UInt = MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
@@ -219,7 +224,7 @@ class Cpu extends Module {
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
 
-    val csr = Module(new CSR)
+    val csr: CSR = Module(new CSR)
     csr.io.addr := ex_csr_addr
     csr.io.cmd  := ex_csr_cmd
     csr.io.in   := csr_in
