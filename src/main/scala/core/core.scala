@@ -499,7 +499,7 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
         new PeekPokeTester(c) {
             // read from binarcd y file
-            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
+            val s: BufferedSource = Source.fromFile("src/sw/test1.hex")
             var buffs: Array[String] = _
             try {
                 buffs = s.getLines.toArray
@@ -530,7 +530,7 @@ object Test extends App {
             println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd\t\t\t\tstall")
 
             //for (lp <- memarray.indices by 1){
-            for (_ <- 0 until 500 by 1) {
+            for (_ <- 0 until 1000 by 1) {
 
                 val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)
