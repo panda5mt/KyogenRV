@@ -121,11 +121,6 @@ class Cpu extends Module {
     // instruction decode
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
 
-    // csr
-    //val id_mret_wbcsr:  UInt = id_ctrl.csr_cmd
-    //val id_mret_en:     Bool = (id_mret_wbcsr === CSR.M) // CSR.MRET
-    //val id_ecall_en:    Bool = (id_mret_wbcsr === CSR.I) // CSR.INST
-
     // get rs1,rs2,rd address(x0 - x31)
     val id_raddr1:      UInt = idm.io.inst.rs1
     val id_raddr2:      UInt = idm.io.inst.rs2
@@ -179,7 +174,7 @@ class Cpu extends Module {
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
 
-
+    // forwarding logic
     val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data,
@@ -193,13 +188,6 @@ class Cpu extends Module {
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out//,
 
     ))
-
-    val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),
-        Mux(ex_reg_raddr(0) === mem_reg_waddr, mem_csr_data,
-            Mux(ex_reg_raddr(0) === wb_reg_waddr, wb_csr_data, ex_rs(0).asUInt())
-        )
-     )
-
 
     // ALU OP1 selector
     val ex_op1: UInt = MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
@@ -219,10 +207,18 @@ class Cpu extends Module {
         )
     )
 
+    // ALU
     val alu: ALU    = Module(new ALU)
     alu.io.alu_op   := ex_ctrl.alu_func
     alu.io.op1      := ex_op1
     alu.io.op2      := ex_op2
+
+    // CSR
+    val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),
+        Mux(ex_reg_raddr(0) === mem_reg_waddr, mem_csr_data,
+            Mux(ex_reg_raddr(0) === wb_reg_waddr, wb_csr_data, ex_rs(0).asUInt())
+        )
+    )
 
     val csr: CSR = Module(new CSR)
     csr.io.addr := ex_csr_addr
@@ -327,9 +323,6 @@ class Cpu extends Module {
 
     // -------- END: WB Stage --------
 
-    // -------- START: CSR Connect --------
-
-    // -------- END: CSR Connect --------
 
     // -------- START: PC update --------
     when (io.sw.halt === false.B){
@@ -499,7 +492,7 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
         new PeekPokeTester(c) {
             // read from binarcd y file
-            val s: BufferedSource = Source.fromFile("src/sw/test1.hex")
+            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
             var buffs: Array[String] = _
             try {
                 buffs = s.getLines.toArray
