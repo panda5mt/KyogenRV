@@ -1,5 +1,6 @@
 
 _label1:
+        csrrw x31,mtvec, x0
 
        lui     x1,  0x08           # x1 = 0x08 << 12
        addi    x1,  x1, 0x04       # x1 = x1 + 0x04 = 0x8004
