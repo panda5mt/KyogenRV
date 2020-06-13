@@ -11,11 +11,11 @@ import scala.collection.immutable._
 object CSR {
   // commands
   val SZ: Width = 3.W
-  val N = 0.U(3.W)
-  val W = 1.U(3.W)
-  val S = 2.U(3.W)
-  val C = 3.U(3.W)
-  val P = 4.U(3.W)
+  val N: UInt = 0.U(3.W)
+  val W: UInt = 1.U(3.W)
+  val S: UInt = 2.U(3.W)
+  val C: UInt = 3.U(3.W)
+  val P: UInt = 4.U(3.W)
 }
 
 
@@ -100,24 +100,28 @@ class CsrIO extends Bundle {
   val in:   UInt = Input(UInt(32.W))    // rs1 or imm_z
   val out:  UInt = Output(UInt(32.W))   // csrdata -> rd
   val cmd:  UInt = Input(UInt(32.W))    // csr_cmd
+  val rs1_addr: UInt = Input(UInt(32.W))  // rs1 addr
 
   // Excpetion
   val expt: Bool = Output(Bool())
   val evec: UInt = Output(UInt(32.W))
   val epc: UInt = Output(UInt(32.W))
+  val inst: UInt = Input(UInt(32.W))    // RV32I instruction
 
 }
 
 class CSR extends Module {
-  val io = IO(new CsrIO)
+  val io: CsrIO = IO(new CsrIO)
 
   // variables
-  val csr_addr: UInt = io.addr
   val wdata: UInt = MuxLookup(io.cmd, 0.U, Seq(
     CSR.W -> io.in,
     CSR.S -> (io.out | io.in),
     CSR.C -> (io.out.asUInt() & (~io.in).asUInt())
   ))
+  val csr_addr: UInt = io.addr
+
+  val rs1_addr: UInt = io.rs1_addr
 
   // user counters
   val time:     UInt = RegInit(0.U(32.W))
@@ -228,13 +232,16 @@ class CSR extends Module {
   when(time.andR) { timeh := timeh + 1.U }
   cycle := cycle + 1.U
   when(cycle.andR) { cycleh := cycleh + 1.U }
+//  val isInstRet = io.inst =/= Instructions.NOP && (!io.expt || isEcall || isEbreak) //&& !io.stall
+//  when(isInstRet) { instret := instret + 1.U }
+//  when(isInstRet && instret.andR) { instreth := instreth + 1.U }
 
   //noinspection ScalaStyle
   val privValid:  Bool = csr_addr(9, 8) <= PRV
   val privInst:   Bool = io.cmd === CSR.P
   val isEcall:    Bool = privInst && !csr_addr(0) && !csr_addr(8)
   val isEbreak:   Bool = privInst &&  csr_addr(0) && !csr_addr(8)
-  val wen:        Bool = io.cmd === CSR.W || io.cmd(1)
+  val wen:        Bool = io.cmd === CSR.W || io.cmd(1) && (rs1_addr =/= 0.U)
 
   io.expt := isEcall // exception
   io.evec := mtvec + (PRV << 6).asUInt()
@@ -251,33 +258,33 @@ class CSR extends Module {
     //when(iaddrInvalid || laddrInvalid || saddrInvalid) { mbadaddr := io.addr }
   }.elsewhen(wen) {
     when(csr_addr === CsrAddr.mstatus) {
-    PRV1 := wdata(5, 4)
-    IE1  := wdata(3)
-    PRV  := wdata(2, 1)
-    IE   := wdata(0)
-    }.elsewhen(csr_addr === CsrAddr.mip) {
-      MTIP := wdata(7)
-      MSIP := wdata(3)
-    }.elsewhen(csr_addr === CsrAddr.mie) {
-      MTIE := wdata(7)
-      MSIE := wdata(3)
-    }.elsewhen(csr_addr === CsrAddr.mtime) {
-      time := wdata }
-    .elsewhen(csr_addr === CsrAddr.mtimeh) { timeh := wdata }
-    .elsewhen(csr_addr === CsrAddr.mtimecmp) { mtimecmp := wdata }
-    .elsewhen(csr_addr === CsrAddr.mtvec) {mtvec := wdata}
-    .elsewhen(csr_addr === CsrAddr.mscratch) { mscratch := wdata }
-    .elsewhen(csr_addr === CsrAddr.mepc) { mepc := wdata >> 2.U << 2.U }
-    .elsewhen(csr_addr === CsrAddr.mcause) { mcause := wdata & (BigInt(1) << (32-1) | 0xf).U }
-    .elsewhen(csr_addr === CsrAddr.mbadaddr) { mbadaddr := wdata }
-    .elsewhen(csr_addr === CsrAddr.mtohost) { mtohost := wdata }
-    .elsewhen(csr_addr === CsrAddr.mfromhost) { mfromhost := wdata }
-    .elsewhen(csr_addr === CsrAddr.cyclew) { cycle := wdata }
-    .elsewhen(csr_addr === CsrAddr.timew) { time := wdata }
-    .elsewhen(csr_addr === CsrAddr.instretw) { instret := wdata }
-    .elsewhen(csr_addr === CsrAddr.cyclehw) { cycleh := wdata }
-    .elsewhen(csr_addr === CsrAddr.timehw) { timeh := wdata }
-    .elsewhen(csr_addr === CsrAddr.instrethw) { instreth := wdata }
+      PRV1 := wdata(5, 4)
+      IE1  := wdata(3)
+      PRV  := wdata(2, 1)
+      IE   := wdata(0)
+      }.elsewhen(csr_addr === CsrAddr.mip) {
+        MTIP := wdata(7)
+        MSIP := wdata(3)
+      }.elsewhen(csr_addr === CsrAddr.mie) {
+        MTIE := wdata(7)
+        MSIE := wdata(3)
+      }.elsewhen(csr_addr === CsrAddr.mtime) {
+        time := wdata }
+      .elsewhen(csr_addr === CsrAddr.mtimeh) { timeh := wdata }
+      .elsewhen(csr_addr === CsrAddr.mtimecmp) { mtimecmp := wdata }
+      .elsewhen(csr_addr === CsrAddr.mtvec) {mtvec := wdata}
+      .elsewhen(csr_addr === CsrAddr.mscratch) { mscratch := wdata }
+      .elsewhen(csr_addr === CsrAddr.mepc) { mepc := wdata >> 2.U << 2.U }
+      .elsewhen(csr_addr === CsrAddr.mcause) { mcause := wdata & (BigInt(1) << (32-1) | 0xf).U }
+      .elsewhen(csr_addr === CsrAddr.mbadaddr) { mbadaddr := wdata }
+      .elsewhen(csr_addr === CsrAddr.mtohost) { mtohost := wdata }
+      .elsewhen(csr_addr === CsrAddr.mfromhost) { mfromhost := wdata }
+      .elsewhen(csr_addr === CsrAddr.cyclew) { cycle := wdata }
+      .elsewhen(csr_addr === CsrAddr.timew) { time := wdata }
+      .elsewhen(csr_addr === CsrAddr.instretw) { instret := wdata }
+      .elsewhen(csr_addr === CsrAddr.cyclehw) { cycleh := wdata }
+      .elsewhen(csr_addr === CsrAddr.timehw) { timeh := wdata }
+      .elsewhen(csr_addr === CsrAddr.instrethw) { instreth := wdata }
   }
 
 }

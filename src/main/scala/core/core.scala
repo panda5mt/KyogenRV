@@ -32,13 +32,13 @@ class Cpu extends Module {
 
     // ID stage pipeline register
     val id_inst: UInt = RegInit(inst_nop)
-    val id_pc: UInt = RegInit( pc_ini)
-    val id_npc: UInt = RegInit( npc_ini)
+    val id_pc: UInt = RegInit(pc_ini)
+    val id_npc: UInt = RegInit(npc_ini)
     //val id_csr_addr: UInt = RegInit(0.U)
 
     // EX stage pipeline register
-    val ex_pc: UInt = RegInit( pc_ini)
-    val ex_npc: UInt = RegInit( npc_ini)
+    val ex_pc: UInt = RegInit(pc_ini)
+    val ex_npc: UInt = RegInit(npc_ini)
     val ex_inst: UInt = RegInit(inst_nop)
     val ex_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
     val ex_reg_raddr: Vec[UInt] = RegInit(VecInit(0.U(5.W), 0.U(5.W)))
@@ -48,9 +48,8 @@ class Cpu extends Module {
     val ex_csr_cmd: UInt = RegInit(0.U(32.W))
 
     // MEM stage pipeline register
-    val mem_pc: UInt = RegInit( pc_ini)
-    val mem_npc: UInt = RegInit( npc_ini)
-    //val mem_inst: UInt = RegInit(inst_nop)
+    val mem_pc: UInt = RegInit(pc_ini)
+    val mem_npc: UInt = RegInit(npc_ini)
     val mem_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
     val mem_imm: SInt = RegInit(0.S(32.W))
     val mem_reg_waddr: UInt = RegInit(0.U(5.W))
@@ -60,9 +59,8 @@ class Cpu extends Module {
     val mem_csr_addr: UInt = RegInit(0.U(32.W))
     val mem_csr_data: UInt = RegInit(0.U(32.W))
 
-
     // WB stage pipeline register
-    val wb_npc: UInt = RegInit( npc_ini)
+    val wb_npc: UInt = RegInit(npc_ini)
     val wb_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
     val wb_reg_waddr: UInt = RegInit(0.U(5.W))
     val wb_alu_out: UInt = RegInit(0.U(32.W))
@@ -220,11 +218,23 @@ class Cpu extends Module {
                 ex_reg_rs1_bypass.asUInt())
         )
     )
+    //val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),ex_reg_rs1_bypass)
 
     val csr: CSR = Module(new CSR)
-    csr.io.addr := ex_csr_addr
+    csr.io.addr := ex_csr_addr//0.U//mem_alu_out
     csr.io.cmd  := ex_csr_cmd
     csr.io.in   := csr_in
+    csr.io.inst := ex_inst
+    csr.io.rs1_addr := ex_rs(0)
+
+/*
+val addr: UInt = Input(UInt(32.W))    // mem_alu_out
+  val in:   UInt = Input(UInt(32.W))    // rs1 or imm_z
+  val out:  UInt = Output(UInt(32.W))   // csrdata -> rd
+  val cmd:  UInt = Input(UInt(32.W))    // csr_cmd
+
+**/
+
 
 
     // iotesters
@@ -317,7 +327,7 @@ class Cpu extends Module {
         }
 
         // iotesters
-        io.sw.r_wb_alu_out := wb_alu_out
+        io.sw.r_wb_alu_out  := wb_alu_out
         io.sw.r_wb_rf_waddr := rf_waddr
         io.sw.r_wb_rf_wdata := rf_wdata
     }
@@ -388,16 +398,16 @@ class CpuBus extends Module {
     val sw_gaddr:   UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
     
     val cpu:        Cpu = Module(new Cpu)
-    val inst_mem:   IMem = Module(new IMem)
-    val data_mem:   DMem = Module(new DMem)
+    val imem:   IMem = Module(new IMem)
+    val dmem:   DMem = Module(new DMem)
     
     // Connect Test Module
     sw_halt     := io.sw.halt
-    sw_data     := inst_mem.io.r_imem_dat.data
-    sw_addr     := inst_mem.io.r_imem_add.addr
+    sw_data     := imem.io.r_imem_dat.data
+    sw_addr     := imem.io.r_imem_add.addr
 
     // imem
-    sw_wdata    := io.sw.w_dat // data to write inst_mem
+    sw_wdata    := io.sw.w_dat // data to write imem
     sw_waddr    := io.sw.w_add
     sw_gaddr    := io.sw.g_add
     io.sw.r_dat := sw_data
@@ -421,7 +431,7 @@ class CpuBus extends Module {
     io.sw.r_mem_alu_out <> cpu.io.sw.r_mem_alu_out
 
     //IOTESTERS: WB Stage
-    io.sw.r_wb_alu_out <> cpu.io.sw.r_wb_alu_out
+    io.sw.r_wb_alu_out  <> cpu.io.sw.r_wb_alu_out
     io.sw.r_wb_rf_wdata <> cpu.io.sw.r_wb_rf_wdata
     io.sw.r_wb_rf_waddr <> cpu.io.sw.r_wb_rf_waddr
 
@@ -438,29 +448,29 @@ class CpuBus extends Module {
 
 
 
-    // Read inst_mem
-    inst_mem.io.r_imem_add.req  <> cpu.io.r_imem_add.req
-    inst_mem.io.r_imem_add.addr <> cpu.io.r_imem_add.addr
-    cpu.io.r_imem_dat.data      <> inst_mem.io.r_imem_dat.data
-    cpu.io.r_imem_dat.ack       <> inst_mem.io.r_imem_dat.ack
+    // Read imem
+    imem.io.r_imem_add.req  <> cpu.io.r_imem_add.req
+    imem.io.r_imem_add.addr <> cpu.io.r_imem_add.addr
+    cpu.io.r_imem_dat.data  <> imem.io.r_imem_dat.data
+    cpu.io.r_imem_dat.ack   <> imem.io.r_imem_dat.ack
 
-    // write inst_mem
-    inst_mem.io.w_imem_add.req   <> cpu.io.w_imem_add.req
-    inst_mem.io.w_imem_add.addr  <> cpu.io.w_imem_add.addr
-    inst_mem.io.w_imem_dat.data  <> cpu.io.w_imem_dat.data
-    cpu.io.w_imem_dat.ack        <> inst_mem.io.w_imem_dat.ack
+    // write imem
+    imem.io.w_imem_add.req   <> cpu.io.w_imem_add.req
+    imem.io.w_imem_add.addr  <> cpu.io.w_imem_add.addr
+    imem.io.w_imem_dat.data  <> cpu.io.w_imem_dat.data
+    cpu.io.w_imem_dat.ack    <> imem.io.w_imem_dat.ack
 
-    // Read data_mem
-    data_mem.io.r_dmem_add.req  <> cpu.io.r_dmem_add.req
-    data_mem.io.r_dmem_add.addr <> cpu.io.r_dmem_add.addr
-    cpu.io.r_dmem_dat.data      <> data_mem.io.r_dmem_dat.data
-    cpu.io.r_dmem_dat.ack       <> data_mem.io.r_dmem_dat.ack
+    // Read dmem
+    dmem.io.r_dmem_add.req  <> cpu.io.r_dmem_add.req
+    dmem.io.r_dmem_add.addr <> cpu.io.r_dmem_add.addr
+    cpu.io.r_dmem_dat.data  <> dmem.io.r_dmem_dat.data
+    cpu.io.r_dmem_dat.ack   <> dmem.io.r_dmem_dat.ack
 
-    // write data_mem
-    data_mem.io.w_dmem_add.req   <> cpu.io.w_dmem_add.req
-    data_mem.io.w_dmem_add.addr  <> cpu.io.w_dmem_add.addr
-    data_mem.io.w_dmem_dat.data  <> cpu.io.w_dmem_dat.data
-    cpu.io.w_dmem_dat.ack        <> data_mem.io.w_dmem_dat.ack
+    // write dmem
+    dmem.io.w_dmem_add.req   <> cpu.io.w_dmem_add.req
+    dmem.io.w_dmem_add.addr  <> cpu.io.w_dmem_add.addr
+    dmem.io.w_dmem_dat.data  <> cpu.io.w_dmem_dat.data
+    cpu.io.w_dmem_dat.ack    <> dmem.io.w_dmem_dat.ack
 
 }
 //noinspection ScalaStyle
@@ -539,7 +549,7 @@ object Test extends App {
                 val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
                 val stallsig = peek(c.io.sw.r_stall_sig)
                 step(1)
-                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%d") //peek(c.io.sw.data)
+                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%x") //peek(c.io.sw.data)
 
             }
 
