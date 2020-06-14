@@ -103,9 +103,10 @@ class CsrIO extends Bundle {
   val rs1_addr: UInt = Input(UInt(32.W))  // rs1 addr
 
   // Excpetion
+  val pc:   UInt = Input(UInt(32.W))
   val expt: Bool = Output(Bool())
   val evec: UInt = Output(UInt(32.W))
-  val epc: UInt = Output(UInt(32.W))
+  val epc:  UInt = Output(UInt(32.W))
   val inst: UInt = Input(UInt(32.W))    // RV32I instruction
 
 }
@@ -226,30 +227,30 @@ class CSR extends Module {
 
   io.out := Lookup(io.addr, 0.U, csrFile).asUInt()
 
-
-// Counters
+  // Counters
   time := time + 1.U
   when(time.andR) { timeh := timeh + 1.U }
   cycle := cycle + 1.U
   when(cycle.andR) { cycleh := cycleh + 1.U }
-//  val isInstRet = io.inst =/= Instructions.NOP && (!io.expt || isEcall || isEbreak) //&& !io.stall
-//  when(isInstRet) { instret := instret + 1.U }
-//  when(isInstRet && instret.andR) { instreth := instreth + 1.U }
+
 
   //noinspection ScalaStyle
   val privValid:  Bool = csr_addr(9, 8) <= PRV
   val privInst:   Bool = io.cmd === CSR.P
   val isEcall:    Bool = privInst && !csr_addr(0) && !csr_addr(8)
   val isEbreak:   Bool = privInst &&  csr_addr(0) && !csr_addr(8)
-  val wen:        Bool = io.cmd === CSR.W || io.cmd(1) && (rs1_addr =/= 0.U)
+  val wen:        Bool = (io.cmd === CSR.W) || io.cmd(1) && (rs1_addr =/= 0.U)
+
+  val isInstRet = (io.inst =/= Instructions.NOP) && (!io.expt || isEcall || isEbreak) //&& !io.stall
+  when(isInstRet) { instret := instret + 1.U }
+  when(isInstRet && instret.andR) { instreth := instreth + 1.U }
 
   io.expt := isEcall // exception
-  io.evec := mtvec + (PRV << 6).asUInt()
+  io.evec := mtvec //+ (PRV << 6).asUInt()
   io.epc  := mepc
 
   when(io.expt) {
-    //mepc   := io.pc >> 2 << 2
-
+    mepc   := io.pc >> 2 << 2
     mcause := Mux(isEcall,  Cause.Ecall + PRV, 0.U)
     PRV  := Prv.M
     IE   := false.B

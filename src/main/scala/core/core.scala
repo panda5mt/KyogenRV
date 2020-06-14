@@ -221,6 +221,7 @@ class Cpu extends Module {
     //val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),ex_reg_rs1_bypass)
 
     val csr: CSR = Module(new CSR)
+    csr.io.pc   := ex_pc
     csr.io.addr := ex_csr_addr//0.U//mem_alu_out
     csr.io.cmd  := ex_csr_cmd
     csr.io.in   := csr_in
@@ -260,6 +261,7 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
         mem_alu_cmp_out := alu.io.cmp_out
         mem_csr_addr := ex_csr_addr
         mem_csr_data := csr.io.out
+
     } .otherwise {
         mem_pc :=  pc_ini
         mem_npc :=  npc_ini
@@ -294,7 +296,7 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
 
     // bubble logic
     inst_kill := (
-      ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J)
+      ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J) || csr.io.expt
     )
 
     // -------- END: MEM Stage --------
@@ -343,7 +345,9 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
             pc_cntr := MuxCase(npc, Seq(
                 ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,//(mem_pc + mem_imm.asUInt),
-                (mem_ctrl.br_type === BR_JR) -> mem_alu_out
+                (mem_ctrl.br_type === BR_JR) -> mem_alu_out,
+                csr.io.expt -> csr.io.evec
+
             ))
         }
     }.otherwise { // halt mode
@@ -397,7 +401,7 @@ class CpuBus extends Module {
 
     val sw_gaddr:   UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
     
-    val cpu:        Cpu = Module(new Cpu)
+    val cpu:    Cpu = Module(new Cpu)
     val imem:   IMem = Module(new IMem)
     val dmem:   DMem = Module(new DMem)
     
