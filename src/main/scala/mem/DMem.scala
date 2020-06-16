@@ -12,7 +12,7 @@ class DMem extends Module {
 
   // initialization
   //val mem = SyncReadMem(1024, UInt(32.W))
-  val mem: Mem[UInt] = Mem(1024, UInt(32.W))
+  val mem: Mem[UInt] = Mem(256*1024, UInt(32.W))
 
   val i_ack: Bool = RegInit(false.B)
   val i_req: Bool = RegInit(false.B)

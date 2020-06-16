@@ -227,6 +227,7 @@ class Cpu extends Module {
     csr.io.in   := csr_in
     csr.io.inst := ex_inst
     csr.io.rs1_addr := ex_rs(0)
+    csr.io.stall := stall
 
 /*
 val addr: UInt = Input(UInt(32.W))    // mem_alu_out

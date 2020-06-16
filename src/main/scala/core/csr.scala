@@ -11,19 +11,20 @@ import scala.collection.immutable._
 object CSR {
   // commands
   val SZ: Width = 3.W
-  val N: UInt = 0.U(3.W)
-  val W: UInt = 1.U(3.W)
-  val S: UInt = 2.U(3.W)
-  val C: UInt = 3.U(3.W)
-  val P: UInt = 4.U(3.W)
+  val N: UInt = 0.U(SZ)
+  val W: UInt = 1.U(SZ)
+  val S: UInt = 2.U(SZ)
+  val C: UInt = 3.U(SZ)
+  val P: UInt = 4.U(SZ)
 }
 
 
-object Prv {
-  val U: UInt = 0x0.U(2.W)  // User Mode
-  val S: UInt = 0x1.U(2.W)  // SV mode
-  val H: UInt = 0x2.U(2.W)  // Reserved (ex-"HV mode")
-  val M: UInt = 0x3.U(2.W)  // Machine Mode
+object PRIV {
+  val SZ: Width = 2.W
+  val U: UInt = 0.U(SZ)  // User Mode
+  val S: UInt = 1.U(SZ)  // SV mode
+  val H: UInt = 2.U(SZ)  // Reserved (ex-"HV mode")
+  val M: UInt = 3.U(SZ)  // Machine Mode
 }
 
 object CsrAddr {
@@ -86,12 +87,12 @@ object CsrAddr {
 }
 
 object Cause {
-  val InstAddrMisaligned:   UInt = 0x0.U
-  val IllegalInst:          UInt = 0x2.U
-  val Breakpoint:           UInt = 0x3.U
-  val LoadAddrMisaligned:   UInt = 0x4.U
-  val StoreAddrMisaligned:  UInt = 0x6.U
-  val Ecall:                UInt = 0x8.U
+  val InstAddrMisaligned:   UInt = 0.U
+  val IllegalInst:          UInt = 2.U
+  val Breakpoint:           UInt = 3.U
+  val LoadAddrMisaligned:   UInt = 4.U
+  val StoreAddrMisaligned:  UInt = 6.U
+  val Ecall:                UInt = 8.U
 }
 
 class CsrIO extends Bundle {
@@ -104,6 +105,7 @@ class CsrIO extends Bundle {
 
   // Excpetion
   val pc:   UInt = Input(UInt(32.W))
+  val stall: Bool = Input(Bool())
   val expt: Bool = Output(Bool())
   val evec: UInt = Output(UInt(32.W))
   val epc:  UInt = Output(UInt(32.W))
@@ -139,8 +141,8 @@ class CSR extends Module {
   val mhartid:  UInt = 0.U(32.W) // only one hart
   
   // interrupt enable stack
-  val PRV:    UInt = RegInit(Prv.M)
-  val PRV1:   UInt = RegInit(Prv.M)
+  val PRV:    UInt = RegInit(PRIV.M)
+  val PRV1:   UInt = RegInit(PRIV.M)
   val PRV2:   UInt = 0.U(2.W)
   val PRV3:   UInt = 0.U(2.W)
   val IE:     Bool = RegInit(false.B)
@@ -241,28 +243,28 @@ class CSR extends Module {
   val isEbreak:   Bool = privInst &&  csr_addr(0) && !csr_addr(8)
   val wen:        Bool = (io.cmd === CSR.W) || io.cmd(1) && (rs1_addr =/= 0.U)
 
-  val isInstRet = (io.inst =/= Instructions.NOP) && (!io.expt || isEcall || isEbreak) //&& !io.stall
+  val isInstRet = (io.inst =/= Instructions.NOP) && (!io.expt || isEcall || isEbreak) && !io.stall
   when(isInstRet) { instret := instret + 1.U }
   when(isInstRet && instret.andR) { instreth := instreth + 1.U }
 
   io.expt := isEcall // exception
   io.evec := mtvec //+ (PRV << 6).asUInt()
   io.epc  := mepc
-
-  when(io.expt) {
-    mepc   := io.pc >> 2 << 2
-    mcause := Mux(isEcall,  Cause.Ecall + PRV, 0.U)
-    PRV  := Prv.M
-    IE   := false.B
-    PRV1 := PRV
-    IE1  := IE
-    //when(iaddrInvalid || laddrInvalid || saddrInvalid) { mbadaddr := io.addr }
-  }.elsewhen(wen) {
-    when(csr_addr === CsrAddr.mstatus) {
-      PRV1 := wdata(5, 4)
-      IE1  := wdata(3)
-      PRV  := wdata(2, 1)
-      IE   := wdata(0)
+  when(!io.stall) {
+    when(io.expt) {
+      mepc := io.pc >> 2 << 2
+      mcause := Mux(isEcall, Cause.Ecall + PRV, 0.U)
+      PRV := PRIV.M
+      IE := false.B
+      PRV1 := PRV
+      IE1 := IE
+      //when(iaddrInvalid || laddrInvalid || saddrInvalid) { mbadaddr := io.addr }
+    }.elsewhen(wen) {
+      when(csr_addr === CsrAddr.mstatus) {
+        PRV1 := wdata(5, 4)
+        IE1 := wdata(3)
+        //PRV := wdata(2, 1)
+        IE := wdata(0)
       }.elsewhen(csr_addr === CsrAddr.mip) {
         MTIP := wdata(7)
         MSIP := wdata(3)
@@ -270,22 +272,54 @@ class CSR extends Module {
         MTIE := wdata(7)
         MSIE := wdata(3)
       }.elsewhen(csr_addr === CsrAddr.mtime) {
-        time := wdata }
-      .elsewhen(csr_addr === CsrAddr.mtimeh) { timeh := wdata }
-      .elsewhen(csr_addr === CsrAddr.mtimecmp) { mtimecmp := wdata }
-      .elsewhen(csr_addr === CsrAddr.mtvec) {mtvec := wdata}
-      .elsewhen(csr_addr === CsrAddr.mscratch) { mscratch := wdata }
-      .elsewhen(csr_addr === CsrAddr.mepc) { mepc := wdata >> 2.U << 2.U }
-      .elsewhen(csr_addr === CsrAddr.mcause) { mcause := wdata & (BigInt(1) << (32-1) | 0xf).U }
-      .elsewhen(csr_addr === CsrAddr.mbadaddr) { mbadaddr := wdata }
-      .elsewhen(csr_addr === CsrAddr.mtohost) { mtohost := wdata }
-      .elsewhen(csr_addr === CsrAddr.mfromhost) { mfromhost := wdata }
-      .elsewhen(csr_addr === CsrAddr.cyclew) { cycle := wdata }
-      .elsewhen(csr_addr === CsrAddr.timew) { time := wdata }
-      .elsewhen(csr_addr === CsrAddr.instretw) { instret := wdata }
-      .elsewhen(csr_addr === CsrAddr.cyclehw) { cycleh := wdata }
-      .elsewhen(csr_addr === CsrAddr.timehw) { timeh := wdata }
-      .elsewhen(csr_addr === CsrAddr.instrethw) { instreth := wdata }
+        time := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.mtimeh) {
+        timeh := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.mtimecmp) {
+        mtimecmp := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.mtvec) {
+        mtvec := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.mscratch) {
+        mscratch := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.mepc) {
+        mepc := wdata >> 2.U << 2.U
+      }
+      .elsewhen(csr_addr === CsrAddr.mcause) {
+        mcause := wdata & (BigInt(1) << (32 - 1) | 0x0f).U
+      } // cause12-16:reserved
+      .elsewhen(csr_addr === CsrAddr.mbadaddr) {
+        mbadaddr := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.mtohost) {
+        mtohost := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.mfromhost) {
+        mfromhost := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.cyclew) {
+        cycle := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.timew) {
+        time := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.instretw) {
+        instret := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.cyclehw) {
+        cycleh := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.timehw) {
+        timeh := wdata
+      }
+      .elsewhen(csr_addr === CsrAddr.instrethw) {
+        instreth := wdata
+      }
+    }
   }
 
 }
