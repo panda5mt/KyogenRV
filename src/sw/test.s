@@ -1,4 +1,5 @@
 _label0:
+        nop
         addi    x1, x0, 0x10
         csrrw   x0, mtvec, x1       # mtvec = <0x10>
         jal     x0, _label1         # jump _label1

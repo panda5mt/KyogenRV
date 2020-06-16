@@ -15,13 +15,6 @@ object ScalarOpConstants {
    def N: UInt = 0.U(1.W)
    def X: BitPat = BitPat("b?")
 
-   // PC Select Signal
-   def PC_4:   UInt = 0.U(3.W)  // PC + 4
-   def PC_BR:  UInt = 1.U(3.W) // branch_target
-   def PC_J:   UInt = 2.U(3.W)  // jump_target
-   def PC_JR:  UInt = 3.U(3.W) // jump_reg_target
-   def PC_EXC: UInt = 4.U(3.W)// exception
-
    // Branch Type
    def BR_N:   UInt = 0.U(4.W) // Next
    def BR_J:   UInt = 1.U(4.W) // Jump
