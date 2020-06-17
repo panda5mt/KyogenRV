@@ -237,8 +237,6 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
 
 **/
 
-
-
     // iotesters
     io.sw.r_ex_raddr1 := ex_reg_raddr(0)
     io.sw.r_ex_raddr2 := ex_reg_raddr(1)
