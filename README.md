@@ -32,7 +32,7 @@ then build test module in chisel project as follows
 make test
 ```
 
-#### 4.5-staged pipeline
+#### 4.Multi-staged pipeline (5-staged-pipeline)
 ```
 git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.10 --depth 1 
 cd KyogenRV/
