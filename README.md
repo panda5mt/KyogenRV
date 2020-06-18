@@ -1,6 +1,6 @@
-The Simple RISC-V KyogenRV(響玄RV) in chisel3 based on RV32I.
+The Simple RISC-V KyogenRV(響玄RV)
 =======================
-## 5-Stage Pipelined soft-core CPU for mid-range FPGAs.
+## 5-Stage Pipelined RV32I written in Chisel.
 ### Basically Logic 
 #### 1.Instruction Fetch Stage(IF)  
 ```
@@ -31,25 +31,8 @@ then build test module in chisel project as follows
 ```
 make test
 ```
-#### 4.Branch (PC update)
-```
-git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.3 --depth 1 
-cd KyogenRV/
-```
 
-write asm file and save to <code>[src/sw/test.s](src/sw/test.s)</code>
-then build as follows 
-
-```
-make clean
-make asm
-```
-you'll get <code>[src/sw/test.hex](src/sw/test.hex)</code>
-then build test module in chisel project as follows
-```
-make test
-```
-#### 5.5-staged pipeline
+#### 4.5-staged pipeline
 ```
 git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.10 --depth 1 
 cd KyogenRV/
@@ -73,7 +56,7 @@ make test
 ```
 so makefile scan test.hex is changed and re-assemble then build chisel project.
 
-#### 6. Added Stage-Stall and Stage-fowardings
+#### 5. Added Stage-Stall and Stage-fowardings
 ```
 git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.15 --depth 1 
 cd KyogenRV/
@@ -96,3 +79,6 @@ when you modified <code>[src/sw/test.hex](src/sw/test.hex)</code>, just type as 
 make test
 ```
 so makefile scan test.hex is changed and re-assemble then build chisel project.
+
+#### 6. Added Exception
+please git clone latest one. 
