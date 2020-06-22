@@ -93,6 +93,7 @@ object Cause {
   val LoadAddrMisaligned:   UInt = 4.U
   val StoreAddrMisaligned:  UInt = 6.U
   val Ecall:                UInt = 8.U
+  val ExtInterrupt:         UInt = 8.U
 }
 
 class CsrIO extends Bundle {
@@ -168,17 +169,21 @@ class CSR extends Module {
   val MTIP: Bool = RegInit(false.B)
   val HTIP: Bool = false.B
   val STIP: Bool = false.B
+
+  val MEIE: Bool = RegInit(false.B)
   val MTIE: Bool = RegInit(false.B)
   val HTIE: Bool = false.B
   val STIE: Bool = false.B
+
+  val MEIP: Bool = RegInit(false.B)
   val MSIP: Bool = RegInit(false.B)
   val HSIP: Bool = false.B
   val SSIP: Bool = false.B
   val MSIE: Bool = RegInit(false.B)
   val HSIE: Bool = false.B
   val SSIE: Bool = false.B
-  val mip:  UInt = Cat(0.U((32-8).W), MTIP, HTIP, STIP, false.B, MSIP, HSIP, SSIP, false.B)
-  val mie:  UInt = Cat(0.U((32-8).W), MTIE, HTIE, STIE, false.B, MSIE, HSIE, SSIE, false.B)
+  val mip:  UInt = Cat(0.U((32-12).W), MEIP, false.B, false.B, false.B,MTIP, HTIP, STIP, false.B, MSIP, HSIP, SSIP, false.B)
+  val mie:  UInt = Cat(0.U((32-12).W), MEIE, false.B, false.B, false.B, MTIE, HTIE, STIE, false.B, MSIE, HSIE, SSIE, false.B)
   
   val mtimecmp:   UInt = Reg(UInt(32.W))
   val mscratch:   UInt = Reg(UInt(32.W))
@@ -235,15 +240,23 @@ class CSR extends Module {
   cycle := cycle + 1.U
   when(cycle.andR) { cycleh := cycleh + 1.U }
 
+//  when (time >= mtimecmp) {
+//    MTIP := true.B
+//  }
+
+  // todo: fixme
+  MEIP := false.B
 
   //noinspection ScalaStyle
   val privValid:  Bool = csr_addr(9, 8) <= PRV
   val privInst:   Bool = io.cmd === CSR.P
+  //val isTimerInt: Bool = MTIE && MTIP
+  val isExtInt:   Bool = MEIP && MEIE
   val isEcall:    Bool = privInst && !csr_addr(0) && !csr_addr(8)
   val isEbreak:   Bool = privInst &&  csr_addr(0) && !csr_addr(8)
   val wen:        Bool = (io.cmd === CSR.W) || io.cmd(1) && (rs1_addr =/= 0.U)
 
-  val isInstRet = (io.inst =/= Instructions.NOP) && (!io.expt || isEcall || isEbreak) && !io.stall
+  val isInstRet: Bool = (io.inst =/= Instructions.NOP) && (!io.expt || isEcall || isEbreak) && !io.stall
   when(isInstRet) { instret := instret + 1.U }
   when(isInstRet && instret.andR) { instreth := instreth + 1.U }
 
@@ -253,7 +266,9 @@ class CSR extends Module {
   when(!io.stall) {
     when(io.expt) {
       mepc := io.pc >> 2 << 2
-      mcause := Mux(isEcall, Cause.Ecall + PRV, 0.U)
+      mcause := Mux(isEcall, Cause.Ecall + PRV,
+        Mux(isExtInt, (BigInt(1) << (32 - 1)).asUInt | (Cause.ExtInterrupt + PRV).asUInt,
+          0.U))
       PRV := PRIV.M
       IE := false.B
       PRV1 := PRV
@@ -269,6 +284,7 @@ class CSR extends Module {
         MTIP := wdata(7)
         MSIP := wdata(3)
       }.elsewhen(csr_addr === CsrAddr.mie) {
+        MEIE := wdata(11)
         MTIE := wdata(7)
         MSIE := wdata(3)
       }.elsewhen(csr_addr === CsrAddr.mtime) {
@@ -277,9 +293,10 @@ class CSR extends Module {
       .elsewhen(csr_addr === CsrAddr.mtimeh) {
         timeh := wdata
       }
-      .elsewhen(csr_addr === CsrAddr.mtimecmp) {
-        mtimecmp := wdata
-      }
+//      .elsewhen(csr_addr === CsrAddr.mtimecmp) {
+//        mtimecmp := wdata
+//        MTIP := false.B
+//      }
       .elsewhen(csr_addr === CsrAddr.mtvec) {
         mtvec := wdata
       }
