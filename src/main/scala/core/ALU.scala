@@ -60,7 +60,7 @@ class ALU extends Module {
     val w_out: UInt =
         Mux(io.alu_op === ALU_ADD || io.alu_op === ALU_SUB, sum,
         Mux(io.alu_op === ALU_SLT || io.alu_op === ALU_SLTU, cmp,
-        Mux(io.alu_op === ALU_SRA || io.alu_op === ALU_SRL, cmp,
+        Mux(io.alu_op === ALU_SRA || io.alu_op === ALU_SRL, shift_r,
         Mux(io.alu_op === ALU_SLL, shift_l,
         Mux(io.alu_op === ALU_AND, io.op1 & io.op2,
         Mux(io.alu_op === ALU_OR,  io.op1 | io.op2,
