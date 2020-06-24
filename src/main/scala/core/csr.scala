@@ -16,6 +16,7 @@ object CSR {
   val S: UInt = 2.U(SZ)
   val C: UInt = 3.U(SZ)
   val P: UInt = 4.U(SZ)
+
 }
 
 
@@ -104,14 +105,16 @@ class CsrIO extends Bundle {
   val cmd:  UInt = Input(UInt(32.W))    // csr_cmd
   val rs1_addr: UInt = Input(UInt(32.W))  // rs1 addr
 
+
   // Excpetion
+  val interrupt_sig: Bool = Input(Bool())
   val pc:   UInt = Input(UInt(32.W))
+  val pc_invalid: Bool = Input(Bool())  // stall || inst_kill_branch || pc === 0.U
   val stall: Bool = Input(Bool())
   val expt: Bool = Output(Bool())
   val evec: UInt = Output(UInt(32.W))
   val epc:  UInt = Output(UInt(32.W))
   val inst: UInt = Input(UInt(32.W))    // RV32I instruction
-
 }
 
 class CSR extends Module {
@@ -155,7 +158,7 @@ class CSR extends Module {
   val VM:       UInt = 0.U(5.W)
 
   // memory privilege
-  val MPRV:     Bool = false.B
+  val MPRV:     Bool = io.interrupt_sig
 
   // extention context status
   val XS:       UInt = 0.U(2.W)
@@ -195,12 +198,8 @@ class CSR extends Module {
   val mtohost:    UInt = RegInit(0.U(32.W))
   val mfromhost:  UInt = Reg(UInt(32.W))
 
-//  io.host.tohost := mtohost
-//  when(io.host.fromhost.valid) {
-//    mfromhost := io.host.fromhost.bits
-//  }
-
-  //val w_out = RegInit(mtvec)
+  // count if pc is valid
+  val valid_pc: UInt = RegInit(0.U(32.W))
 
   val csrFile: Seq[(BitPat, UInt)] = Seq(
       BitPat(CsrAddr.cycle)     -> cycle,
@@ -244,8 +243,7 @@ class CSR extends Module {
 //    MTIP := true.B
 //  }
 
-  // todo: fixme
-  MEIP := false.B
+  MEIP := io.interrupt_sig // true => external interrupt
 
   //noinspection ScalaStyle
   val privValid:  Bool = csr_addr(9, 8) <= PRV
@@ -260,12 +258,22 @@ class CSR extends Module {
   when(isInstRet) { instret := instret + 1.U }
   when(isInstRet && instret.andR) { instreth := instreth + 1.U }
 
-  io.expt := isEcall // exception
+  io.expt := isEcall || isExtInt// exception
   io.evec := mtvec //+ (PRV << 6).asUInt()
-  io.epc  := mepc
+
+  io.epc := mepc
+
+  when(!io.pc_invalid) {
+    valid_pc := io.pc >> 2 << 2
+  }
+
   when(!io.stall) {
     when(io.expt) {
-      mepc := io.pc >> 2 << 2
+      when(isExtInt){
+        mepc := valid_pc
+      }.otherwise {
+        mepc := io.pc >> 2 << 2
+      }
       mcause := Mux(isEcall, Cause.Ecall + PRV,
         Mux(isExtInt, (BigInt(1) << (32 - 1)).asUInt | (Cause.ExtInterrupt + PRV).asUInt,
           0.U))

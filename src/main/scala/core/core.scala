@@ -74,6 +74,8 @@ class Cpu extends Module {
 
     // branch control
     val inst_kill: Bool = Wire(Bool())
+    val inst_kill_branch: Bool = Wire(Bool())
+
     // ------- END: pipeline registers --------
 
     // Program Counter 
@@ -93,6 +95,7 @@ class Cpu extends Module {
     io.r_dmem_add.req   := RegInit(false.B)
     io.r_dmem_add.addr  := RegInit(0.U(32.W))
 
+
     // -------- START: IF stage -------
     io.r_imem_add.addr  := pc_cntr
     io.r_imem_add.req   := true.B
@@ -111,10 +114,12 @@ class Cpu extends Module {
         id_pc   := pc_ini
         id_npc  := npc_ini
         id_inst := inst_nop
+
     }
 
     val idm: IDModule = Module(new IDModule)
     idm.io.imem := id_inst
+
 
     // instruction decode
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
@@ -130,6 +135,11 @@ class Cpu extends Module {
     val reg_f: RegRAM = new RegRAM
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read)
 
+    // program counter check
+    val pc_invalid: Bool = inst_kill_branch || (ex_pc === pc_ini)
+
+    val int_sig: UInt = io.sw.w_interrupt_sig
+
     // judge if stall needed
     withClock(invClock) {
         var mem_stall: Bool = RegInit(false.B)
@@ -141,7 +151,7 @@ class Cpu extends Module {
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall
-        io.sw.r_stall_sig := stall //mem_ctrl.br_type//
+        io.sw.r_stall_sig := stall
     }
     // -------- END: ID stage --------
 
@@ -228,6 +238,8 @@ class Cpu extends Module {
     csr.io.inst := ex_inst
     csr.io.rs1_addr := ex_rs(0)
     csr.io.stall := stall
+    csr.io.pc_invalid := pc_invalid
+    csr.io.interrupt_sig := int_sig
 
 /*
 val addr: UInt = Input(UInt(32.W))    // mem_alu_out
@@ -294,8 +306,9 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
 
 
     // bubble logic
+    inst_kill_branch := ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J)
     inst_kill := (
-      ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J) || csr.io.expt
+      inst_kill_branch || csr.io.expt
     )
 
     // -------- END: MEM Stage --------
@@ -441,6 +454,10 @@ class CpuBus extends Module {
     //IOTESTERS: STALL
     io.sw.r_stall_sig <> cpu.io.sw.r_stall_sig
 
+    //IOTESTERS: External Interrupt Signal
+    cpu.io.sw.w_interrupt_sig <> io.sw.w_interrupt_sig
+
+
     w_pc        := io.sw.w_pc
 
     cpu.io.sw.halt  <> sw_halt
@@ -537,7 +554,7 @@ object Test extends App {
             println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd\t\t\t\tstall")
 
             //for (lp <- memarray.indices by 1){
-            for (_ <- 0 until 1000 by 1) {
+            for (lp <- 0 until 1000 by 1) {
 
                 val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)
@@ -551,6 +568,15 @@ object Test extends App {
                 val wbaddr  = peek(c.io.sw.r_wb_rf_waddr)
                 val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
                 val stallsig = peek(c.io.sw.r_stall_sig)
+                // if you need fire external interrupt signal uncomment below
+
+                if(lp == 96){
+                    poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
+                }
+                else{
+                    poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
+                }
+
                 step(1)
                 println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%x") //peek(c.io.sw.data)
 
