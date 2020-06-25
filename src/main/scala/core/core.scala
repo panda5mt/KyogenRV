@@ -14,17 +14,19 @@ import MemoryOpConstants._
 import bus.{HostIf, TestIf}
 import mem._
 
+
 //noinspection ScalaStyle
 class Cpu extends Module {
     val io: HostIf = IO(new HostIf)
 
     val invClock: Clock = Wire(new Clock)
     invClock := (~clock.asUInt()(0)).asBool.asClock() // Clock reversed
+    def risingEdge(x: Bool): Bool = x && !RegNext(x)
     // ------- START: pipeline registers --------
     // program counter init
-    val pc_ini: UInt = PC_INITS.PC_START.U(32.W)     // pc start address
-    val npc_ini: UInt =  pc_ini + 4.U(32.W)     // pc next
-    val inst_nop: UInt = Instructions.NOP       // NOP instruction (addi x0, x0, 0)
+    val pc_ini: UInt = PC_INITS.PC_START.U(32.W) // pc start address
+    val npc_ini: UInt = pc_ini + 4.U(32.W) // pc next
+    val inst_nop: UInt = Instructions.NOP // NOP instruction (addi x0, x0, 0)
     val nop_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(inst_nop, (new IDecode).table)
 
     // IF stage pipeline register
@@ -79,40 +81,39 @@ class Cpu extends Module {
     // ------- END: pipeline registers --------
 
     // Program Counter 
-    val pc_cntr: UInt = RegInit(0.U(32.W))      // pc
-    val npc: UInt = pc_cntr + 4.U(32.W)         // next pc counter
-    
-    //val r_data: UInt = RegInit(0.U(32.W))
-    val r_req:  Bool = RegInit(true.B)          // fetch signal
-    //val r_rw: Bool = RegInit(false.B)
-    val r_ack:  Bool = RegInit(false.B)
+    val pc_cntr: UInt = RegInit(0.U(32.W)) // pc
+    val npc: UInt = pc_cntr + 4.U(32.W) // next pc counter
 
-    val w_req:  Bool = RegInit(true.B)
-    val w_ack:  Bool = RegInit(false.B)
+    //val r_data: UInt = RegInit(0.U(32.W))
+    val r_req: Bool = RegInit(true.B) // fetch signal
+    //val r_rw: Bool = RegInit(false.B)
+    val r_ack: Bool = RegInit(false.B)
+
+    val w_req: Bool = RegInit(true.B)
+    val w_ack: Bool = RegInit(false.B)
     val w_addr: UInt = RegInit(0.U(32.W))
     val w_data: UInt = RegInit(0.U(32.W))
 
-    io.r_dmem_add.req   := RegInit(false.B)
-    io.r_dmem_add.addr  := RegInit(0.U(32.W))
+    io.r_dmem_add.req := RegInit(false.B)
+    io.r_dmem_add.addr := RegInit(0.U(32.W))
 
 
     // -------- START: IF stage -------
-    io.r_imem_add.addr  := pc_cntr
-    io.r_imem_add.req   := true.B
+    io.r_imem_add.addr := pc_cntr
+    io.r_imem_add.req := true.B
     // -------- END: IF stage --------
-
 
 
     // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
-    when (!stall && !inst_kill) {
-        id_pc   := pc_cntr
-        id_npc  := npc
+    when(!stall && !inst_kill) {
+        id_pc := pc_cntr
+        id_npc := npc
         id_inst := io.r_imem_dat.data
 
-    } .elsewhen(inst_kill) {
-        id_pc   := pc_ini
-        id_npc  := npc_ini
+    }.elsewhen(inst_kill) {
+        id_pc := pc_ini
+        id_npc := npc_ini
         id_inst := inst_nop
 
     }
@@ -122,14 +123,14 @@ class Cpu extends Module {
 
 
     // instruction decode
-    val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits,(new IDecode).table)
+    val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits, (new IDecode).table)
 
     // get rs1,rs2,rd address(x0 - x31)
-    val id_raddr1:      UInt = idm.io.inst.rs1
-    val id_raddr2:      UInt = idm.io.inst.rs2
+    val id_raddr1: UInt = idm.io.inst.rs1
+    val id_raddr2: UInt = idm.io.inst.rs2
     val id_raddr: IndexedSeq[UInt] = IndexedSeq(id_raddr1, id_raddr2) // rs1,2 :treat as 64bit-Addressed SRAM
-    val id_waddr:       UInt = idm.io.inst.rd // rd
-    val id_csr_addr:    UInt = idm.io.inst.csr // csr address
+    val id_waddr: UInt = idm.io.inst.rd // rd
+    val id_csr_addr: UInt = idm.io.inst.csr // csr address
 
     // read register data
     val reg_f: RegRAM = new RegRAM
@@ -138,7 +139,8 @@ class Cpu extends Module {
     // program counter check
     val pc_invalid: Bool = inst_kill_branch || (ex_pc === pc_ini)
 
-    val int_sig: UInt = io.sw.w_interrupt_sig
+    // external interrupt signal
+    val int_sig: Bool = io.sw.w_interrupt_sig
 
     // judge if stall needed
     withClock(invClock) {
@@ -570,7 +572,7 @@ object Test extends App {
                 val stallsig = peek(c.io.sw.r_stall_sig)
                 // if you need fire external interrupt signal uncomment below
 
-                if(lp == 96){
+                if(lp >= 96 && lp <= 97){
                     poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
                 }
                 else{
