@@ -158,7 +158,7 @@ class CSR extends Module {
   val VM:       UInt = 0.U(5.W)
 
   // memory privilege
-  val MPRV:     Bool = io.interrupt_sig
+  val MPRV: Bool = false.B
 
   // extention context status
   val XS:       UInt = 0.U(2.W)
@@ -257,6 +257,7 @@ class CSR extends Module {
   val isInstRet: Bool = (io.inst =/= Instructions.NOP) && (!io.expt || isEcall || isEbreak) && !io.stall
   when(isInstRet) { instret := instret + 1.U }
   when(isInstRet && instret.andR) { instreth := instreth + 1.U }
+
 
   io.expt := isEcall || isExtInt// exception
   io.evec := mtvec //+ (PRV << 6).asUInt()

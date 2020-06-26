@@ -42,6 +42,7 @@ class CtrlSwChannel extends Bundle {
 
     // STALL Signal
     val r_stall_sig:UInt = Output(UInt(32.W))
+
     // External interrupt signal
     val w_interrupt_sig: Bool = Input(Bool())
 

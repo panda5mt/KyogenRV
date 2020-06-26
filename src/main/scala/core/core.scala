@@ -140,7 +140,8 @@ class Cpu extends Module {
     val pc_invalid: Bool = inst_kill_branch || (ex_pc === pc_ini)
 
     // external interrupt signal
-    val int_sig: Bool = io.sw.w_interrupt_sig
+    val interrupt_sig: Bool = RegInit(false.B)
+    interrupt_sig := io.sw.w_interrupt_sig
 
     // judge if stall needed
     withClock(invClock) {
@@ -241,7 +242,7 @@ class Cpu extends Module {
     csr.io.rs1_addr := ex_rs(0)
     csr.io.stall := stall
     csr.io.pc_invalid := pc_invalid
-    csr.io.interrupt_sig := int_sig
+    csr.io.interrupt_sig := interrupt_sig
 
 /*
 val addr: UInt = Input(UInt(32.W))    // mem_alu_out
@@ -310,7 +311,7 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
     // bubble logic
     inst_kill_branch := ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J)
     inst_kill := (
-      inst_kill_branch || csr.io.expt
+      inst_kill_branch || csr.io.expt /*|| io.sw.w_interrupt_sig*/
     )
 
     // -------- END: MEM Stage --------
@@ -357,10 +358,11 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
             w_req := false.B
             r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
+                csr.io.expt -> csr.io.evec,
                 ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,//(mem_pc + mem_imm.asUInt),
-                (mem_ctrl.br_type === BR_JR) -> mem_alu_out,
-                csr.io.expt -> csr.io.evec
+                (mem_ctrl.br_type === BR_JR) -> mem_alu_out
+
 
             ))
         }
@@ -572,7 +574,7 @@ object Test extends App {
                 val stallsig = peek(c.io.sw.r_stall_sig)
                 // if you need fire external interrupt signal uncomment below
 
-                if(lp >= 96 && lp <= 97){
+                if(lp == 96){
                     poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
                 }
                 else{
