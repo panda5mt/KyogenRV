@@ -1,6 +1,7 @@
 The Simple RISC-V KyogenRV(響玄RV)
 =======================
 ## 5-Stage Pipelined RV32I written in Chisel.
+##### 日本語のREADMEはこちら。 [README_J.md](日本語はこちら)
 ### Basically Logic 
 #### 1.Instruction Fetch Stage(IF)  
 ```
