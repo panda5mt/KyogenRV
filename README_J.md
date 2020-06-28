@@ -26,7 +26,7 @@ git clone http://github.com/panda5mt/KyogenRV -b 0.0.9 --depth 1
 cd KyogenRV/
 make test
 ```
-#### 3.Branch (PC update)
+#### 3.分岐の実装(PC update)
 分岐命令の実装とフェッチした命令をフラッシュする実装です
 ```
 git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.3 --depth 1 
@@ -46,7 +46,7 @@ make test
 ```
 を実行します。
 
-#### 4.5段パイプライン化
+#### 4.マルチパイプライン(5ステージ)化
 項目3までシングルパイプラインでした。ここで5段パイプラインにします
 ```
 git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.10 --depth 1 
@@ -55,7 +55,6 @@ cd KyogenRV/
 
 <code>[src/sw/test.s](src/sw/test.s)</code>にアセンブラファイルを記述し、
 プロジェクトのルートフォルダで以下の方法でアセンブルしてください。(riscv-toolchainが必要となります)
-
 
 ```
 make clean
@@ -81,23 +80,23 @@ git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.15 --depth 1
 cd KyogenRV/
 ```
 
-write asm file and save to <code>[src/sw/test.s](src/sw/test.s)</code>
-then build as follows 
+<code>[src/sw/test.s](src/sw/test.s)</code>にアセンブラファイルを記述し、
+プロジェクトのルートフォルダで以下の方法でアセンブルしてください。(riscv-toolchainが必要となります)
 
 ```
 make clean
 make asm
 ```
-you'll get <code>[src/sw/test.hex](src/sw/test.hex)</code>
-then build test module in chisel project as follows
+その後<code>[src/sw/test.hex](src/sw/test.hex)</code>が生成されます。
+このhexをChiselプロジェクトでCPUにロードし実行結果を見るには、
 ```
 make test
 ```
-when you modified <code>[src/sw/test.hex](src/sw/test.hex)</code>, just type as follows
+とします。なお、asmファイルを書き換えた場合、Makefileが自動認識するので
 ```
 make test
 ```
-so makefile scan test.hex is changed and re-assemble then build chisel project.
+するだけでOKです.
 
 #### 6. 例外と割り込み(外部割り込みのみ)実装
-please git clone latest one. 
+最新のプロジェクトをCloneしてください
