@@ -362,8 +362,6 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
                 ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,//(mem_pc + mem_imm.asUInt),
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
-
-
             ))
         }
     }.otherwise { // halt mode
@@ -527,7 +525,7 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
         new PeekPokeTester(c) {
             // read from binary file
-            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
+            val s: BufferedSource = Source.fromFile("src/sw/test3.hex")
             var buffs: Array[String] = _
             try {
                 buffs = s.getLines.toArray
