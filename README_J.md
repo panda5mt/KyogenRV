@@ -1,4 +1,4 @@
-響玄RV:RISC-V RV32I soft-core
+響玄RV:soft-core RISC-V(RV32I) 
 =======================
 ### 
 - アーキテクチャ:RV32I
