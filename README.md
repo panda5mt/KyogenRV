@@ -10,7 +10,7 @@ The Simple RISC-V KyogenRV(響玄RV)
 - Pipelines: 5-stage(IF/ID/EX/MEM/WB)
 - Written: in Chisel-lang v.3.3 + Makefile
 
-##### The following instructions written who want to explore this "KyogenRV" RV32I design step by step. 
+##### The following instructions is written for who want to explore this "KyogenRV" RV32I design step by step. 
 ##### Otherwise, please clone the latest from GitHub. 
 ### Basically Logic 
 #### 1.Instruction Fetch Stage(IF)  
