@@ -6,7 +6,7 @@ The Simple RISC-V KyogenRV(響玄RV)
 - Privilege : only M-mode 
     - User-Level ISA Version 2.2
     - Privileged ISA Version 1.11
-- Intrrupt:External
+- Interrupt:External
 - Pipelines: 5-stage(IF/ID/EX/MEM/WB)
 - Written: in Chisel-lang v.3.3 + Makefile
 
