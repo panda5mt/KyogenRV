@@ -19,7 +19,7 @@ git clone http://github.com/panda5mt/KyogenRV -b 0.0.2 --depth 1
 cd KyogenRV/
 make test
 ```
-#### 2.Instruction Decode Stage(ID) and ALU
+#### 2.Instruction Decode Stage(ID) and Integer ALU
 ```
 git clone http://github.com/panda5mt/KyogenRV -b 0.0.9 --depth 1 
 cd KyogenRV/
