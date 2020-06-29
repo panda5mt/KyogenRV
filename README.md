@@ -91,5 +91,5 @@ make test
 ```
 so makefile scan test.hex is changed and re-assemble then build chisel project.
 
-#### 6. Added Exception
+#### 6. Added Exception and External Interrupt
 please git clone latest one. 
