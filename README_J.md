@@ -1,4 +1,4 @@
-響玄RV:soft-core RISC-V(RV32I) 
+The Simple RISC-V KyogenRV(響玄RV)
 =======================
 ##### English README is [here](README.md)
 - アーキテクチャ:RV32I
