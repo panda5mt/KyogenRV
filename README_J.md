@@ -1,6 +1,6 @@
 響玄RV:soft-core RISC-V(RV32I) 
 =======================
-### 
+##### English README is [here](README.md)
 - アーキテクチャ:RV32I
 - 特権モード: Machine modeのみ
     - User-Level ISA Version 2.2
@@ -9,7 +9,7 @@
 - パイプライン: 5ステージ(IF/ID/EX/MEM/WB stage)
 - 言語:Chisel v.3.3
 
-##### English README is [here](README.md)
+
 ##### 以下の手順はこのKyogenRVの設計を順を追って調べたい方向けです。それ以外の方は最新のgitをcloneしてください。 
 ### 各ステージのロジック 
 #### 1.フェッチステージ(IF)

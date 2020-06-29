@@ -2,6 +2,14 @@ The Simple RISC-V KyogenRV(響玄RV)
 =======================
 ## 5-Stage Pipelined RV32I written in Chisel.
 ##### 日本語のREADMEは[こちら](README_J.md)
+- Arch:RV32I
+- Privilege : only M-mode 
+    - User-Level ISA Version 2.2
+    - Privileged ISA Version 1.11
+- Intrrupt:External
+- Pipelines: 5-stage(IF/ID/EX/MEM/WB)
+- Written: Chisel-lang v.3.3
+
 ### Basically Logic 
 #### 1.Instruction Fetch Stage(IF)  
 ```
