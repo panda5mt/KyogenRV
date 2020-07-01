@@ -289,9 +289,6 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
         mem_csr_data := 0.U
     }
 
-    val r_dmem_data: UInt = RegInit(0.U(32.W))
-    r_dmem_data := io.r_dmem_dat.data
-
     // iotesters
     io.sw.r_mem_alu_out := mem_alu_out
 
