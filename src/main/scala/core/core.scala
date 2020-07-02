@@ -244,14 +244,6 @@ class Cpu extends Module {
     csr.io.pc_invalid := pc_invalid
     csr.io.interrupt_sig := interrupt_sig
 
-/*
-val addr: UInt = Input(UInt(32.W))    // mem_alu_out
-  val in:   UInt = Input(UInt(32.W))    // rs1 or imm_z
-  val out:  UInt = Output(UInt(32.W))   // csrdata -> rd
-  val cmd:  UInt = Input(UInt(32.W))    // csr_cmd
-
-**/
-
     // iotesters
     io.sw.r_ex_raddr1 := ex_reg_raddr(0)
     io.sw.r_ex_raddr2 := ex_reg_raddr(1)
@@ -259,8 +251,6 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
     io.sw.r_ex_rs2 := ex_reg_rs2_bypass//ex_rs(1)
     io.sw.r_ex_imm := ex_imm.asUInt
     // -------- END: EX Stage --------
-
-
 
     // -------- START: MEM Stage --------
     when (!inst_kill) {
@@ -302,8 +292,6 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
     //todo: send cpubus data size
     // *************
     io.w_dmem_dat.data := mem_rs(1)
-
-
 
     // bubble logic
     inst_kill_branch := ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J)
@@ -367,19 +355,14 @@ val addr: UInt = Input(UInt(32.W))    // mem_alu_out
         w_data := io.sw.w_dat
         w_req  := true.B
         pc_cntr := io.sw.w_pc
-
-
     }
 
     // for imem test
-    io.sw.r_dat  := io.r_imem_dat.data//r_data
+    io.sw.r_dat  := io.r_imem_dat.data
     io.sw.r_add  := pc_cntr
-    io.sw.r_pc   := id_pc//pc_cntr// program counter
+    io.sw.r_pc   := id_pc//pc_cntr      // program counter
 
-
-
-
-      // write process
+    // write process
     io.w_imem_add.addr   := w_addr
     io.w_imem_dat.data   := w_data
     io.w_imem_add.req    := w_req
@@ -580,9 +563,9 @@ object Test extends App {
                 println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%x") //peek(c.io.sw.data)
 
             }
-
             step(1)
             println("---------------------------------------------------------")
+
             poke(signal = c.io.sw.halt, value = true.B)
             step(2)
             for (lp <- 0.U(32.W) to 31.U(32.W) by 1) {
@@ -595,7 +578,6 @@ object Test extends App {
 
                 step(1)
                 println(msg = f"read : x$lp%2d = 0x$d%08X ") //peek(c.io.sw.data)
-
             }
         }
     })
