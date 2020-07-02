@@ -259,7 +259,7 @@ class CSR extends Module {
   when(isInstRet && instret.andR) { instreth := instreth + 1.U }
 
 
-  io.expt := isEcall || isExtInt// exception
+  io.expt := isEcall || isEbreak || isExtInt// exception
   io.evec := mtvec //+ (PRV << 6).asUInt()
 
   io.epc := mepc
@@ -277,7 +277,8 @@ class CSR extends Module {
       }
       mcause := Mux(isEcall, Cause.Ecall + PRV,
         Mux(isExtInt, (BigInt(1) << (32 - 1)).asUInt | (Cause.ExtInterrupt + PRV).asUInt,
-          0.U))
+          Mux(isEbreak, Cause.Breakpoint,
+            Cause.IllegalInst)))
       PRV := PRIV.M
       IE := false.B
       PRV1 := PRV
