@@ -22,6 +22,7 @@ class Cpu extends Module {
     val invClock: Clock = Wire(new Clock)
     invClock := (~clock.asUInt()(0)).asBool.asClock() // Clock reversed
     def risingEdge(x: Bool): Bool = x && !RegNext(x)
+
     // ------- START: pipeline registers --------
     // program counter init
     val pc_ini: UInt = PC_INITS.PC_START.U(32.W) // pc start address
@@ -87,22 +88,27 @@ class Cpu extends Module {
     //val r_data: UInt = RegInit(0.U(32.W))
     val r_req: Bool = RegInit(true.B) // fetch signal
     //val r_rw: Bool = RegInit(false.B)
-    val r_ack: Bool = RegInit(false.B)
+    //val r_ack: Bool = RegInit(false.B)
 
     val w_req: Bool = RegInit(true.B)
     val w_ack: Bool = RegInit(false.B)
     val w_addr: UInt = RegInit(0.U(32.W))
     val w_data: UInt = RegInit(0.U(32.W))
 
-    io.r_dmem_add.req := RegInit(false.B)
+    //io.r_dmem_add.req := RegInit(false.B)
     io.r_dmem_add.addr := RegInit(0.U(32.W))
 
 
     // -------- START: IF stage -------
     io.r_imem_add.addr := pc_cntr
-    io.r_imem_add.req := true.B
+    when(!io.w_imem_add.req){
+        io.r_imem_add.req := true.B
+    }.otherwise{
+        io.r_imem_add.req := false.B
+    }
     // -------- END: IF stage --------
 
+    //val id_valid = (io.r_imem_dat.ack)
 
     // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
@@ -110,12 +116,10 @@ class Cpu extends Module {
         id_pc := pc_cntr
         id_npc := npc
         id_inst := io.r_imem_dat.data
-
     }.elsewhen(inst_kill) {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-
     }
 
     val idm: IDModule = Module(new IDModule)
@@ -153,7 +157,7 @@ class Cpu extends Module {
         }
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall
+          (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
         io.sw.r_stall_sig := stall
     }
     // -------- END: ID stage --------
@@ -342,7 +346,7 @@ class Cpu extends Module {
 
         w_req := false.B
         when(!stall) {
-            r_req := r_req
+            //r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
                 ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
@@ -369,7 +373,7 @@ class Cpu extends Module {
     io.w_imem_add.req    := w_req
 
     // read process
-    r_ack  := io.r_imem_dat.ack
+    //r_ack  := io.r_imem_dat.ack
     //r_data := io.r_imem_dat.data
 
     // x0 - x31
@@ -440,6 +444,8 @@ class CpuBus extends Module {
     //IOTESTERS: External Interrupt Signal
     cpu.io.sw.w_interrupt_sig <> io.sw.w_interrupt_sig
 
+    // MISC
+    cpu.io.sw.misc <> io.sw.misc
 
     w_pc        := io.sw.w_pc
 
@@ -552,6 +558,7 @@ object Test extends App {
                 val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
                 val stallsig = peek(c.io.sw.r_stall_sig)
                 // if you need fire external interrupt signal uncomment below
+
 
                 if(lp == 96){
                     poke(signal = c.io.sw.w_interrupt_sig, value = true.B)

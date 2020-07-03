@@ -18,4 +18,3 @@ _label1:
 _label2:
         addi    x6,  x0, 0xCC       # <0x2C>
         jal     x0, _label2         # <0x30>
-
