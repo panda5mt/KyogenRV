@@ -9,7 +9,7 @@ class IMem extends Module {
     val io: SlaveIf_Inst = IO(new SlaveIf_Inst)
 
     // initialization
-    //val mem = SyncReaimem(5120, UInt(32.W))
+    //val mem = SyncReadMem(5120, UInt(32.W))
     val mem: Mem[UInt] = Mem(5120, UInt(32.W))
     //val mem: Mem[UInt] = Mem(256*1024, UInt(32.W))
 
