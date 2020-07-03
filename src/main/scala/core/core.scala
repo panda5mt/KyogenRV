@@ -339,8 +339,9 @@ class Cpu extends Module {
 
     // -------- START: PC update --------
     when (io.sw.halt === false.B){
+
+        w_req := false.B
         when(!stall) {
-            w_req := false.B
             r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
