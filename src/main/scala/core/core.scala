@@ -16,7 +16,7 @@ import mem._
 
 
 //noinspection ScalaStyle
-class Cpu extends Module {
+class KyogenRVCpu extends Module {
     val io: HostIf = IO(new HostIf)
 
     val invClock: Clock = Wire(new Clock)
@@ -400,7 +400,7 @@ class CpuBus extends Module {
 
     val sw_gaddr:   UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
     
-    val cpu:    Cpu = Module(new Cpu)
+    val cpu:    KyogenRVCpu = Module(new KyogenRVCpu)
     val imem:   IMem = Module(new IMem)
     val dmem:   DMem = Module(new DMem)
     
@@ -500,12 +500,12 @@ class RegRAM {
 
 //noinspection ScalaStyle
 object kyogenrv extends App {
-    val name = "cpu"
+    val name = "KyogenRVCpu"
 
     (new stage.ChiselStage).execute(
         Array("-td=fpga/chisel_generated", s"-o=$name"),
         Seq(chisel3.stage.ChiselGeneratorAnnotation(
-            () => new Cpu())))
+            () => new KyogenRVCpu())))
 }
 
 object Test extends App {
