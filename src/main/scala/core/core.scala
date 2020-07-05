@@ -293,10 +293,33 @@ class KyogenRVCpu extends Module {
     io.r_dmem_add.addr := mem_alu_out
     io.r_dmem_add.req  := (mem_ctrl.mem_wr === M_XRD)
 
-    //todo: send cpubus data size
-    // *************
     io.w_dmem_dat.data := mem_rs(1)
-    io.w_dmem_dat.byteenable := 15.U
+    // send bus write size
+    io.w_dmem_dat.byteenable := DontCare
+    when(mem_ctrl.mem_wr === M_XWR) {
+        when(mem_ctrl.mask_type === MT_B) { // byte write
+            switch(mem_alu_out(1, 0)){
+                is("b00".U){ io.w_dmem_dat.byteenable := "b0001".U }
+                is("b01".U){ io.w_dmem_dat.byteenable := "b0010".U }
+                is("b10".U){ io.w_dmem_dat.byteenable := "b0100".U }
+                is("b11".U){ io.w_dmem_dat.byteenable := "b1000".U }
+            }
+        }.elsewhen(mem_ctrl.mask_type === MT_H) {
+            switch(mem_alu_out(1, 0)){
+                is("b00".U){ io.w_dmem_dat.byteenable := "b0011".U }
+                is("b10".U){ io.w_dmem_dat.byteenable := "b1100".U }
+                // others
+                is("b01".U){ io.w_dmem_dat.byteenable := "b0000".U }
+                is("b11".U){ io.w_dmem_dat.byteenable := "b0000".U }
+            }
+        }.otherwise {
+            io.w_dmem_dat.byteenable := "b1111".U
+        }
+    }.otherwise {
+        io.w_dmem_dat.byteenable := "b1111".U
+    }
+
+
 
     // bubble logic
     inst_kill_branch := ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J)

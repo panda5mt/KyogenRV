@@ -34,7 +34,8 @@ class IMem extends Module {
     io.r_imem_dat.data  := DontCare
     io.r_imem_dat.ack   := i_ack
     when(io.r_imem_add.req === true.B) {
-        io.r_imem_dat.data  := Cat(mem_3.read(io.r_imem_add.addr),
+        io.r_imem_dat.data  := Cat(
+            mem_3.read(io.r_imem_add.addr),
             mem_2.read(io.r_imem_add.addr),
             mem_1.read(io.r_imem_add.addr),
             mem_0.read(io.r_imem_add.addr)
