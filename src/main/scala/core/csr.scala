@@ -348,5 +348,4 @@ class CSR extends Module {
       }
     }
   }
-
 }

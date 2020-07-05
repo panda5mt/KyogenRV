@@ -296,6 +296,7 @@ class KyogenRVCpu extends Module {
     //todo: send cpubus data size
     // *************
     io.w_dmem_dat.data := mem_rs(1)
+    io.w_dmem_dat.byteenable := 15.U
 
     // bubble logic
     inst_kill_branch := ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J)
@@ -371,7 +372,7 @@ class KyogenRVCpu extends Module {
     io.w_imem_add.addr   := w_addr
     io.w_imem_dat.data   := w_data
     io.w_imem_add.req    := w_req
-
+    io.w_imem_dat.byteenable := 15.U
     // read process
     //r_ack  := io.r_imem_dat.ack
     //r_data := io.r_imem_dat.data
@@ -464,10 +465,11 @@ class CpuBus extends Module {
     cpu.io.r_imem_dat.ack   <> imem.io.r_imem_dat.ack
 
     // write imem
-    imem.io.w_imem_add.req   <> cpu.io.w_imem_add.req
-    imem.io.w_imem_add.addr  <> cpu.io.w_imem_add.addr
-    imem.io.w_imem_dat.data  <> cpu.io.w_imem_dat.data
-    cpu.io.w_imem_dat.ack    <> imem.io.w_imem_dat.ack
+    imem.io.w_imem_add.req          <> cpu.io.w_imem_add.req
+    imem.io.w_imem_add.addr         <> cpu.io.w_imem_add.addr
+    imem.io.w_imem_dat.data         <> cpu.io.w_imem_dat.data
+    cpu.io.w_imem_dat.ack           <> imem.io.w_imem_dat.ack
+    cpu.io.w_imem_dat.byteenable    <> imem.io.w_imem_dat.byteenable
 
     // Read dmem
     dmem.io.r_dmem_add.req  <> cpu.io.r_dmem_add.req
@@ -480,6 +482,7 @@ class CpuBus extends Module {
     dmem.io.w_dmem_add.addr  <> cpu.io.w_dmem_add.addr
     dmem.io.w_dmem_dat.data  <> cpu.io.w_dmem_dat.data
     cpu.io.w_dmem_dat.ack    <> dmem.io.w_dmem_dat.ack
+    cpu.io.w_dmem_dat.byteenable    <> dmem.io.w_dmem_dat.byteenable
 
 }
 //noinspection ScalaStyle

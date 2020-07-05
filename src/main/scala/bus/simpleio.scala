@@ -63,6 +63,7 @@ class DataChannel extends Bundle {
 class wDataChannel extends Bundle {
     val ack: Bool = Input(Bool())        // data is available ack
     val data: UInt = Output(UInt(32.W))   // data (32bit)
+    val byteenable: UInt = Output(UInt(4.W))    // byteenable (8bit lane x4 = 32bit)
 }
 
 // HOST :read only(IMem)
@@ -83,6 +84,7 @@ class HostIf extends Bundle {
     // write operation
     val w_dmem_add: AddressChannel   = new AddressChannel
     val w_dmem_dat: wDataChannel     = new wDataChannel
+
 
     // debug if
     val sw: CtrlSwChannel = new CtrlSwChannel
