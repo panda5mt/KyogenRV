@@ -335,9 +335,49 @@ class KyogenRVCpu extends Module {
     wb_reg_waddr := mem_reg_waddr
     wb_alu_out := mem_alu_out
     wb_dmem_read_ack := io.r_dmem_dat.ack
-    wb_dmem_read_data := io.r_dmem_dat.data
+    //wb_dmem_read_data := io.r_dmem_dat.data
     wb_csr_addr := mem_csr_addr
     wb_csr_data := mem_csr_data
+
+
+    when(mem_ctrl.mem_wr === M_XRD) {
+        when(mem_ctrl.mask_type === MT_B) { // byte read
+            switch(mem_alu_out(1, 0)){
+                is("b00".U){ wb_dmem_read_data := Cat(Fill(24, io.r_dmem_dat.data(7)), io.r_dmem_dat.data( 7, 0)) }
+                is("b01".U){ wb_dmem_read_data := Cat(Fill(24, io.r_dmem_dat.data(15)),io.r_dmem_dat.data(15, 8)) }
+                is("b10".U){ wb_dmem_read_data := Cat(Fill(24, io.r_dmem_dat.data(23)),io.r_dmem_dat.data(23,16)) }
+                is("b11".U){ wb_dmem_read_data := Cat(Fill(24, io.r_dmem_dat.data(31)),io.r_dmem_dat.data(31,24)) }
+            }
+        }.elsewhen(mem_ctrl.mask_type === MT_BU) { // byte read unsigned
+            switch(mem_alu_out(1, 0)){
+                is("b00".U){ wb_dmem_read_data := Cat(0.U(24.W), io.r_dmem_dat.data( 7, 0)) }
+                is("b01".U){ wb_dmem_read_data := Cat(0.U(24.W), io.r_dmem_dat.data(15, 8)) }
+                is("b10".U){ wb_dmem_read_data := Cat(0.U(24.W), io.r_dmem_dat.data(23,16)) }
+                is("b11".U){ wb_dmem_read_data := Cat(0.U(24.W), io.r_dmem_dat.data(31,24)) }
+            }
+        }.elsewhen(mem_ctrl.mask_type === MT_H) {
+            switch(mem_alu_out(1, 0)){
+                is("b00".U){ wb_dmem_read_data := Cat(Fill(16, io.r_dmem_dat.data(15)), io.r_dmem_dat.data( 15, 0)) }
+                is("b10".U){ wb_dmem_read_data := Cat(Fill(16, io.r_dmem_dat.data(31)), io.r_dmem_dat.data( 31, 16)) }
+                // others
+                is("b01".U){ wb_dmem_read_data := 0.U }
+                is("b11".U){ wb_dmem_read_data := 0.U }
+            }
+        }.elsewhen(mem_ctrl.mask_type === MT_HU) {
+            switch(mem_alu_out(1, 0)){
+                is("b00".U){ wb_dmem_read_data := Cat(0.U(16.W), io.r_dmem_dat.data( 15, 0 )) }
+                is("b10".U){ wb_dmem_read_data := Cat(0.U(16.W), io.r_dmem_dat.data( 31, 16)) }
+                // others
+                is("b01".U){ wb_dmem_read_data := 0.U }
+                is("b11".U){ wb_dmem_read_data := 0.U }
+            }
+        }.otherwise {
+            wb_dmem_read_data := io.r_dmem_dat.data
+        }
+    }.otherwise {
+        wb_dmem_read_data := io.r_dmem_dat.data
+    }
+
 
 
     withClock(invClock) {
