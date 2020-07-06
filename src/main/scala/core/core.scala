@@ -578,7 +578,7 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
         new PeekPokeTester(c) {
             // read from binary file
-            val s: BufferedSource = Source.fromFile("src/sw/test5.hex")
+            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
             var buffs: Array[String] = _
             try {
                 buffs = s.getLines.toArray
