@@ -11,10 +11,14 @@ class DMem extends Module {
   val io: SlaveIf_Data = IO(new SlaveIf_Data)
 
   val i_ack: Bool = RegInit(false.B)
-  val i_req: Bool = RegInit(false.B)
-
   val w_ack: Bool = RegInit(false.B)
+
+  // data memory 0x2000 - 0x3000
+  val valid_address: Bool = (io.r_dmem_add.addr >= 0x2000.U) && (io.r_dmem_add.addr <= 0x3000.U)
   val byteenable: UInt = io.w_dmem_dat.byteenable
+
+  val r_req: Bool = io.r_dmem_add.req && valid_address
+  val w_req: Bool = io.w_dmem_add.req && valid_address
 
   // initialization
   //val mem: Mem[UInt] = Mem(256*1024, UInt(32.W))
@@ -30,12 +34,13 @@ class DMem extends Module {
 
   val addr_align: UInt = (io.r_dmem_add.addr >> 2).asUInt()
 
-  // read operation
-  i_req               := io.r_dmem_add.req
+
   io.w_dmem_dat.ack   := w_ack
   io.r_dmem_dat.data  := DontCare
   io.r_dmem_dat.ack   := i_ack
-  when(io.r_dmem_add.req === true.B) {
+
+  // read operation
+  when(r_req === true.B) {
     io.r_dmem_dat.data  := Cat(
       mem_3.read(addr_align),
       mem_2.read(addr_align),
@@ -44,7 +49,7 @@ class DMem extends Module {
     )
     i_ack := true.B
     w_ack := false.B
-  }.elsewhen(io.w_dmem_add.req === true.B) {
+  }.elsewhen(w_req === true.B) {
     //mem.write(io.w_dmem_add.addr, io.w_dmem_dat.data)
     when(byteenable(3)){ mem_3.write(addr_align, wdat_3) }
     when(byteenable(2)){ mem_2.write(addr_align, wdat_2) }

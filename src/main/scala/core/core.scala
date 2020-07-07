@@ -152,13 +152,13 @@ class KyogenRVCpu extends Module {
         var mem_stall: Bool = RegInit(false.B)
         when (ex_ctrl.mem_wr === M_XRD) {
             mem_stall := true.B
-        } .elsewhen(io.r_dmem_dat.ack === true.B) {
+        } .elsewhen(io.r_dmem_dat.ack/*  wb_dmem_read_ack === true.B*/) {
             mem_stall := false.B
         }
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
-        io.sw.r_stall_sig := stall
+        io.sw.r_stall_sig := stall//io.r_dmem_add.addr//stall
     }
     // -------- END: ID stage --------
 
@@ -287,13 +287,23 @@ class KyogenRVCpu extends Module {
     io.sw.r_mem_alu_out := mem_alu_out
 
     //dmem connection
-    io.w_dmem_add.addr := mem_alu_out
-    io.w_dmem_add.req  := (mem_ctrl.mem_wr === M_XWR)
+    when (io.sw.halt === false.B) { // CPU active
+        io.w_dmem_add.addr := mem_alu_out
+        io.w_dmem_add.req := (mem_ctrl.mem_wr === M_XWR)
 
-    io.r_dmem_add.addr := mem_alu_out
-    io.r_dmem_add.req  := (mem_ctrl.mem_wr === M_XRD)
+        io.r_dmem_add.addr := mem_alu_out
+        io.r_dmem_add.req := (mem_ctrl.mem_wr === M_XRD)
 
-    io.w_dmem_dat.data := mem_rs(1)
+        io.w_dmem_dat.data := mem_rs(1)
+    }.otherwise{    // CPU halt
+        // dmem connection
+        io.w_dmem_add.addr := 0.U
+        io.w_dmem_add.req := false.B
+        io.r_dmem_add.addr := 0.U
+        io.r_dmem_add.req := false.B
+        io.w_dmem_dat.data := 0.U
+    }
+
     // send bus write size
     io.w_dmem_dat.byteenable := DontCare
     when(mem_ctrl.mem_wr === M_XWR) {
@@ -407,7 +417,6 @@ class KyogenRVCpu extends Module {
 
     // -------- START: PC update --------
     when (io.sw.halt === false.B){
-
         w_req := false.B
         when(!stall) {
             //r_req := r_req
@@ -419,7 +428,7 @@ class KyogenRVCpu extends Module {
             ))
         }
     }.otherwise { // halt mode
-        // enable Write Operation
+        // enable imem Write Operation
         w_addr := io.sw.w_add //w_addr + 4.U(32.W)
         w_data := io.sw.w_dat
         w_req  := true.B
@@ -624,15 +633,13 @@ object Test extends App {
                 val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
                 val stallsig = peek(c.io.sw.r_stall_sig)
                 // if you need fire external interrupt signal uncomment below
-
-
                 if(lp == 96){
                     poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
                 }
                 else{
                     poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
                 }
-
+                //poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
                 step(1)
                 println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%x") //peek(c.io.sw.data)
 
