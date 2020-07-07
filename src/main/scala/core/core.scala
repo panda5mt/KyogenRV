@@ -349,10 +349,13 @@ class KyogenRVCpu extends Module {
 
 
     // bubble logic
-    inst_kill_branch := ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) || (mem_ctrl.br_type === BR_JR) || (mem_ctrl.br_type === BR_J)
-    inst_kill := (
-      inst_kill_branch || csr.io.expt /*|| io.sw.w_interrupt_sig*/
-    )
+    inst_kill_branch := (
+        ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) ||
+        (mem_ctrl.br_type === BR_JR) ||
+        (mem_ctrl.br_type === BR_J)
+      )
+
+    inst_kill := (inst_kill_branch || csr.io.expt)
 
     // -------- END: MEM Stage --------
 
@@ -636,7 +639,6 @@ object Test extends App {
 
             //for (lp <- memarray.indices by 1){
             for (lp <- 0 until 1000 by 1) {
-
                 val a = peek(signal = c.io.sw.r_pc)
                 val d = peek(signal = c.io.sw.r_dat)
                 val exraddr1 = peek(c.io.sw.r_ex_raddr1)
