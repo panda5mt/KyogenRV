@@ -12,7 +12,7 @@ class IMem extends Module {
     val i_ack: Bool = RegInit(false.B)
     val w_ack: Bool = RegInit(false.B)
 
-    // data memory 0x0000 - 0x1000
+    // instruction memory 0x0000 - 0x1000
     val valid_address: Bool = (io.r_imem_add.addr >= 0x0000.U) && (io.r_imem_add.addr <= 0x1000.U)
     val byteenable: UInt = 15.U// io.w_imem_dat.byteenable
 
