@@ -290,43 +290,60 @@ class KyogenRVCpu extends Module {
     when (io.sw.halt === false.B) { // CPU active
         io.w_dmem_add.addr := mem_alu_out
         io.w_dmem_add.req := (mem_ctrl.mem_wr === M_XWR)
-
+        io.w_dmem_dat.data := DontCare
         io.r_dmem_add.addr := mem_alu_out
         io.r_dmem_add.req := (mem_ctrl.mem_wr === M_XRD)
 
-        io.w_dmem_dat.data := mem_rs(1)
+        //io.w_dmem_dat.data := mem_rs(1)
     }.otherwise{    // CPU halt
         // dmem connection
-        io.w_dmem_add.addr := 0.U
-        io.w_dmem_add.req := false.B
+        io.w_dmem_add.addr := io.sw.w_add
+        io.w_dmem_dat.data := io.sw.w_dat
+        io.w_dmem_add.req := true.B
+        io.w_dmem_dat.byteenable := 15.U
         io.r_dmem_add.addr := 0.U
         io.r_dmem_add.req := false.B
-        io.w_dmem_dat.data := 0.U
+
     }
 
     // send bus write size
     io.w_dmem_dat.byteenable := DontCare
+    //  mem_rs(1)
     when(mem_ctrl.mem_wr === M_XWR) {
         when(mem_ctrl.mask_type === MT_B) { // byte write
             switch(mem_alu_out(1, 0)){
-                is("b00".U){ io.w_dmem_dat.byteenable := "b0001".U }
-                is("b01".U){ io.w_dmem_dat.byteenable := "b0010".U }
-                is("b10".U){ io.w_dmem_dat.byteenable := "b0100".U }
-                is("b11".U){ io.w_dmem_dat.byteenable := "b1000".U }
+                is("b00".U){
+                    io.w_dmem_dat.byteenable := "b0001".U
+                    io.w_dmem_dat.data := mem_rs(1)
+                }
+                is("b01".U){
+                    io.w_dmem_dat.byteenable := "b0010".U
+                    io.w_dmem_dat.data := mem_rs(1) << 8.U
+                }
+                is("b10".U){
+                    io.w_dmem_dat.byteenable := "b0100".U
+                    io.w_dmem_dat.data := mem_rs(1) << 16.U
+                }
+                is("b11".U){
+                    io.w_dmem_dat.byteenable := "b1000".U
+                    io.w_dmem_dat.data := mem_rs(1) << 24.U
+                }
             }
         }.elsewhen(mem_ctrl.mask_type === MT_H) {
             switch(mem_alu_out(1, 0)){
-                is("b00".U){ io.w_dmem_dat.byteenable := "b0011".U }
-                is("b10".U){ io.w_dmem_dat.byteenable := "b1100".U }
-                // others
-                is("b01".U){ io.w_dmem_dat.byteenable := "b0000".U }
-                is("b11".U){ io.w_dmem_dat.byteenable := "b0000".U }
+                is("b00".U){
+                    io.w_dmem_dat.byteenable := "b0011".U
+                    io.w_dmem_dat.data := mem_rs(1)
+                }
+                is("b10".U){
+                    io.w_dmem_dat.byteenable := "b1100".U
+                    io.w_dmem_dat.data := (mem_rs(1) << 16.U)
+                }
             }
-        }.otherwise {
+        }.otherwise { // MT_W
             io.w_dmem_dat.byteenable := "b1111".U
+            io.w_dmem_dat.data := mem_rs(1)
         }
-    }.otherwise {
-        io.w_dmem_dat.byteenable := "b1111".U
     }
 
 
@@ -587,7 +604,7 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
         new PeekPokeTester(c) {
             // read from binary file
-            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
+            val s: BufferedSource = Source.fromFile("src/sw/test5.hex")
             var buffs: Array[String] = _
             try {
                 buffs = s.getLines.toArray
