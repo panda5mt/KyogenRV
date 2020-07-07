@@ -152,7 +152,7 @@ class KyogenRVCpu extends Module {
         var mem_stall: Bool = RegInit(false.B)
         when (ex_ctrl.mem_wr === M_XRD) {
             mem_stall := true.B
-        } .elsewhen(wb_dmem_read_ack === true.B){//io.r_dmem_dat.ack/*  wb_dmem_read_ack === true.B*/) {
+        } .elsewhen(wb_dmem_read_ack === true.B) {
             mem_stall := false.B
         }
 
