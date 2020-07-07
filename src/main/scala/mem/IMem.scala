@@ -9,13 +9,16 @@ import chisel3.util.Cat
 class IMem extends Module {
     val io: SlaveIf_Inst = IO(new SlaveIf_Inst)
 
-
     val i_ack: Bool = RegInit(false.B)
-    val i_req: Bool = RegInit(false.B)
-
     val w_ack: Bool = RegInit(false.B)
-    val byteenable: UInt = 15.U // byteenable = b1111 = all(32bits) are write-enable
 
+    // data memory 0x0000 - 0x1000
+    val valid_address: Bool = (io.r_imem_add.addr >= 0x0000.U) && (io.r_imem_add.addr <= 0x1000.U)
+    val byteenable: UInt = 15.U// io.w_imem_dat.byteenable
+
+    val r_req: Bool = io.r_imem_add.req && valid_address
+    val w_req: Bool = io.w_imem_add.req && valid_address
+    
     // initialization
     //val mem: Mem[UInt] = Mem(256*1024, UInt(32.W))
     val mem_3: Mem[UInt] = Mem(256*1024, UInt(8.W))
@@ -28,12 +31,13 @@ class IMem extends Module {
     val wdat_1: UInt = io.w_imem_dat.data(15, 8)
     val wdat_0: UInt = io.w_imem_dat.data( 7, 0)
 
-    // read operation
-    i_req               := io.r_imem_add.req
     io.w_imem_dat.ack   := w_ack
     io.r_imem_dat.data  := DontCare
     io.r_imem_dat.ack   := i_ack
-    when(io.r_imem_add.req === true.B) {
+
+
+    // read operation
+    when(r_req === true.B) {
         io.r_imem_dat.data  := Cat(
             mem_3.read(io.r_imem_add.addr),
             mem_2.read(io.r_imem_add.addr),
@@ -42,7 +46,7 @@ class IMem extends Module {
         )
         i_ack := true.B
         w_ack := false.B
-    }.elsewhen(io.w_imem_add.req === true.B) {
+    }.elsewhen(w_req) {
         //mem.write(io.w_imem_add.addr, io.w_imem_dat.data)
         when(byteenable(3)){ mem_3.write(io.w_imem_add.addr, wdat_3) }
         when(byteenable(2)){ mem_2.write(io.w_imem_add.addr, wdat_2) }
