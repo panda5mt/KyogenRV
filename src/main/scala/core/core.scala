@@ -74,6 +74,7 @@ class KyogenRVCpu extends Module {
 
     // stall control
     val stall: Bool = Wire(Bool())
+    val stall_without_csr: Bool = Wire(Bool())
 
     // branch control
     val inst_kill: Bool = Wire(Bool())
@@ -149,17 +150,21 @@ class KyogenRVCpu extends Module {
 
     // judge if stall needed
     withClock(invClock) {
-        var mem_stall: Bool = RegInit(false.B)
+        val mem_stall: Bool = RegInit(false.B)
         when (ex_ctrl.mem_wr === M_XRD) {
             mem_stall := true.B
         } .elsewhen(wb_dmem_read_ack === true.B) {
             mem_stall := false.B
         }
 
+        stall_without_csr := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
+          (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
+
+        val csr_stall = id_raddr(0) === ex_reg_waddr && ex_ctrl.csr_cmd =/= CSR.N
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) ||
-          (id_raddr(0) === ex_reg_waddr && ex_ctrl.csr_cmd =/= CSR.N) || mem_stall || !io.r_imem_add.req
-        io.sw.r_stall_sig := stall//io.r_dmem_add.addr//stall
+          (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req || csr_stall
+
+        io.sw.r_stall_sig := stall
     }
     // -------- END: ID stage --------
 
@@ -239,12 +244,12 @@ class KyogenRVCpu extends Module {
 
     val csr: CSR = Module(new CSR)
     csr.io.pc   := ex_pc
-    csr.io.addr := ex_csr_addr//0.U//mem_alu_out
+    csr.io.addr := ex_csr_addr
     csr.io.cmd  := ex_csr_cmd
     csr.io.in   := csr_in
     csr.io.inst := ex_inst
     csr.io.rs1_addr := ex_inst(19, 15)//ex_rs(0)
-    csr.io.stall := stall
+    csr.io.stall := stall_without_csr //stall
     csr.io.pc_invalid := pc_invalid
     csr.io.interrupt_sig := interrupt_sig
 
@@ -658,7 +663,7 @@ object Test extends App {
                 else{
                     poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
                 }
-                //poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
+//                poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
                 step(1)
                 println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%x") //peek(c.io.sw.data)
 
