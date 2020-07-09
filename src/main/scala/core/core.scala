@@ -161,8 +161,7 @@ class KyogenRVCpu extends Module {
           (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
 
         val csr_stall = id_raddr(0) === ex_reg_waddr && ex_ctrl.csr_cmd =/= CSR.N
-        stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req || csr_stall
+        stall := stall_without_csr || csr_stall
 
         io.sw.r_stall_sig := stall
     }
