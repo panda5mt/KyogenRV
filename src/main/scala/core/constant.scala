@@ -25,7 +25,6 @@ object ScalarOpConstants {
    def BR_GEU: UInt = 6.U(4.W) // Branch on Greater/Equal Unsigned
    def BR_LT:  UInt = 7.U(4.W) // Branch on Less Than
    def BR_LTU: UInt = 8.U(4.W) // Branch on Less Than Unsigned
-
    def BR_X:   BitPat = BitPat("b????")
 
    // RS1 Operand Select Signal

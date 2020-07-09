@@ -243,7 +243,7 @@ class KyogenRVCpu extends Module {
     csr.io.cmd  := ex_csr_cmd
     csr.io.in   := csr_in
     csr.io.inst := ex_inst
-    csr.io.rs1_addr := ex_rs(0)
+    csr.io.rs1_addr := ex_inst(19, 15)//ex_rs(0)
     csr.io.stall := stall
     csr.io.pc_invalid := pc_invalid
     csr.io.interrupt_sig := interrupt_sig

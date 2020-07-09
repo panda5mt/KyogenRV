@@ -252,7 +252,7 @@ class CSR extends Module {
   val isExtInt:   Bool = MEIP && MEIE
   val isEcall:    Bool = privInst && !csr_addr(0) && !csr_addr(8)
   val isEbreak:   Bool = privInst &&  csr_addr(0) && !csr_addr(8)
-  val wen:        Bool = (io.cmd === CSR.W) || io.cmd(1) && (rs1_addr =/= 0.U)
+  val wen:        Bool = (io.cmd === CSR.W) || io.cmd(1) && rs1_addr.orR //(rs1_addr =/= 0.U)
 
   val isInstRet: Bool = (io.inst =/= Instructions.NOP) && (!io.expt || isEcall || isEbreak) && !io.stall
   when(isInstRet) { instret := instret + 1.U }
