@@ -75,6 +75,7 @@ class KyogenRVCpu extends Module {
     // stall control
     val stall: Bool = Wire(Bool())
     val stall_without_csr: Bool = Wire(Bool())
+    val csr_stall: Bool = Wire(Bool())
 
     // branch control
     val inst_kill: Bool = Wire(Bool())
@@ -160,7 +161,6 @@ class KyogenRVCpu extends Module {
         stall_without_csr := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
 
-        val csr_stall = id_raddr(0) === ex_reg_waddr && ex_ctrl.csr_cmd =/= CSR.N
         stall := stall_without_csr || csr_stall
 
         io.sw.r_stall_sig := stall
@@ -251,7 +251,7 @@ class KyogenRVCpu extends Module {
     csr.io.stall := stall_without_csr //stall
     csr.io.pc_invalid := pc_invalid
     csr.io.interrupt_sig := interrupt_sig
-
+    csr_stall := id_raddr(0) === ex_reg_waddr && ex_ctrl.csr_cmd =/= CSR.N && !csr.io.expt
     // iotesters
     io.sw.r_ex_raddr1 := ex_reg_raddr(0)
     io.sw.r_ex_raddr2 := ex_reg_raddr(1)
@@ -611,7 +611,7 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
         new PeekPokeTester(c) {
             // read from binary file
-            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
+            val s: BufferedSource = Source.fromFile("src/sw/test5.hex")
             var buffs: Array[String] = _
             try {
                 buffs = s.getLines.toArray
