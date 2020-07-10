@@ -446,9 +446,9 @@ class KyogenRVCpu extends Module {
             //r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
-                ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
-                (mem_ctrl.br_type === BR_J) -> mem_alu_out,//(mem_pc + mem_imm.asUInt),
-                (mem_ctrl.br_type === BR_JR) -> mem_alu_out
+                ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) -> ((mem_pc + mem_imm.asUInt)>> 2 << 2),// (>> 2 << 2) -> 4byte alignment
+                (mem_ctrl.br_type === BR_J) -> (mem_alu_out >> 2 << 2),// (>> 2 << 2) -> 4byte alignment
+                (mem_ctrl.br_type === BR_JR) -> (mem_alu_out >> 2 << 2) // (>> 2 << 2) -> 4byte alignment
             ))
         }
     }.otherwise { // halt mode
