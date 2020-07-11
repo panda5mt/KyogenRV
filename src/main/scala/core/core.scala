@@ -74,8 +74,7 @@ class KyogenRVCpu extends Module {
 
     // stall control
     val stall: Bool = Wire(Bool())
-    val stall_without_csr: Bool = Wire(Bool())
-    val csr_stall: Bool = Wire(Bool())
+    //val csr_stall: Bool = Wire(Bool())
 
     // branch control
     val inst_kill: Bool = Wire(Bool())
@@ -149,6 +148,8 @@ class KyogenRVCpu extends Module {
     val interrupt_sig: Bool = RegInit(false.B)
     interrupt_sig := io.sw.w_interrupt_sig
 
+    val csr: CSR = Module(new CSR)
+
     // judge if stall needed
     withClock(invClock) {
         val mem_stall: Bool = RegInit(false.B)
@@ -158,12 +159,12 @@ class KyogenRVCpu extends Module {
             mem_stall := false.B
         }
 
-        stall_without_csr := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
+        stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
 
-        stall := stall_without_csr || csr_stall
+        //stall := stall_without_csr
 
-        io.sw.r_stall_sig := stall
+        io.sw.r_stall_sig := (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.csr_cmd =/= CSR.N)//wb_csr_data//stall
     }
     // -------- END: ID stage --------
 
@@ -196,12 +197,14 @@ class KyogenRVCpu extends Module {
 
     // forwarding logic
     val ex_reg_rs1_bypass: UInt = MuxCase(ex_rs(0), Seq(
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.csr_cmd =/= CSR.N) -> mem_csr_data,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0) -> wb_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out
     ))
     val ex_reg_rs2_bypass: UInt = MuxCase(ex_rs(1), Seq(
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.csr_cmd =/= CSR.N) -> mem_csr_data,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1) -> io.r_dmem_dat.data,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0) -> wb_alu_out,
@@ -241,17 +244,17 @@ class KyogenRVCpu extends Module {
     )
     //val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),ex_reg_rs1_bypass)
 
-    val csr: CSR = Module(new CSR)
+
     csr.io.pc   := ex_pc
     csr.io.addr := ex_csr_addr
     csr.io.cmd  := ex_csr_cmd
     csr.io.in   := csr_in
     csr.io.inst := ex_inst
     csr.io.rs1_addr := ex_inst(19, 15)//ex_rs(0)
-    csr.io.stall := stall_without_csr //stall
+    csr.io.stall := stall
     csr.io.pc_invalid := pc_invalid
     csr.io.interrupt_sig := interrupt_sig
-    csr_stall := id_raddr(0) === ex_reg_waddr && ex_ctrl.csr_cmd =/= CSR.N && !csr.io.expt
+    //csr_stall ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.csr_cmd =/= CSR.N)) && !csr.io.expt
     // iotesters
     io.sw.r_ex_raddr1 := ex_reg_raddr(0)
     io.sw.r_ex_raddr2 := ex_reg_raddr(1)
@@ -611,7 +614,7 @@ object Test extends App {
     iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
         new PeekPokeTester(c) {
             // read from binary file
-            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
+            val s: BufferedSource = Source.fromFile("src/sw/test5.hex")
             var buffs: Array[String] = _
             try {
                 buffs = s.getLines.toArray

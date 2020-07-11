@@ -198,6 +198,8 @@ class CSR extends Module {
   val mtohost:    UInt = RegInit(0.U(32.W))
   val mfromhost:  UInt = Reg(UInt(32.W))
 
+  val misa:       UInt = RegInit(0x40000000L.U(32.W))
+
   // count if pc is valid
   val valid_pc: UInt = RegInit(0.U(32.W))
 
@@ -228,7 +230,8 @@ class CSR extends Module {
       BitPat(CsrAddr.mcause)    -> mcause,
       BitPat(CsrAddr.mbadaddr)  -> mbadaddr,
       BitPat(CsrAddr.mip)       -> mip,
-      BitPat(CsrAddr.mstatus)   -> mstatus
+      BitPat(CsrAddr.mstatus)   -> mstatus,
+    BitPat(CsrAddr.misa)       -> misa
   )
 
   io.out := Lookup(io.addr, 0.U, csrFile).asUInt()
