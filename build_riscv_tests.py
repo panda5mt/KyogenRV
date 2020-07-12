@@ -3,8 +3,6 @@
 import os
 import platform
 import subprocess
-    #riscv64-unknown-elf-objcopy --gap-fill 0 -O binary rv32mi-p-illegal test5.bin
-    #god -An -v -tx4 -w4 test5.bin > test5.hex
 
 old_path = os.getcwd()
 dir_path = os.getcwd() +'/tests/share/riscv-tests/isa/'
