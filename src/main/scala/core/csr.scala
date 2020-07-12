@@ -39,6 +39,7 @@ object CsrAddr {
   val instreth:   UInt = 0xc82.U(SZ)
 
   // Supervisor-level
+  val satp:       UInt = 0x180.U(SZ)
   val cyclew:     UInt = 0x900.U(SZ)
   val timew:      UInt = 0x901.U(SZ)
   val instretw:   UInt = 0x902.U(SZ)
@@ -80,7 +81,7 @@ object CsrAddr {
 
   val regs: Seq[UInt] = List(
       cycle, time, instret, cycleh, timeh, instreth,
-      cyclew, timew, instretw, cyclehw, timehw, instrethw,
+    satp, cyclew, timew, instretw, cyclehw, timehw, instrethw,
       mcpuid, mimpid, mhartid, mtvec, medeleg, mie,
       mtimecmp, mtime, mtimeh, mscratch, mepc, mcause, mbadaddr, mip,
       mtohost, mfromhost, mstatus
@@ -197,7 +198,7 @@ class CSR extends Module {
   
   val mtohost:    UInt = RegInit(0.U(32.W))
   val mfromhost:  UInt = Reg(UInt(32.W))
-
+  val satp:       UInt = RegInit(0.U(32.W))
   val misa:       UInt = RegInit(0x40000000L.U(32.W))
 
   // count if pc is valid
@@ -211,6 +212,7 @@ class CSR extends Module {
       BitPat(CsrAddr.timeh)     -> timeh,
       BitPat(CsrAddr.instreth)  -> instreth,
       BitPat(CsrAddr.cyclew)    -> cycle,
+      BitPat(CsrAddr.satp)      -> satp,
       BitPat(CsrAddr.timew)     -> time,
       BitPat(CsrAddr.instretw)  -> instret,
       BitPat(CsrAddr.cyclehw)   -> cycleh,
@@ -231,7 +233,7 @@ class CSR extends Module {
       BitPat(CsrAddr.mbadaddr)  -> mbadaddr,
       BitPat(CsrAddr.mip)       -> mip,
       BitPat(CsrAddr.mstatus)   -> mstatus,
-    BitPat(CsrAddr.misa)       -> misa
+      BitPat(CsrAddr.misa)       -> misa
   )
 
   io.out := Lookup(io.addr, 0.U, csrFile).asUInt()
