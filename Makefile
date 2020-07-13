@@ -15,4 +15,5 @@ clean:
 	rm -rf $(TARGET)/*.json $(TARGET)/*.fir $(TARGET)/*.v $(ASM_DIR)/$(ASM_TARGET).elf $(ASM_DIR)/$(ASM_TARGET).bin $(ASM_DIR)/*.hex $(RISCV_TESTS_DIR)/*.hex $(RISCV_TESTS_DIR)/*.bin
 riscv-tests:
 	python3 build_riscv_tests.py
+	$(SBT) 'test:testOnly TestCore'
 
