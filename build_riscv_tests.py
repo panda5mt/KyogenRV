@@ -16,6 +16,7 @@ files_in = [s for s in files_in if '.dump' not in s] # exclude *.dump file
 # files_in = [rv32mi* and rv32ui* and not in *.dump]
 
 
+# noinspection PyInterpreter
 for item in files_in:
     str1='riscv64-unknown-elf-objcopy --gap-fill 0 -O binary '+item+' '+item+".bin"
     if platform.system() == 'Darwin': # macOS?
