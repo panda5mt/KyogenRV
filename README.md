@@ -18,7 +18,7 @@ cd KyogenRV/
 make clean
 make test
 ```
-#### 2.Simulating with riscv-tests
+#### 2.Simulating with riscv-tests (need python 3.7 or later)
 ```
 git clone http://github.com/panda5mt/KyogenRV  
 ```
