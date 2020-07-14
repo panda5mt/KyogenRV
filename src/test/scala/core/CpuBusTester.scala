@@ -38,7 +38,7 @@ case class CpuBusTester(c: CpuBus, hexname: String) extends PeekPokeTester(c) {
   //println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd\t\t\t\tstall")
 
   //for (lp <- memarray.indices by 1){
-  for (lp <- 0 until 1000 by 1) {
+  for (lp <- 0 until 800 by 1) {
     val a = peek(signal = c.io.sw.r_pc)
     val d = peek(signal = c.io.sw.r_dat)
     val exraddr1 = peek(c.io.sw.r_ex_raddr1)

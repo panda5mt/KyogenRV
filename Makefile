@@ -16,4 +16,6 @@ clean:
 riscv-tests:
 	python3 build_riscv_tests.py
 	$(SBT) 'test:testOnly core.TestCoreAll'
+tester-gen:
+	python3 build_riscv_tests.py
 
