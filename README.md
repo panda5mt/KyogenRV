@@ -10,9 +10,66 @@ The Simple RISC-V KyogenRV(響玄RV)
 - Pipelines: 5-stage(IF/ID/EX/MEM/WB)
 - Written: in Chisel-lang v.3.3 + Makefile
 
+### I.Usage
+#### 1.Simulation
+```
+git clone http://github.com/panda5mt/KyogenRV  
+cd KyogenRV/
+make clean
+make test
+```
+#### 2.Simulating with riscv-tests
+```
+git clone http://github.com/panda5mt/KyogenRV  
+git clone https://github.com/riscv/riscv-tests
+cd riscv-tests
+git submodule update --init --recursive
+```
+then modify linker script
+```
+nano env/p/link.ld
+```
+change start address of '.text' section to start 0x00000000
+
+```
+SECTIONS
+{
+  . = 0x00000000;   # -> change this 
+  .text.init : { *(.text.init) }
+  . = ALIGN(0x1000);
+  .tohost : { *(.tohost) }
+  . = ALIGN(0x1000);
+  .text : { *(.text) }
+  . = ALIGN(0x1000);
+  .data : { *(.data) }
+  .bss : { *(.bss) }
+  _end = .;
+}
+```
+save link.d and make riscv-tests
+```
+autoconf
+./configure --prefix=<your-kyogenRVs-root-dir>/tests/
+make
+make install
+cd ../
+```
+
+```
+cd KyogenRV/
+make clean
+make riscv-tests
+```
+#### 3.Generate Verilog
+```
+git clone http://github.com/panda5mt/KyogenRV  
+cd KyogenRV/
+make clean
+make hdl
+```
 ##### The following instructions is written for who want to explore this "KyogenRV" RV32I design step by step. 
 ##### Otherwise, please clone the latest from GitHub. 
-### Basically Logic 
+### II.Basically Logic 
 #### 1.Instruction Fetch Stage(IF)  
 ```
 git clone http://github.com/panda5mt/KyogenRV -b 0.0.2 --depth 1 
