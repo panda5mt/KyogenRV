@@ -17,6 +17,7 @@ files_in = [s for s in files_in if '.dump' not in s] # exclude *.dump file
 
 
 # noinspection PyInterpreter
+print('building hex files...\r\n')
 for item in files_in:
     str1='riscv64-unknown-elf-objcopy --gap-fill 0 -O binary '+item+' '+item+".bin"
     if platform.system() == 'Darwin': # macOS?
@@ -25,10 +26,10 @@ for item in files_in:
         str2 = 'od -An -v -tx4 -w4 '+item+'.bin > '+item+'.hex'
     proc = subprocess.run(str1, shell=True, universal_newlines=True, cwd=dir_path)
     proc = subprocess.run(str2, shell=True, universal_newlines=True, cwd=dir_path)
-    print(str1)
-    print(str2)
+    #print(str1)
+    #print(str2)
 
 proc = subprocess.run('rm -rf *.bin', shell=True, universal_newlines=True, cwd=dir_path)
 str3 = 'mv *.hex '+old_path+'/src/sw/'
-print(str3)
+#print(str3)
 proc = subprocess.run(str3, shell=True, universal_newlines=True, cwd=dir_path)
