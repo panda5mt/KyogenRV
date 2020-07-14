@@ -72,8 +72,7 @@ make hdl
 ```
 ##
 ## II.Basically Logic 
-##### The following instructions is written for who want to explore this "KyogenRV" RV32I design step by step. 
-##### Otherwise, please clone the latest from GitHub. 
+##### The following instructions is written for who want to explore this "KyogenRV" RV32I design step by step. Otherwise, please clone the latest from GitHub. 
 #### 1.Instruction Fetch Stage(IF)  
 ```
 git clone http://github.com/panda5mt/KyogenRV -b 0.0.2 --depth 1 
