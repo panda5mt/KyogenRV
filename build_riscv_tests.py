@@ -39,7 +39,7 @@ for item in files_in:
     proc = subprocess.run(str2, shell=True, universal_newlines=True, cwd=dir_path)
     #print(str1)
     #print(str2)
-    code ='\t"'+item+'.hex test using Driver.execute" should "be used as an alternative way to run specification" in {\n' \
+    code ='\t"'+item+'.hex test using Driver.execute" should "be pass test." in {\n' \
           '\t\tiotesters.Driver.execute(Array(), () => new CpuBus())(testerGen = c => {\n' \
           '\t\t\tCpuBusTester(c, "src/sw/' + item + '.hex")\n' \
                                               '\t\t}) should be (true)\n\t}\n'
