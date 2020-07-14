@@ -21,6 +21,9 @@ make test
 #### 2.Simulating with riscv-tests
 ```
 git clone http://github.com/panda5mt/KyogenRV  
+```
+clone from riscv-tests
+```
 git clone https://github.com/riscv/riscv-tests
 cd riscv-tests
 git submodule update --init --recursive
