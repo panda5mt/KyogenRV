@@ -67,16 +67,16 @@ case class CpuBusTester(c: CpuBus, hexname: String) extends PeekPokeTester(c) {
 
   poke(signal = c.io.sw.halt, value = 1)
   step(2)
-  poke(signal = c.io.sw.g_add, value = 3)
+  poke(signal = c.io.sw.g_add, value = 3)                 // select x3
   step(1)
   val d: BigInt = peek(signal = c.io.sw.g_dat)
   step(1)
-  if (d == 1) {
+  if (d == 1) {                                           // if(x3 == 1) then PASS else FAIL
     println(f"$hexname%s PASS: simulation finished.")
   } else {
     println(f"$hexname%s FAIL: simulation finished.")
   }
-
+  expect(c.io.sw.g_dat, 1)
 
 }
 
@@ -85,8 +85,7 @@ case class CpuBusTester(c: CpuBus, hexname: String) extends PeekPokeTester(c) {
 class TestCore extends ChiselFlatSpec {
   "Basic test using Driver.execute" should "be used as an alternative way to run specification" in {
     iotesters.Driver.execute(Array(), () => new CpuBus())(testerGen = c => {
-      CpuBusTester(c, "src/sw/rv32mi-p-shamt.hex")
-      CpuBusTester(c, "src/sw/rv32mi-p-mcsr.hex")
+      CpuBusTester(c, "src/sw/rv32ui-p-add.hex")
     })should be (true)
   }
 }
