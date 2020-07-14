@@ -6,7 +6,7 @@ import subprocess
 
 old_path = os.getcwd()
 dir_path = os.getcwd() +'/tests/share/riscv-tests/isa/'
-test_gen_path = os.getcwd() + '/src/test/scala/TestCoreAll.scala'
+test_gen_path = os.getcwd() + '/src/test/scala/core/TestCoreAll.scala'
 proc = subprocess.run('rm -rf *.bin *.hex', shell=True, universal_newlines=True, cwd=dir_path)
 files = [path for path in os.listdir(dir_path)]
 header_text = '// See README.md for license details.\npackage core\n' \
