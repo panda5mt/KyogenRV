@@ -49,7 +49,7 @@ SECTIONS
   _end = .;
 }
 ```
-save link.d and make riscv-tests
+save link.ld and make riscv-tests
 ```
 autoconf
 ./configure --prefix=<your-kyogenRVs-root-dir>/tests/
