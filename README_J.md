@@ -9,9 +9,72 @@ The Simple RISC-V KyogenRV(響玄RV)
 - パイプライン: 5ステージ(IF/ID/EX/MEM/WB stage)
 - 言語:Chisel v.3.3
 
+## I.使い方
+#### 1.シミュレーション
+<code>[src/sw/test.s](src/sw/test.s)</code>にアセンブラファイルを記述し、
+プロジェクトのルートフォルダで以下の方法でアセンブルしてください。(riscv-toolchainが必要となります)
+```
+git clone http://github.com/panda5mt/KyogenRV  
+cd KyogenRV/
+make clean
+make test
+```
+コンソール上で各命令処理時の各ステージの挙動、終了後の汎用レジスタ(x0 ~ x31)の値を確認することができます。
+#### 2.riscv-testsのシミュレーション (python 3.7以降が必要)
+```
+git clone http://github.com/panda5mt/KyogenRV  
+```
+riscv-testsをcloneします。
+```
+git clone https://github.com/riscv/riscv-tests
+cd riscv-tests
+git submodule update --init --recursive
+```
+リンカスクリプトを修正します。
+```
+nano env/p/link.ld
+```
+'.text'セクションが0x00000000から開始するように修正します。
 
+```
+SECTIONS
+{
+  . = 0x00000000;   # -> ここを修正 
+  .text.init : { *(.text.init) }
+  . = ALIGN(0x1000);
+  .tohost : { *(.tohost) }
+  . = ALIGN(0x1000);
+  .text : { *(.text) }
+  . = ALIGN(0x1000);
+  .data : { *(.data) }
+  .bss : { *(.bss) }
+  _end = .;
+}
+```
+link.ldを保存しriscv-testsをビルドします。
+```
+autoconf
+./configure --prefix=<your-kyogenRVs-root-dir>/tests/
+make
+make install
+cd ../
+```
+KyogenRVのルートディレクトリに移動し、下記のようにコマンドを入力することにより、riscv-testsのシミュレーションが行えます。
+```
+cd KyogenRV/
+make clean
+make riscv-tests
+```
+#### 3.Verilogファイルの生成
+```
+git clone http://github.com/panda5mt/KyogenRV  
+cd KyogenRV/
+make clean
+make hdl
+```
+##
 ##### 以下の手順はこのKyogenRVの設計を順を追って調べたい方向けです。それ以外の方は最新のgitをcloneしてください。 
-### 各ステージのロジック 
+##II. 各ステージのロジック 
 #### 1.フェッチステージ(IF)
 CPUの初歩的なステートマシンと命令メモリを読み込むロジックです  
 ```
