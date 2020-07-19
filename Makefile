@@ -12,7 +12,7 @@ hdl:
 test: $(ASM_DIR)/$(ASM_TARGET).hex
 	$(SBT) 'runMain core.Test'
 clean:
-	rm -rf $(TARGET)/*.json $(TARGET)/*.fir $(TARGET)/*.v $(ASM_DIR)/$(ASM_TARGET).elf $(ASM_DIR)/$(ASM_TARGET).bin $(ASM_DIR)/*.hex $(RISCV_TESTS_DIR)/*.hex $(RISCV_TESTS_DIR)/*.bin
+	rm -rf $(TARGET)/*.json $(TARGET)/*.fir $(TARGET)/*.v $(ASM_DIR)/$(ASM_TARGET).elf $(ASM_DIR)/$(ASM_TARGET).bin $(ASM_DIR)/*.hex $(ASM_DIR)/*.log
 riscv-tests:
 	python3 build_riscv_tests.py
 	$(SBT) 'test:testOnly core.TestCoreAll'
