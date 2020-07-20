@@ -19,6 +19,7 @@ files_in = [s for s in files if 'rv32ui-p-' in s]  # select rv32ui-p-*.* file
 files_in2 = [s for s in files if 'rv32mi-p-' in s] # select rv32mi-p*.* file
 files_in.extend(files_in2)
 files_in = [s for s in files_in if '.dump' not in s] # exclude *.dump file
+files_in = [s for s in files_in if 'rv32ui-p-fence_i' not in s] # exclude fence_i file
 # files_in = [rv32mi* and rv32ui* and not in *.dump]
 
 

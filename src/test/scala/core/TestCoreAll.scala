@@ -119,11 +119,6 @@ class TestCoreAll extends ChiselFlatSpec {
 			CpuBusTester(c, "src/sw/rv32ui-p-sltu.hex", "src/sw/rv32ui-p-sltu_tester.log")
 		}) should be (true)
 	}
-	"rv32ui-p-fence_i.hex test using Driver.execute" should "be pass test." in {
-		iotesters.Driver.execute(Array(), () => new CpuBus())(testerGen = c => {
-			CpuBusTester(c, "src/sw/rv32ui-p-fence_i.hex", "src/sw/rv32ui-p-fence_i_tester.log")
-		}) should be (true)
-	}
 	"rv32ui-p-sb.hex test using Driver.execute" should "be pass test." in {
 		iotesters.Driver.execute(Array(), () => new CpuBus())(testerGen = c => {
 			CpuBusTester(c, "src/sw/rv32ui-p-sb.hex", "src/sw/rv32ui-p-sb_tester.log")
