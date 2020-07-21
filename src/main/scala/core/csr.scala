@@ -161,7 +161,6 @@ class CSR extends Module {
     CSR.C -> (io.out.asUInt() & (~io.in).asUInt())
   ))
   val csr_addr: UInt = io.addr
-
   val rs1_addr: UInt = io.rs1_addr
 
   // user counters
@@ -233,7 +232,7 @@ class CSR extends Module {
   val mfromhost:  UInt = Reg(UInt(32.W))
   val satp:       UInt = RegInit(0.U(32.W))
   val misa:       UInt = RegInit(0x40000000L.U(32.W))
-  val mtval:      UInt = RegInit(0x0188.U(32.W))
+  val mtval:      UInt = RegInit(Instructions.NOP)
 
   // count if pc is valid
   val valid_pc: UInt = RegInit(0.U(32.W))
@@ -315,6 +314,7 @@ class CSR extends Module {
         mepc := valid_pc
       }.otherwise {
         mepc := io.pc >> 2 << 2
+        mtval := io.inst
       }
       mcause := Mux(isEcall, Cause.Ecall + PRV,
         Mux(isExtInt, (BigInt(1) << (32 - 1)).asUInt | (Cause.ExtInterrupt + PRV).asUInt,
