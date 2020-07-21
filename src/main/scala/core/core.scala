@@ -154,31 +154,19 @@ class KyogenRVCpu extends Module {
     withClock(invClock) {
         val mem_stall: Bool = RegInit(false.B)
         val mem_stall_cntr = RegInit(0.U(4.W))
-        when (ex_ctrl.mem_wr === M_XRD) {
+        when (mem_ctrl.mem_wr === M_XRD) {
             mem_stall := true.B
         } .elsewhen(wb_dmem_read_ack === true.B) {
             mem_stall := false.B
         }
-        // todo: remove below (load instruction time out logic)---------
-//        when(mem_stall) {
-//            mem_stall_cntr := mem_stall_cntr + 1.U
-//        }.otherwise{
-//            mem_stall_cntr := 0.U
-//        }
-//        when(mem_stall_cntr >= 3.U)
-//        {
-//            mem_stall_cntr := 0.U
-//            mem_stall := false.B
-//        }
-        // todo-end--------------------
-
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
 
         //stall := stall_without_csr
 
-        io.sw.r_stall_sig := stall//csr.io.expt
+        io.sw.r_stall_sig := stall
+
     }
     // -------- END: ID stage --------
 
@@ -372,9 +360,10 @@ class KyogenRVCpu extends Module {
 
     // bubble logic
     inst_kill_branch := (
-        ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) ||
-        (mem_ctrl.br_type === BR_JR) ||
-        (mem_ctrl.br_type === BR_J)
+            ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) || // branch
+            (mem_ctrl.br_type === BR_JR) ||     // jalr
+            (mem_ctrl.br_type === BR_J)  ||     // jal
+            (mem_ctrl.br_type === BR_RET)       // mret / sret
       )
 
     inst_kill := (inst_kill_branch || csr.io.expt)
@@ -464,7 +453,8 @@ class KyogenRVCpu extends Module {
             //r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
-                ((mem_ctrl.br_type > 2.U) && mem_alu_cmp_out) -> ((mem_pc + mem_imm.asUInt)>> 2 << 2),// (>> 2 << 2) -> 4byte alignment
+                (mem_ctrl.br_type === BR_RET) -> csr.io.epc,
+                ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) -> ((mem_pc + mem_imm.asUInt)>> 2 << 2),// (>> 2 << 2) -> 4byte alignment
                 (mem_ctrl.br_type === BR_J) -> (mem_alu_out >> 2 << 2),// (>> 2 << 2) -> 4byte alignment
                 (mem_ctrl.br_type === BR_JR) -> (mem_alu_out >> 2 << 2) // (>> 2 << 2) -> 4byte alignment
             ))
@@ -560,7 +550,7 @@ class CpuBus extends Module {
     cpu.io.sw.w_interrupt_sig <> io.sw.w_interrupt_sig
 
     // MISC
-    cpu.io.sw.misc <> io.sw.misc
+    //cpu.io.sw.misc <> io.sw.misc
 
     w_pc        := io.sw.w_pc
 

@@ -233,7 +233,7 @@ class CSR extends Module {
   val mfromhost:  UInt = Reg(UInt(32.W))
   val satp:       UInt = RegInit(0.U(32.W))
   val misa:       UInt = RegInit(0x40000000L.U(32.W))
-  val mtval:      UInt = RegInit(0x0.U(32.W))
+  val mtval:      UInt = RegInit(0x0188.U(32.W))
 
   // count if pc is valid
   val valid_pc: UInt = RegInit(0.U(32.W))

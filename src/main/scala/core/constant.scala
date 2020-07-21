@@ -19,12 +19,14 @@ object ScalarOpConstants {
    def BR_N:   UInt = 0.U(4.W) // Next
    def BR_J:   UInt = 1.U(4.W) // Jump
    def BR_JR:  UInt = 2.U(4.W) // Jump Register
-   def BR_NE:  UInt = 3.U(4.W) // Branch on NotEqual
-   def BR_EQ:  UInt = 4.U(4.W) // Branch on Equal
-   def BR_GE:  UInt = 5.U(4.W) // Branch on Greater/Equal
-   def BR_GEU: UInt = 6.U(4.W) // Branch on Greater/Equal Unsigned
-   def BR_LT:  UInt = 7.U(4.W) // Branch on Less Than
-   def BR_LTU: UInt = 8.U(4.W) // Branch on Less Than Unsigned
+   def BR_RET: UInt = 3.U(4.W) // mret / sret
+   def BR_NE:  UInt = 4.U(4.W) // Branch on NotEqual
+   def BR_EQ:  UInt = 5.U(4.W) // Branch on Equal
+   def BR_GE:  UInt = 6.U(4.W) // Branch on Greater/Equal
+   def BR_GEU: UInt = 7.U(4.W) // Branch on Greater/Equal Unsigned
+   def BR_LT:  UInt = 8.U(4.W) // Branch on Less Than
+   def BR_LTU: UInt = 9.U(4.W) // Branch on Less Than Unsigned
+
    def BR_X:   BitPat = BitPat("b????")
 
    // RS1 Operand Select Signal
