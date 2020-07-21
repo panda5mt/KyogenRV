@@ -95,6 +95,7 @@ object CsrAddr {
   val mtvec:      UInt = 0x305.U(SZ)
 
   val mtimecmp:   UInt = 0x321.U(SZ)
+  val mtval:      UInt = 0x343.U(SZ)
   
   // Timers and Counters
   val mtime:      UInt = 0x701.U(SZ)
@@ -136,6 +137,7 @@ class CsrIO extends Bundle {
   val out:  UInt = Output(UInt(32.W))   // csrdata -> rd
   val cmd:  UInt = Input(UInt(32.W))    // csr_cmd
   val rs1_addr: UInt = Input(UInt(32.W))  // rs1 addr
+  val legal: Bool = Input(Bool())         // illegal instruction = !(legal)
 
 
   // Excpetion
@@ -231,6 +233,7 @@ class CSR extends Module {
   val mfromhost:  UInt = Reg(UInt(32.W))
   val satp:       UInt = RegInit(0.U(32.W))
   val misa:       UInt = RegInit(0x40000000L.U(32.W))
+  val mtval:      UInt = RegInit(0x0.U(32.W))
 
   // count if pc is valid
   val valid_pc: UInt = RegInit(0.U(32.W))
@@ -264,7 +267,8 @@ class CSR extends Module {
       BitPat(CsrAddr.mbadaddr)  -> mbadaddr,
       BitPat(CsrAddr.mip)       -> mip,
       BitPat(CsrAddr.mstatus)   -> mstatus,
-      BitPat(CsrAddr.misa)       -> misa
+      BitPat(CsrAddr.misa)      -> misa,
+      BitPat(CsrAddr.mtval)     -> mtval
   )
 
   io.out := Lookup(io.addr, 0.U, csrFile).asUInt()
@@ -289,13 +293,14 @@ class CSR extends Module {
   val isEcall:    Bool = privInst && !csr_addr(0) && !csr_addr(8)
   val isEbreak:   Bool = privInst &&  csr_addr(0) && !csr_addr(8)
   val wen:        Bool = (io.cmd === CSR.W) || io.cmd(1) && rs1_addr.orR //(rs1_addr =/= 0.U)
+  val isIllegal:  Bool = !io.legal && !io.pc_invalid
 
   val isInstRet: Bool = (io.inst =/= Instructions.NOP) && (!io.expt || isEcall || isEbreak) && !io.stall
   when(isInstRet) { instret := instret + 1.U }
   when(isInstRet && instret.andR) { instreth := instreth + 1.U }
 
 
-  io.expt := isEcall || isEbreak || isExtInt// exception
+  io.expt := isEcall || isEbreak || isIllegal || isExtInt// exception
   io.evec := mtvec //+ (PRV << 6).asUInt()
 
   io.epc := mepc
@@ -314,7 +319,8 @@ class CSR extends Module {
       mcause := Mux(isEcall, Cause.Ecall + PRV,
         Mux(isExtInt, (BigInt(1) << (32 - 1)).asUInt | (Cause.ExtInterrupt + PRV).asUInt,
           Mux(isEbreak, Cause.Breakpoint,
-            Cause.IllegalInst)))
+            Mux(isIllegal, Cause.IllegalInst,
+            Cause.InstAddrMisaligned))))
       PRV := PRIV.M
       IE := false.B
       PRV1 := PRV

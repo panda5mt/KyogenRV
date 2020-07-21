@@ -153,18 +153,32 @@ class KyogenRVCpu extends Module {
     // judge if stall needed
     withClock(invClock) {
         val mem_stall: Bool = RegInit(false.B)
+        val mem_stall_cntr = RegInit(0.U(4.W))
         when (ex_ctrl.mem_wr === M_XRD) {
             mem_stall := true.B
         } .elsewhen(wb_dmem_read_ack === true.B) {
             mem_stall := false.B
         }
+        // todo: remove below (load instruction time out logic)---------
+//        when(mem_stall) {
+//            mem_stall_cntr := mem_stall_cntr + 1.U
+//        }.otherwise{
+//            mem_stall_cntr := 0.U
+//        }
+//        when(mem_stall_cntr >= 3.U)
+//        {
+//            mem_stall_cntr := 0.U
+//            mem_stall := false.B
+//        }
+        // todo-end--------------------
+
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_en === MEN_1) && (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
+          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
 
         //stall := stall_without_csr
 
-        io.sw.r_stall_sig := (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.csr_cmd =/= CSR.N)//wb_csr_data//stall
+        io.sw.r_stall_sig := stall//csr.io.expt
     }
     // -------- END: ID stage --------
 
@@ -250,6 +264,7 @@ class KyogenRVCpu extends Module {
     csr.io.cmd  := ex_csr_cmd
     csr.io.in   := csr_in
     csr.io.inst := ex_inst
+    csr.io.legal := (ex_ctrl.legal === true.B)
     csr.io.rs1_addr := ex_inst(19, 15)//ex_rs(0)
     csr.io.stall := stall
     csr.io.pc_invalid := pc_invalid
@@ -644,20 +659,24 @@ object Test extends App {
             step(2)
             println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd\t\t\t\tstall")
 
-            //for (lp <- memarray.indices by 1){
+            // external interrupt signal(true = rising edge, false = off)
+            poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
+
+            // about 1000 cycle, we can finish 'riscv-tests'.
+            // change parameters on your another projects.
             for (lp <- 0 until 1000 by 1) {
-                val a = peek(signal = c.io.sw.r_pc)
-                val d = peek(signal = c.io.sw.r_dat)
-                val exraddr1 = peek(c.io.sw.r_ex_raddr1)
-                val exraddr2 = peek(c.io.sw.r_ex_raddr2)
-                val exrs1 = peek(c.io.sw.r_ex_rs1)
-                val exrs2 = peek(c.io.sw.r_ex_rs2)
-                val eximm = peek(c.io.sw.r_ex_imm)
-                val memaluo = peek(c.io.sw.r_mem_alu_out)
-                val wbaluo  = peek(c.io.sw.r_wb_alu_out)
-                val wbaddr  = peek(c.io.sw.r_wb_rf_waddr)
-                val wbdata  = peek(c.io.sw.r_wb_rf_wdata)
-                val stallsig = peek(c.io.sw.r_stall_sig)
+                val a           = peek(signal = c.io.sw.r_pc)   // pc count
+                val d           = peek(signal = c.io.sw.r_dat)  // instruction
+                val exraddr1    = peek(c.io.sw.r_ex_raddr1)     // rs1 address
+                val exraddr2    = peek(c.io.sw.r_ex_raddr2)     // rs2 address
+                val exrs1       = peek(c.io.sw.r_ex_rs1)        // rs1 data
+                val exrs2       = peek(c.io.sw.r_ex_rs2)        // rs2 data
+                val eximm       = peek(c.io.sw.r_ex_imm)        // imm
+                val memaluo     = peek(c.io.sw.r_mem_alu_out)   // alu(MEM stage)
+                val wbaluo      = peek(c.io.sw.r_wb_alu_out)    // alu(WB stage)
+                val wbaddr      = peek(c.io.sw.r_wb_rf_waddr)   // write-back rd address
+                val wbdata      = peek(c.io.sw.r_wb_rf_wdata)   // write-back rd data
+                val stallsig    = peek(c.io.sw.r_stall_sig)     // stall signal
                 // if you need fire external interrupt signal uncomment below
                 if(lp == 96){
                     poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
@@ -665,7 +684,7 @@ object Test extends App {
                 else{
                     poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
                 }
-//                poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
+
                 step(1)
                 println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%x") //peek(c.io.sw.data)
 
