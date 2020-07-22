@@ -38,6 +38,7 @@ import chisel3.internal.firrtl.Width
 import chisel3.util._
 
 import scala.collection.immutable._
+import MemoryOpConstants._
 
 object CSR {
   // commands
@@ -132,23 +133,28 @@ object Cause {
 
 class CsrIO extends Bundle {
 
-  val addr: UInt = Input(UInt(32.W))    // csr_addr
-  val in:   UInt = Input(UInt(32.W))    // rs1 or imm_z
-  val out:  UInt = Output(UInt(32.W))   // csrdata -> rd
-  val cmd:  UInt = Input(UInt(32.W))    // csr_cmd
-  val rs1_addr: UInt = Input(UInt(32.W))  // rs1 addr
-  val legal: Bool = Input(Bool())         // illegal instruction = !(legal)
+  val addr:           UInt = Input(UInt(32.W))      // csr_addr
+  val in:             UInt = Input(UInt(32.W))      // rs1 or imm_z
+  val out:            UInt = Output(UInt(32.W))     // csrdata -> rd
+  val cmd:            UInt = Input(UInt(32.W))      // csr_cmd
+  val rs1_addr:       UInt = Input(UInt(32.W))      // rs1 addr
+  val legal:          Bool = Input(Bool())          // illegal instruction = !(legal)
 
 
   // Excpetion
-  val interrupt_sig: Bool = Input(Bool())
-  val pc:   UInt = Input(UInt(32.W))
-  val pc_invalid: Bool = Input(Bool())  // stall || inst_kill_branch || pc === 0.U
-  val stall: Bool = Input(Bool())
-  val expt: Bool = Output(Bool())
-  val evec: UInt = Output(UInt(32.W))
-  val epc:  UInt = Output(UInt(32.W))
-  val inst: UInt = Input(UInt(32.W))    // RV32I instruction
+  val interrupt_sig:  Bool = Input(Bool())
+  val pc:             UInt = Input(UInt(32.W))
+  val pc_invalid:     Bool = Input(Bool())          // stall || inst_kill_branch || pc === 0.U
+  val jumpInstCheck:  Bool = Input(Bool())
+  val stall:          Bool = Input(Bool())
+  val expt:           Bool = Output(Bool())
+  val evec:           UInt = Output(UInt(32.W))
+  val epc:            UInt = Output(UInt(32.W))
+  val inst:           UInt = Input(UInt(32.W))      // RV32I instruction
+  val mem_wr:         UInt = Input(UInt(M_SZ))      // load/store type
+  val mask_type:      UInt = Input(UInt(MT_SZ))     // load/store mask type
+  val alu_op1:        UInt = Input(UInt(32.W))
+  val alu_op2:        UInt = Input(UInt(32.W))
 }
 
 class CSR extends Module {
@@ -162,6 +168,7 @@ class CSR extends Module {
   ))
   val csr_addr: UInt = io.addr
   val rs1_addr: UInt = io.rs1_addr
+  val alu_calc_addr: UInt = (io.alu_op1 + io.alu_op2).asUInt()
 
   // user counters
   val time:     UInt = RegInit(0.U(32.W))
@@ -285,21 +292,33 @@ class CSR extends Module {
   MEIP := io.interrupt_sig // true => external interrupt
 
   //noinspection ScalaStyle
-  val privValid:  Bool = csr_addr(9, 8) <= PRV
-  val privInst:   Bool = io.cmd === CSR.P
+  val privValid:    Bool = csr_addr(9, 8) <= PRV
+  val privInst:     Bool = io.cmd === CSR.P
   //val isTimerInt: Bool = MTIE && MTIP
-  val isExtInt:   Bool = MEIP && MEIE
-  val isEcall:    Bool = privInst && !csr_addr(0) && !csr_addr(8)
-  val isEbreak:   Bool = privInst &&  csr_addr(0) && !csr_addr(8)
-  val wen:        Bool = (io.cmd === CSR.W) || io.cmd(1) && rs1_addr.orR //(rs1_addr =/= 0.U)
-  val isIllegal:  Bool = !io.legal && !io.pc_invalid
+  val isExtInt:     Bool = MEIP && MEIE
+  val isEcall:      Bool = privInst && !csr_addr(0) && !csr_addr(8)
+  val isEbreak:     Bool = privInst &&  csr_addr(0) && !csr_addr(8)
+  val wen:          Bool = (io.cmd === CSR.W) || io.cmd(1) && rs1_addr.orR //(rs1_addr =/= 0.U)
+  val isIllegal:    Bool = !io.legal && !io.pc_invalid
+  val iaddrInvalid: Bool = io.jumpInstCheck && alu_calc_addr(1)
+  //!io.pc_invalid && io.pc(1) // for RVI. this is not good for RVC
+
+   val laddrInvalid: Bool = MuxCase(false.B, Seq(
+      (io.mem_wr === M_XRD && io.mask_type === MT_W)  -> alu_calc_addr(1,0).orR,
+      (io.mem_wr === M_XRD && io.mask_type === MT_H)  -> alu_calc_addr(0),
+      (io.mem_wr === M_XRD && io.mask_type === MT_HU) -> alu_calc_addr(0)
+   ))
+  val saddrInvalid: Bool = MuxCase(false.B, Seq(
+      (io.mem_wr === M_XWR && io.mask_type === MT_W)  -> alu_calc_addr(1,0).orR,
+      (io.mem_wr === M_XWR && io.mask_type === MT_H)  -> alu_calc_addr(0)
+  ))
 
   val isInstRet: Bool = (io.inst =/= Instructions.NOP) && (!io.expt || isEcall || isEbreak) && !io.stall
   when(isInstRet) { instret := instret + 1.U }
   when(isInstRet && instret.andR) { instreth := instreth + 1.U }
 
 
-  io.expt := isEcall || isEbreak || isIllegal || isExtInt// exception
+  io.expt := isEcall || isEbreak || isIllegal || isExtInt || iaddrInvalid || laddrInvalid || saddrInvalid// exception
   io.evec := mtvec //+ (PRV << 6).asUInt()
 
   io.epc := mepc
@@ -320,7 +339,11 @@ class CSR extends Module {
         Mux(isExtInt, (BigInt(1) << (32 - 1)).asUInt | (Cause.ExtInterrupt + PRV).asUInt,
           Mux(isEbreak, Cause.Breakpoint,
             Mux(isIllegal, Cause.IllegalInst,
-            Cause.InstAddrMisaligned))))
+              Mux(iaddrInvalid,Cause.InstAddrMisaligned,
+                Mux(laddrInvalid, Cause.LoadAddrMisaligned,
+                  Mux(saddrInvalid, Cause.StoreAddrMisaligned,
+                    Cause.InstAddrMisaligned)))))))
+
       PRV := PRIV.M
       IE := false.B
       PRV1 := PRV

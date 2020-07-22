@@ -246,50 +246,56 @@ class KyogenRVCpu extends Module {
     //val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),ex_reg_rs1_bypass)
 
 
-    csr.io.pc   := ex_pc
-    csr.io.addr := ex_csr_addr
-    csr.io.cmd  := ex_csr_cmd
-    csr.io.in   := csr_in
-    csr.io.inst := ex_inst
-    csr.io.legal := (ex_ctrl.legal === true.B)
-    csr.io.rs1_addr := ex_inst(19, 15)//ex_rs(0)
-    csr.io.stall := stall
-    csr.io.pc_invalid := pc_invalid
-    csr.io.interrupt_sig := interrupt_sig
+    csr.io.pc           := ex_pc
+    csr.io.addr         := ex_csr_addr
+    csr.io.cmd          := ex_csr_cmd
+    csr.io.in           := csr_in
+    csr.io.inst         := ex_inst
+    csr.io.mem_wr       := ex_ctrl.mem_wr
+    csr.io.mask_type    := ex_ctrl.mask_type
+    csr.io.alu_op1      := ex_op1
+    csr.io.alu_op2      := ex_op2
+    csr.io.legal        := (ex_ctrl.legal === true.B)
+    csr.io.rs1_addr     := ex_inst(19, 15) //ex_rs(0)
+    csr.io.stall        := stall
+    csr.io.pc_invalid   := pc_invalid
+    csr.io.jumpInstCheck := (ex_ctrl.br_type === BR_J) || (ex_ctrl.br_type === BR_JR)
+    csr.io.interrupt_sig:= interrupt_sig
     //csr_stall ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.csr_cmd =/= CSR.N)) && !csr.io.expt
+
     // iotesters
-    io.sw.r_ex_raddr1 := ex_reg_raddr(0)
-    io.sw.r_ex_raddr2 := ex_reg_raddr(1)
-    io.sw.r_ex_rs1 := ex_reg_rs1_bypass//ex_rs(0)
-    io.sw.r_ex_rs2 := ex_reg_rs2_bypass//ex_rs(1)
-    io.sw.r_ex_imm := ex_imm.asUInt
+    io.sw.r_ex_raddr1   := ex_reg_raddr(0)
+    io.sw.r_ex_raddr2   := ex_reg_raddr(1)
+    io.sw.r_ex_rs1      := ex_reg_rs1_bypass//ex_rs(0)
+    io.sw.r_ex_rs2      := ex_reg_rs2_bypass//ex_rs(1)
+    io.sw.r_ex_imm      := ex_imm.asUInt
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
     when (!inst_kill) {
-        mem_pc := ex_pc
-        mem_npc := ex_npc
-        mem_ctrl := ex_ctrl
-        mem_reg_waddr := ex_reg_waddr
-        mem_imm := ex_imm
-        mem_rs(0) := ex_reg_rs1_bypass
-        mem_rs(1) := ex_reg_rs2_bypass
-        mem_alu_out := alu.io.out
+        mem_pc          := ex_pc
+        mem_npc         := ex_npc
+        mem_ctrl        := ex_ctrl
+        mem_reg_waddr   := ex_reg_waddr
+        mem_imm         := ex_imm
+        mem_rs(0)       := ex_reg_rs1_bypass
+        mem_rs(1)       := ex_reg_rs2_bypass
+        mem_alu_out     := alu.io.out
         mem_alu_cmp_out := alu.io.cmp_out
-        mem_csr_addr := ex_csr_addr
-        mem_csr_data := csr.io.out
+        mem_csr_addr    := ex_csr_addr
+        mem_csr_data    := csr.io.out
 
     } .otherwise {
-        mem_pc :=  pc_ini
-        mem_npc :=  npc_ini
-        mem_ctrl := nop_ctrl
-        mem_reg_waddr := 0.U
-        mem_imm := 0.S
-        mem_rs := VecInit(0.U, 0.U)
-        mem_alu_out := 0.U
+        mem_pc          :=  pc_ini
+        mem_npc         :=  npc_ini
+        mem_ctrl        := nop_ctrl
+        mem_reg_waddr   := 0.U
+        mem_imm         := 0.S
+        mem_rs          := VecInit(0.U, 0.U)
+        mem_alu_out     := 0.U
         mem_alu_cmp_out := false.B
-        mem_csr_addr := 0.U
-        mem_csr_data := 0.U
+        mem_csr_addr    := 0.U
+        mem_csr_data    := 0.U
     }
 
     // iotesters
@@ -297,21 +303,21 @@ class KyogenRVCpu extends Module {
 
     //dmem connection
     when (io.sw.halt === false.B) { // CPU active
-        io.w_dmem_add.addr := mem_alu_out
-        io.w_dmem_add.req := (mem_ctrl.mem_wr === M_XWR)
-        io.w_dmem_dat.data := DontCare
-        io.r_dmem_add.addr := mem_alu_out
-        io.r_dmem_add.req := (mem_ctrl.mem_wr === M_XRD)
+        io.w_dmem_add.addr          := mem_alu_out
+        io.w_dmem_add.req           := (mem_ctrl.mem_wr === M_XWR)
+        io.w_dmem_dat.data          := DontCare
+        io.r_dmem_add.addr          := mem_alu_out
+        io.r_dmem_add.req           := (mem_ctrl.mem_wr === M_XRD)
 
         //io.w_dmem_dat.data := mem_rs(1)
     }.otherwise{    // CPU halt
         // dmem connection
-        io.w_dmem_add.addr := io.sw.w_add
-        io.w_dmem_dat.data := io.sw.w_dat
-        io.w_dmem_add.req := true.B
-        io.w_dmem_dat.byteenable := 15.U
-        io.r_dmem_add.addr := 0.U
-        io.r_dmem_add.req := false.B
+        io.w_dmem_add.addr          := io.sw.w_add
+        io.w_dmem_dat.data          := io.sw.w_dat
+        io.w_dmem_add.req           := true.B
+        io.w_dmem_dat.byteenable    := 15.U
+        io.r_dmem_add.addr          := 0.U
+        io.r_dmem_add.req           := false.B
 
     }
 
