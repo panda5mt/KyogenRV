@@ -309,8 +309,8 @@ class CSR extends Module {
   }
 
   // priority: InstAddrMisalign > InvalidInstruction (if both illegal occur)
-  val iaddrInvalid_b: Bool = io.pc(1) || io.pc(0)
-  val iaddrInvalid_j: Bool = io.j_check && (alu_calc_addr(1) || alu_calc_addr(0))
+  val iaddrInvalid_b: Bool = io.pc(1,0).orR
+  val iaddrInvalid_j: Bool = io.j_check && alu_calc_addr(1,0).orR
   val laddrInvalid: Bool = MuxCase(false.B, Seq(
     (io.mem_wr === M_XRD && io.mask_type === MT_W)  -> alu_calc_addr(1,0).orR,
     (io.mem_wr === M_XRD && io.mask_type === MT_H)  -> alu_calc_addr(0),
