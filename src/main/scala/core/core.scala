@@ -49,6 +49,8 @@ class KyogenRVCpu extends Module {
     val ex_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
     val ex_csr_addr: UInt = RegInit(0.U(32.W))
     val ex_csr_cmd: UInt = RegInit(0.U(32.W))
+    val ex_b_check: Bool = RegInit(false.B)  // branch check
+    val ex_j_check: Bool = RegInit(false.B)  // jump check
 
     // MEM stage pipeline register
     val mem_pc: UInt = RegInit(pc_ini)
@@ -79,6 +81,7 @@ class KyogenRVCpu extends Module {
     // branch control
     val inst_kill: Bool = Wire(Bool())
     val inst_kill_branch: Bool = Wire(Bool())
+
 
     // ------- END: pipeline registers --------
 
@@ -162,8 +165,6 @@ class KyogenRVCpu extends Module {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
 
-        //stall := stall_without_csr
-
         io.sw.r_stall_sig := stall
 
     }
@@ -173,25 +174,29 @@ class KyogenRVCpu extends Module {
 
     // -------- START: EX Stage --------
     when (!stall && !inst_kill) {
-        ex_pc := id_pc
-        ex_npc := id_npc
-        ex_ctrl := id_ctrl
-        ex_inst := idm.io.inst.bits
-        ex_reg_raddr := id_raddr
-        ex_reg_waddr := id_waddr
-        ex_rs := id_rs
-        ex_csr_addr := id_csr_addr
-        ex_csr_cmd := id_ctrl.csr_cmd
+        ex_pc           := id_pc
+        ex_npc          := id_npc
+        ex_ctrl         := id_ctrl
+        ex_inst         := idm.io.inst.bits
+        ex_reg_raddr    := id_raddr
+        ex_reg_waddr    := id_waddr
+        ex_rs           := id_rs
+        ex_csr_addr     := id_csr_addr
+        ex_csr_cmd      := id_ctrl.csr_cmd
+        ex_j_check      := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
+        ex_b_check      := (id_ctrl.br_type > 3.U)
     } .otherwise {
-        ex_pc :=  pc_ini
-        ex_npc :=  npc_ini
-        ex_ctrl := nop_ctrl
-        ex_inst := inst_nop
-        ex_reg_raddr := VecInit(0.U, 0.U)
-        ex_reg_waddr := 0.U
-        ex_rs := VecInit(0.U, 0.U)
-        ex_csr_addr := 0.U
-        ex_csr_cmd := 0.U
+        ex_pc           :=  pc_ini
+        ex_npc          :=  npc_ini
+        ex_ctrl         := nop_ctrl
+        ex_inst         := inst_nop
+        ex_reg_raddr    := VecInit(0.U, 0.U)
+        ex_reg_waddr    := 0.U
+        ex_rs           := VecInit(0.U, 0.U)
+        ex_csr_addr     := 0.U
+        ex_csr_cmd      := 0.U
+        ex_j_check      := false.B
+        ex_b_check      := false.B
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
@@ -259,7 +264,8 @@ class KyogenRVCpu extends Module {
     csr.io.rs1_addr     := ex_inst(19, 15) //ex_rs(0)
     csr.io.stall        := stall
     csr.io.pc_invalid   := pc_invalid
-    csr.io.jumpInstCheck := (ex_ctrl.br_type === BR_J) || (ex_ctrl.br_type === BR_JR)
+    csr.io.j_check     := ex_j_check
+    csr.io.b_check     := ex_b_check
     csr.io.interrupt_sig:= interrupt_sig
     //csr_stall ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.csr_cmd =/= CSR.N)) && !csr.io.expt
 

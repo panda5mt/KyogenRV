@@ -145,7 +145,8 @@ class CsrIO extends Bundle {
   val interrupt_sig:  Bool = Input(Bool())
   val pc:             UInt = Input(UInt(32.W))
   val pc_invalid:     Bool = Input(Bool())          // stall || inst_kill_branch || pc === 0.U
-  val jumpInstCheck:  Bool = Input(Bool())
+  val j_check:       Bool = Input(Bool())           // jump check
+  val b_check:       Bool = Input(Bool())           // branch check
   val stall:          Bool = Input(Bool())
   val expt:           Bool = Output(Bool())
   val evec:           UInt = Output(UInt(32.W))
@@ -177,7 +178,6 @@ class CSR extends Module {
   val cycleh:   UInt = RegInit(0.U(32.W))
   val instret:  UInt = RegInit(0.U(32.W))
   val instreth: UInt = RegInit(0.U(32.W))
-  
   val mcpuid:   UInt = Cat(0.U(2.W) /* RV32I */, 0.U((32-28).W),
     (1 << ('I' - 'A') /* Base ISA */|
       1 << ('U' - 'A') /* User Mode */).U(26.W))
@@ -285,10 +285,6 @@ class CSR extends Module {
   cycle := cycle + 1.U
   when(cycle.andR) { cycleh := cycleh + 1.U }
 
-//  when (time >= mtimecmp) {
-//    MTIP := true.B
-//  }
-
   MEIP := io.interrupt_sig // true => external interrupt
 
   //noinspection ScalaStyle
@@ -299,18 +295,30 @@ class CSR extends Module {
   val isEcall:      Bool = privInst && !csr_addr(0) && !csr_addr(8)
   val isEbreak:     Bool = privInst &&  csr_addr(0) && !csr_addr(8)
   val wen:          Bool = (io.cmd === CSR.W) || io.cmd(1) && rs1_addr.orR //(rs1_addr =/= 0.U)
-  val isIllegal:    Bool = !io.legal && !io.pc_invalid
-  val iaddrInvalid: Bool = io.jumpInstCheck && alu_calc_addr(1)
-  //!io.pc_invalid && io.pc(1) // for RVI. this is not good for RVC
 
-   val laddrInvalid: Bool = MuxCase(false.B, Seq(
-      (io.mem_wr === M_XRD && io.mask_type === MT_W)  -> alu_calc_addr(1,0).orR,
-      (io.mem_wr === M_XRD && io.mask_type === MT_H)  -> alu_calc_addr(0),
-      (io.mem_wr === M_XRD && io.mask_type === MT_HU) -> alu_calc_addr(0)
-   ))
+
+  val isIllegal:    Bool = !io.legal && !io.pc_invalid
+
+  // branch instruction check (for InstAddrMisalign)
+  val pre_mepc:     UInt = RegInit(0.U(32.W)) // save mepc if branch inst exsists
+  val pre_mtval:    UInt = RegInit(0.U(32.W)) // save mtval if branch inst exsists
+
+  when(io.b_check || io.j_check){
+    pre_mepc  := io.pc
+    pre_mtval := io.inst
+  }
+
+  // priority: InstAddrMisalign > InvalidInstruction (if both illegal occur)
+  val iaddrInvalid_b: Bool = io.pc(1) || io.pc(0)
+  val iaddrInvalid_j: Bool = io.j_check && (alu_calc_addr(1) || alu_calc_addr(0))
+  val laddrInvalid: Bool = MuxCase(false.B, Seq(
+    (io.mem_wr === M_XRD && io.mask_type === MT_W)  -> alu_calc_addr(1,0).orR,
+    (io.mem_wr === M_XRD && io.mask_type === MT_H)  -> alu_calc_addr(0),
+    (io.mem_wr === M_XRD && io.mask_type === MT_HU) -> alu_calc_addr(0)
+  ))
   val saddrInvalid: Bool = MuxCase(false.B, Seq(
-      (io.mem_wr === M_XWR && io.mask_type === MT_W)  -> alu_calc_addr(1,0).orR,
-      (io.mem_wr === M_XWR && io.mask_type === MT_H)  -> alu_calc_addr(0)
+    (io.mem_wr === M_XWR && io.mask_type === MT_W)  -> alu_calc_addr(1,0).orR,
+    (io.mem_wr === M_XWR && io.mask_type === MT_H)  -> alu_calc_addr(0)
   ))
 
   val isInstRet: Bool = (io.inst =/= Instructions.NOP) && (!io.expt || isEcall || isEbreak) && !io.stall
@@ -318,7 +326,7 @@ class CSR extends Module {
   when(isInstRet && instret.andR) { instreth := instreth + 1.U }
 
 
-  io.expt := isEcall || isEbreak || isIllegal || isExtInt || iaddrInvalid || laddrInvalid || saddrInvalid// exception
+  io.expt := isEcall || isEbreak || isIllegal || isExtInt || iaddrInvalid_j || iaddrInvalid_b || laddrInvalid || saddrInvalid// exception
   io.evec := mtvec //+ (PRV << 6).asUInt()
 
   io.epc := mepc
@@ -331,6 +339,9 @@ class CSR extends Module {
     when(io.expt) {
       when(isExtInt){
         mepc := valid_pc
+      }.elsewhen(iaddrInvalid_b){
+        mepc  := pre_mepc
+        mtval := pre_mtval
       }.otherwise {
         mepc := io.pc >> 2 << 2
         mtval := io.inst
@@ -338,8 +349,8 @@ class CSR extends Module {
       mcause := Mux(isEcall, Cause.Ecall + PRV,
         Mux(isExtInt, (BigInt(1) << (32 - 1)).asUInt | (Cause.ExtInterrupt + PRV).asUInt,
           Mux(isEbreak, Cause.Breakpoint,
-            Mux(isIllegal, Cause.IllegalInst,
-              Mux(iaddrInvalid,Cause.InstAddrMisaligned,
+            Mux(iaddrInvalid_j || iaddrInvalid_b, Cause.InstAddrMisaligned,
+              Mux(isIllegal, Cause.IllegalInst,
                 Mux(laddrInvalid, Cause.LoadAddrMisaligned,
                   Mux(saddrInvalid, Cause.StoreAddrMisaligned,
                     Cause.InstAddrMisaligned)))))))
