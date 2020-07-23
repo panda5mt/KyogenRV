@@ -121,6 +121,7 @@ object CsrAddr {
   )
 }
 
+// CAUSES
 object Cause {
   val InstAddrMisaligned:   UInt = 0.U
   val IllegalInst:          UInt = 2.U
