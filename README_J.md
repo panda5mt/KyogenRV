@@ -11,7 +11,7 @@ The Simple RISC-V KyogenRV(響玄RV)
 
 ## I.使い方
 #### 1.シミュレーション
-riscv-toolchainが必要となります。以下はの手順は導入が済んでいる前提で進めていきます。
+riscv-toolchainが必要となります。以下の手順は導入が済んでいる前提で進めていきます。
 ```
 git clone http://github.com/panda5mt/KyogenRV  
 cd KyogenRV/
