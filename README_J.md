@@ -11,14 +11,15 @@ The Simple RISC-V KyogenRV(響玄RV)
 
 ## I.使い方
 #### 1.シミュレーション
-<code>[src/sw/test.s](src/sw/test.s)</code>にアセンブラファイルを記述し、
-プロジェクトのルートフォルダで以下の方法でアセンブルしてください。(riscv-toolchainが必要となります)
+riscv-toolchainが必要となります。以下はの手順は導入が済んでいる前提で進めていきます。
 ```
 git clone http://github.com/panda5mt/KyogenRV  
 cd KyogenRV/
 make clean
 make test
 ```
+アセンブラファイルを書き換える場合は、<code>[src/sw/test.s](src/sw/test.s)</code>にアセンブラファイルを記述し、
+make testでアセンブル、実行が可能となります。
 コンソール上で各命令処理時の各ステージの挙動、終了後の汎用レジスタ(x0 ~ x31)の値を確認することができます。
 #### 2.riscv-testsのシミュレーション (python 3.7以降が必要)
 ```
