@@ -105,10 +105,10 @@ class KyogenRVCpu extends Module {
 
     // -------- START: IF stage -------
     io.r_imem_add.addr := pc_cntr
-    when(!io.w_imem_add.req){
-        io.r_imem_add.req := true.B
-    }.otherwise{
+    when( io.w_imem_add.req || io.r_dmem_add.req || io.w_dmem_add.req ){
         io.r_imem_add.req := false.B
+    }.otherwise{
+        io.r_imem_add.req := true.B
     }
     // -------- END: IF stage --------
 
@@ -163,7 +163,7 @@ class KyogenRVCpu extends Module {
         }
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_dat.ack//!io.r_imem_add.req
+          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_add.req
 
         io.sw.r_stall_sig := stall
 
@@ -390,7 +390,7 @@ class KyogenRVCpu extends Module {
     wb_ctrl := mem_ctrl
     wb_reg_waddr := mem_reg_waddr
     wb_alu_out := mem_alu_out
-    wb_dmem_read_ack := io.r_dmem_dat.ack//RegNext(io.r_dmem_dat.ack)
+    wb_dmem_read_ack := io.r_dmem_dat.ack
     //wb_dmem_read_data := io.r_dmem_dat.data
     wb_csr_addr := mem_csr_addr
     wb_csr_data := mem_csr_data
