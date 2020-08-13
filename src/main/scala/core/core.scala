@@ -368,6 +368,8 @@ class KyogenRVCpu extends Module {
             io.w_dmem_dat.byteenable := "b1111".U
             io.w_dmem_dat.data := mem_rs(1)
         }
+    }.otherwise{
+        io.w_dmem_dat.byteenable    := 15.U
     }
 
 

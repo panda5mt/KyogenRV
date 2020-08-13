@@ -15,7 +15,7 @@ class IMem extends Module {
     // instruction memory 0x0000 - 0x1000
     val valid_address: Bool = (io.imem_add.addr >= 0x0000.U) && (io.imem_add.addr <= 0x1000.U)
     //val w_valid_address: Bool = (io.w_imem_add.addr >= 0x0000.U) && (io.w_imem_add.addr <= 0x1000.U)
-    val byteenable: UInt = 15.U// io.w_imem_dat.byteenable
+    val byteenable: UInt = io.w_imem_dat.byteenable
 
     val r_req: Bool = io.r_imem_dat.req && valid_address
     val w_req: Bool = io.w_imem_dat.req && valid_address
@@ -39,12 +39,16 @@ class IMem extends Module {
 
     // read operation
     when(r_req === true.B) {
-        io.r_imem_dat.data  := Cat(
-            mem_3.read(io.imem_add.addr),
-            mem_2.read(io.imem_add.addr),
-            mem_1.read(io.imem_add.addr),
-            mem_0.read(io.imem_add.addr)
-        )
+        when(byteenable === 15.U){
+            io.r_imem_dat.data  := Cat(
+                mem_3.read(io.imem_add.addr),
+                mem_2.read(io.imem_add.addr),
+                mem_1.read(io.imem_add.addr),
+                mem_0.read(io.imem_add.addr)
+            )
+        }.otherwise{
+            io.r_imem_dat.data := 0.U
+        }
         i_ack := true.B
         w_ack := false.B
     }.elsewhen(w_req) {

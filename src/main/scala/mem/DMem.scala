@@ -44,12 +44,16 @@ class DMem extends Module {
 
   // read operation
   when(r_req === true.B) {
-    io.r_dmem_dat.data  := Cat(
-      mem_3.read(addr_align),
-      mem_2.read(addr_align),
-      mem_1.read(addr_align),
-      mem_0.read(addr_align)
+    when(byteenable === 15.U) {
+      io.r_dmem_dat.data  := Cat(
+        mem_3.read(addr_align),
+        mem_2.read(addr_align),
+        mem_1.read(addr_align),
+        mem_0.read(addr_align)
     )
+    }.otherwise{
+      io.r_dmem_dat.data  := 0.U
+    }
     r_ack := true.B
     w_ack := false.B
   }.elsewhen(w_req === true.B) {
