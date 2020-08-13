@@ -100,7 +100,7 @@ class KyogenRVCpu extends Module {
     val w_data: UInt = RegInit(0.U(32.W))
 
     //io.r_dmem_dat.req := RegInit(false.B)
-    io.r_dmem_add.addr := RegInit(0.U(32.W))
+    io.dmem_add.addr := RegInit(0.U(32.W))
 
 
     // -------- START: IF stage -------
@@ -313,19 +313,19 @@ class KyogenRVCpu extends Module {
 
     //dmem connection
     when (io.sw.halt === false.B) { // CPU active
-        io.w_dmem_add.addr          := mem_alu_out
+        //io.w_dmem_add.addr          := mem_alu_out
+        io.dmem_add.addr            := mem_alu_out
         io.w_dmem_dat.req           := (mem_ctrl.mem_wr === M_XWR)
         io.w_dmem_dat.data          := DontCare
-        io.r_dmem_add.addr          := mem_alu_out
         io.r_dmem_dat.req           := (mem_ctrl.mem_wr === M_XRD)
 
     }.otherwise{    // CPU halt
         // dmem connection
-        io.w_dmem_add.addr          := io.sw.w_add
+        io.dmem_add.addr          := io.sw.w_add
         io.w_dmem_dat.data          := io.sw.w_dat
         io.w_dmem_dat.req           := true.B
         io.w_dmem_dat.byteenable    := 15.U
-        io.r_dmem_add.addr          := 0.U
+        //io.r_dmem_add.addr          := 0.U
         io.r_dmem_dat.req           := false.B
 
     }
@@ -584,12 +584,12 @@ class CpuBus extends Module {
 
 
     // imem address connection
-    imem.io.imem_add.addr <> cpu.io.imem_add.addr
+    imem.io.imem_add.addr           <> cpu.io.imem_add.addr
 
     // Read imem
-    imem.io.r_imem_dat.req  <> cpu.io.r_imem_dat.req
-    cpu.io.r_imem_dat.data  <> imem.io.r_imem_dat.data
-    cpu.io.r_imem_dat.ack   <> imem.io.r_imem_dat.ack
+    imem.io.r_imem_dat.req          <> cpu.io.r_imem_dat.req
+    cpu.io.r_imem_dat.data          <> imem.io.r_imem_dat.data
+    cpu.io.r_imem_dat.ack           <> imem.io.r_imem_dat.ack
 
     // write imem
     imem.io.w_imem_dat.req          <> cpu.io.w_imem_dat.req
@@ -598,16 +598,15 @@ class CpuBus extends Module {
     cpu.io.w_imem_dat.byteenable    <> imem.io.w_imem_dat.byteenable
 
     // Read dmem
-    dmem.io.r_dmem_dat.req  <> cpu.io.r_dmem_dat.req
-    dmem.io.r_dmem_add.addr <> cpu.io.r_dmem_add.addr
-    cpu.io.r_dmem_dat.data  <> dmem.io.r_dmem_dat.data
-    cpu.io.r_dmem_dat.ack   <> dmem.io.r_dmem_dat.ack
+    dmem.io.r_dmem_dat.req          <> cpu.io.r_dmem_dat.req
+    dmem.io.dmem_add.addr           <> cpu.io.dmem_add.addr
+    cpu.io.r_dmem_dat.data          <> dmem.io.r_dmem_dat.data
+    cpu.io.r_dmem_dat.ack           <> dmem.io.r_dmem_dat.ack
 
     // write dmem
-    dmem.io.w_dmem_dat.req   <> cpu.io.w_dmem_dat.req
-    dmem.io.w_dmem_add.addr  <> cpu.io.w_dmem_add.addr
-    dmem.io.w_dmem_dat.data  <> cpu.io.w_dmem_dat.data
-    cpu.io.w_dmem_dat.ack    <> dmem.io.w_dmem_dat.ack
+    dmem.io.w_dmem_dat.req          <> cpu.io.w_dmem_dat.req
+    dmem.io.w_dmem_dat.data         <> cpu.io.w_dmem_dat.data
+    cpu.io.w_dmem_dat.ack           <> dmem.io.w_dmem_dat.ack
     cpu.io.w_dmem_dat.byteenable    <> dmem.io.w_dmem_dat.byteenable
 
 }

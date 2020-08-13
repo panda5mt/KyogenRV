@@ -14,12 +14,12 @@ class DMem extends Module {
   val w_ack: Bool = RegInit(false.B)
 
   // data memory 0x2000 - 0x3000
-  val r_valid_address: Bool = (io.r_dmem_add.addr >= 0x0000.U) && (io.r_dmem_add.addr <= 0x3000.U)
-  val w_valid_address: Bool = (io.w_dmem_add.addr >= 0x0000.U) && (io.w_dmem_add.addr <= 0x3000.U)
+  val valid_address: Bool = (io.dmem_add.addr >= 0x0000.U) && (io.dmem_add.addr <= 0x3000.U)
+  //val w_valid_address: Bool = (io.w_dmem_add.addr >= 0x0000.U) && (io.w_dmem_add.addr <= 0x3000.U)
   val byteenable: UInt = io.w_dmem_dat.byteenable
 
-  val r_req: Bool = io.r_dmem_dat.req && r_valid_address
-  val w_req: Bool = io.w_dmem_dat.req && w_valid_address
+  val r_req: Bool = io.r_dmem_dat.req && valid_address
+  val w_req: Bool = io.w_dmem_dat.req && valid_address
 
   // initialization
   //val mem: Mem[UInt] = Mem(256*1024, UInt(32.W))
@@ -33,8 +33,8 @@ class DMem extends Module {
   val wdat_1: UInt = io.w_dmem_dat.data(15, 8)
   val wdat_0: UInt = io.w_dmem_dat.data( 7, 0)
 
-  val addr_align: UInt = Mux(r_req,(io.r_dmem_add.addr >> 2).asUInt() - 0x0000.U,
-    Mux(w_req,(io.w_dmem_add.addr >> 2).asUInt() - 0x0000.U,
+  val addr_align: UInt = Mux(r_req,(io.dmem_add.addr >> 2).asUInt() - 0x0000.U,
+    Mux(w_req,(io.dmem_add.addr >> 2).asUInt() - 0x0000.U,
       0xffffffffL.U))
 
 
