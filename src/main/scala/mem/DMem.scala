@@ -18,8 +18,8 @@ class DMem extends Module {
   val w_valid_address: Bool = (io.w_dmem_add.addr >= 0x0000.U) && (io.w_dmem_add.addr <= 0x3000.U)
   val byteenable: UInt = io.w_dmem_dat.byteenable
 
-  val r_req: Bool = io.r_dmem_add.req && r_valid_address
-  val w_req: Bool = io.w_dmem_add.req && w_valid_address
+  val r_req: Bool = io.r_dmem_dat.req && r_valid_address
+  val w_req: Bool = io.w_dmem_dat.req && w_valid_address
 
   // initialization
   //val mem: Mem[UInt] = Mem(256*1024, UInt(32.W))

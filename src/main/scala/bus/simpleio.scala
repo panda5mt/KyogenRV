@@ -48,19 +48,20 @@ class CtrlSwChannel extends Bundle {
 
 // address channel bundle
 class AddressChannel extends Bundle {
-    val req: Bool = Output(Bool())        // request signal
-    val addr: UInt = Output(UInt(32.W))   // address (32bit)
+    val addr: UInt = Output(UInt(32.W))         // address (32bit)
 }
 
 // data channel bundle
 class DataChannel extends Bundle {
-    val ack: Bool = Output(Bool())        // data is available ack
-    val data: UInt = Output(UInt(32.W))   // data (32bit)
+    val req: Bool = Input(Bool())               // request signal
+    val ack: Bool = Output(Bool())              // data is available ack
+    val data: UInt = Output(UInt(32.W))         // data (32bit)
 }
 
 class wDataChannel extends Bundle {
-    val ack: Bool = Input(Bool())        // data is available ack
-    val data: UInt = Output(UInt(32.W))   // data (32bit)
+    val req: Bool = Output(Bool())              // request signal
+    val ack: Bool = Input(Bool())               // data is available ack
+    val data: UInt = Output(UInt(32.W))         // data (32bit)
     val byteenable: UInt = Output(UInt(4.W))    // byteenable (8bit lane x4 = 32bit)
 }
 
