@@ -104,7 +104,7 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: IF stage -------
-    io.r_imem_add.addr := pc_cntr
+    //io.r_imem_add.addr := pc_cntr
     when(io.w_imem_dat.req === false.B){
         io.r_imem_dat.req := true.B
     }.otherwise{
@@ -319,7 +319,6 @@ class KyogenRVCpu extends Module {
         io.r_dmem_add.addr          := mem_alu_out
         io.r_dmem_dat.req           := (mem_ctrl.mem_wr === M_XRD)
 
-        //io.w_dmem_dat.data := mem_rs(1)
     }.otherwise{    // CPU halt
         // dmem connection
         io.w_dmem_add.addr          := io.sw.w_add
@@ -487,11 +486,19 @@ class KyogenRVCpu extends Module {
     io.sw.r_add  := pc_cntr
     io.sw.r_pc   := id_pc//pc_cntr      // program counter
 
+
+    // address update
+    when(w_req){    // write request
+        io.imem_add.addr    := w_addr
+    }.otherwise{
+        io.imem_add.addr    := pc_cntr
+    }
+
     // write process
-    io.w_imem_add.addr   := w_addr
     io.w_imem_dat.data   := w_data
     io.w_imem_dat.req    := w_req
     io.w_imem_dat.byteenable := 15.U
+
     // read process
     //r_ack  := io.r_imem_dat.ack
     //r_data := io.r_imem_dat.data
@@ -527,7 +534,7 @@ class CpuBus extends Module {
     // Connect Test Module
     sw_halt     := io.sw.halt
     sw_data     := imem.io.r_imem_dat.data
-    sw_addr     := imem.io.r_imem_add.addr
+    sw_addr     := imem.io.imem_add.addr
 
     // imem
     sw_wdata    := io.sw.w_dat // data to write imem
@@ -576,16 +583,16 @@ class CpuBus extends Module {
     cpu.io.sw.w_pc  := w_pc
 
 
+    // imem address connection
+    imem.io.imem_add.addr <> cpu.io.imem_add.addr
 
     // Read imem
     imem.io.r_imem_dat.req  <> cpu.io.r_imem_dat.req
-    imem.io.r_imem_add.addr <> cpu.io.r_imem_add.addr
     cpu.io.r_imem_dat.data  <> imem.io.r_imem_dat.data
     cpu.io.r_imem_dat.ack   <> imem.io.r_imem_dat.ack
 
     // write imem
     imem.io.w_imem_dat.req          <> cpu.io.w_imem_dat.req
-    imem.io.w_imem_add.addr         <> cpu.io.w_imem_add.addr
     imem.io.w_imem_dat.data         <> cpu.io.w_imem_dat.data
     cpu.io.w_imem_dat.ack           <> imem.io.w_imem_dat.ack
     cpu.io.w_imem_dat.byteenable    <> imem.io.w_imem_dat.byteenable

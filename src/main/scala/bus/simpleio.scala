@@ -70,10 +70,10 @@ class wDataChannel extends Bundle {
 class HostIf extends Bundle {
     // Instruction Memory
     // IO definition
-    val r_imem_add: AddressChannel = new AddressChannel
+    val imem_add: AddressChannel = new AddressChannel
     val r_imem_dat: DataChannel = Flipped(new DataChannel)    // flipped I/O
     // write operation
-    val w_imem_add: AddressChannel = new AddressChannel
+    //val w_imem_add: AddressChannel = new AddressChannel
     val w_imem_dat: wDataChannel = new wDataChannel
 
     // data Memory
@@ -95,10 +95,10 @@ class HostIf extends Bundle {
 class SlaveIf_Inst extends Bundle {
     // IO definition
     // read operation
-    val r_imem_add: AddressChannel = Flipped(new AddressChannel) // flipped I/O
+    val imem_add: AddressChannel = Flipped(new AddressChannel) // flipped I/O
     val r_imem_dat: DataChannel = new DataChannel
     // write operation
-    val w_imem_add: AddressChannel = Flipped(new AddressChannel) // flipped I/O
+    //val w_imem_add: AddressChannel = Flipped(new AddressChannel) // flipped I/O
     val w_imem_dat: wDataChannel = Flipped(new wDataChannel)
 }
 

@@ -13,12 +13,12 @@ class IMem extends Module {
     val w_ack: Bool = RegInit(false.B)
 
     // instruction memory 0x0000 - 0x1000
-    val r_valid_address: Bool = (io.r_imem_add.addr >= 0x0000.U) && (io.r_imem_add.addr <= 0x1000.U)
-    val w_valid_address: Bool = (io.w_imem_add.addr >= 0x0000.U) && (io.w_imem_add.addr <= 0x1000.U)
+    val valid_address: Bool = (io.imem_add.addr >= 0x0000.U) && (io.imem_add.addr <= 0x1000.U)
+    //val w_valid_address: Bool = (io.w_imem_add.addr >= 0x0000.U) && (io.w_imem_add.addr <= 0x1000.U)
     val byteenable: UInt = 15.U// io.w_imem_dat.byteenable
 
-    val r_req: Bool = io.r_imem_dat.req && r_valid_address
-    val w_req: Bool = io.w_imem_dat.req && w_valid_address
+    val r_req: Bool = io.r_imem_dat.req && valid_address
+    val w_req: Bool = io.w_imem_dat.req && valid_address
     
     // initialization
     //val mem: Mem[UInt] = Mem(256*1024, UInt(32.W))
@@ -40,20 +40,20 @@ class IMem extends Module {
     // read operation
     when(r_req === true.B) {
         io.r_imem_dat.data  := Cat(
-            mem_3.read(io.r_imem_add.addr),
-            mem_2.read(io.r_imem_add.addr),
-            mem_1.read(io.r_imem_add.addr),
-            mem_0.read(io.r_imem_add.addr)
+            mem_3.read(io.imem_add.addr),
+            mem_2.read(io.imem_add.addr),
+            mem_1.read(io.imem_add.addr),
+            mem_0.read(io.imem_add.addr)
         )
         i_ack := true.B
         w_ack := false.B
     }.elsewhen(w_req) {
         //mem.write(io.w_imem_add.addr, io.w_imem_dat.data)
-        when(byteenable(3)){ mem_3.write(io.w_imem_add.addr, wdat_3) }
-        when(byteenable(2)){ mem_2.write(io.w_imem_add.addr, wdat_2) }
-        when(byteenable(1)){ mem_1.write(io.w_imem_add.addr, wdat_1) }
-        when(byteenable(0)){ mem_0.write(io.w_imem_add.addr, wdat_0) }
-        mem_0.write(io.w_imem_add.addr, wdat_0)
+        when(byteenable(3)){ mem_3.write(io.imem_add.addr, wdat_3) }
+        when(byteenable(2)){ mem_2.write(io.imem_add.addr, wdat_2) }
+        when(byteenable(1)){ mem_1.write(io.imem_add.addr, wdat_1) }
+        when(byteenable(0)){ mem_0.write(io.imem_add.addr, wdat_0) }
+        mem_0.write(io.imem_add.addr, wdat_0)
         w_ack := true.B
         i_ack := false.B
     }.otherwise{
