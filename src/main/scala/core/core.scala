@@ -107,6 +107,8 @@ class KyogenRVCpu extends Module {
     //io.r_imem_add.addr := pc_cntr
     when(io.w_imem_dat.req === false.B){
         io.r_imem_dat.req := true.B
+    }.elsewhen(stall){
+        io.r_imem_dat.req := false.B
     }.otherwise{
         io.r_imem_dat.req := false.B
     }
