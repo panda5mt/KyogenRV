@@ -105,10 +105,14 @@ class KyogenRVCpu extends Module {
 
     // -------- START: IF stage -------
     //io.r_imem_add.addr := pc_cntr
+
+    val waitrequest: Bool = io.sw.w_waitrequest_sig
     when(io.w_imem_dat.req === false.B){
-        io.r_imem_dat.req := true.B
-    }.elsewhen(stall){
-        io.r_imem_dat.req := false.B
+        when(!waitrequest){
+            io.r_imem_dat.req := true.B
+        }.otherwise{
+            io.r_imem_dat.req := false.B
+        }
     }.otherwise{
         io.r_imem_dat.req := false.B
     }
@@ -165,7 +169,7 @@ class KyogenRVCpu extends Module {
         }
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_dat.ack
+          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_dat.ack || waitrequest
 
         io.sw.r_stall_sig := stall
 
@@ -575,8 +579,8 @@ class CpuBus extends Module {
     //IOTESTERS: External Interrupt Signal
     cpu.io.sw.w_interrupt_sig <> io.sw.w_interrupt_sig
 
-    // MISC
-    //cpu.io.sw.misc <> io.sw.misc
+    // WAITREQUEST
+    cpu.io.sw.w_waitrequest_sig <> io.sw.w_waitrequest_sig
 
     w_pc        := io.sw.w_pc
 
@@ -653,6 +657,7 @@ object Test extends App {
             }
             step(1)
             poke(signal = c.io.sw.halt, value = true.B)
+            poke(c.io.sw.w_waitrequest_sig, false.B)
             step(1)
 
             for (addr <- 0 until buffs.length * 4 by 4) {

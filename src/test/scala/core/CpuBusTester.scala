@@ -18,6 +18,7 @@ case class CpuBusTester(c: CpuBus, hexname: String, logname: String) extends Pee
   }
   step(1)
   poke(c.io.sw.halt, value = 1)
+  poke(c.io.sw.w_waitrequest_sig, value = 0)
   step(1)
 
   var pw = new PrintWriter(new BufferedWriter(new FileWriter(logname)), true)

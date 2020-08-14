@@ -42,6 +42,9 @@ class CtrlSwChannel extends Bundle {
     // External interrupt signal
     val w_interrupt_sig: Bool = Input(Bool())
 
+    // waitrequest signal
+    val w_waitrequest_sig: Bool = Input(Bool())
+
 }
 
 // address channel bundle
