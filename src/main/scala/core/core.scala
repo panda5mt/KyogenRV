@@ -171,7 +171,7 @@ class KyogenRVCpu extends Module {
         }
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_dat.ack || waitrequest
+          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_dat.req || waitrequest
 
         io.sw.r_stall_sig := stall
 
