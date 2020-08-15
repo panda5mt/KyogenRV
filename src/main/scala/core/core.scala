@@ -110,7 +110,11 @@ class KyogenRVCpu extends Module {
     waitrequest := io.sw.w_waitrequest_sig
 
     when(io.w_imem_dat.req === false.B){
+        when(!waitrequest){
             io.r_imem_dat.req := true.B
+        }.otherwise{
+            io.r_imem_dat.req := false.B
+        }
     }.otherwise{
         io.r_imem_dat.req := false.B
     }
