@@ -106,7 +106,9 @@ class KyogenRVCpu extends Module {
     // -------- START: IF stage -------
     //io.r_imem_add.addr := pc_cntr
 
-    val waitrequest: Bool = io.sw.w_waitrequest_sig
+    val waitrequest: Bool = RegInit(true.B)
+    waitrequest := io.sw.w_waitrequest_sig
+
     when(io.w_imem_dat.req === false.B){
             io.r_imem_dat.req := true.B
     }.otherwise{
