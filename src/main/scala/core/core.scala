@@ -49,8 +49,8 @@ class KyogenRVCpu extends Module {
     val ex_rs: Vec[UInt] = RegInit(VecInit(0.U(32.W), 0.U(32.W)))
     val ex_csr_addr: UInt = RegInit(0.U(32.W))
     val ex_csr_cmd: UInt = RegInit(0.U(32.W))
-    val ex_b_check: Bool = RegInit(false.B)  // branch check
-    val ex_j_check: Bool = RegInit(false.B)  // jump check
+    val ex_b_check: Bool = RegInit(false.B) // branch check
+    val ex_j_check: Bool = RegInit(false.B) // jump check
 
     // MEM stage pipeline register
     val mem_pc: UInt = RegInit(pc_ini)
@@ -114,11 +114,11 @@ class KyogenRVCpu extends Module {
     //delay_stall is "cheat" logic to ready memory mapped logic.
     // stall 3 or 4 clock after reset.
     val delay_stall: UInt = RegInit(0.U(2.W))
-    when (imem_read_sig === true.B) {
+    when(imem_read_sig === true.B) {
         when(delay_stall =/= 3.U) {
             delay_stall := delay_stall + 1.U
         }
-    }.otherwise{
+    }.otherwise {
         delay_stall := 0.U(2.W)
     }
 
@@ -169,9 +169,9 @@ class KyogenRVCpu extends Module {
     // judge if stall needed
     withClock(invClock) {
         val mem_stall: Bool = RegInit(false.B)
-        when (mem_ctrl.mem_wr === M_XRD) {
+        when(mem_ctrl.mem_wr === M_XRD) {
             mem_stall := true.B
-        } .elsewhen(wb_dmem_read_ack === true.B) {
+        }.elsewhen(wb_dmem_read_ack === true.B) {
             mem_stall := false.B
         }
 
@@ -186,32 +186,31 @@ class KyogenRVCpu extends Module {
     // -------- END: ID stage --------
 
 
-
     // -------- START: EX Stage --------
-    when (!stall && !inst_kill) {
-        ex_pc           := id_pc
-        ex_npc          := id_npc
-        ex_ctrl         := id_ctrl
-        ex_inst         := idm.io.inst.bits
-        ex_reg_raddr    := id_raddr
-        ex_reg_waddr    := id_waddr
-        ex_rs           := id_rs
-        ex_csr_addr     := id_csr_addr
-        ex_csr_cmd      := id_ctrl.csr_cmd
-        ex_j_check      := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
-        ex_b_check      := (id_ctrl.br_type > 3.U)
-    } .otherwise {
-        ex_pc           :=  pc_ini
-        ex_npc          :=  npc_ini
-        ex_ctrl         := nop_ctrl
-        ex_inst         := inst_nop
-        ex_reg_raddr    := VecInit(0.U, 0.U)
-        ex_reg_waddr    := 0.U
-        ex_rs           := VecInit(0.U, 0.U)
-        ex_csr_addr     := 0.U
-        ex_csr_cmd      := 0.U
-        ex_j_check      := false.B
-        ex_b_check      := false.B
+    when(!stall && !inst_kill) {
+        ex_pc := id_pc
+        ex_npc := id_npc
+        ex_ctrl := id_ctrl
+        ex_inst := idm.io.inst.bits
+        ex_reg_raddr := id_raddr
+        ex_reg_waddr := id_waddr
+        ex_rs := id_rs
+        ex_csr_addr := id_csr_addr
+        ex_csr_cmd := id_ctrl.csr_cmd
+        ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
+        ex_b_check := (id_ctrl.br_type > 3.U)
+    }.otherwise {
+        ex_pc := pc_ini
+        ex_npc := npc_ini
+        ex_ctrl := nop_ctrl
+        ex_inst := inst_nop
+        ex_reg_raddr := VecInit(0.U, 0.U)
+        ex_reg_waddr := 0.U
+        ex_rs := VecInit(0.U, 0.U)
+        ex_csr_addr := 0.U
+        ex_csr_cmd := 0.U
+        ex_j_check := false.B
+        ex_b_check := false.B
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
@@ -221,6 +220,7 @@ class KyogenRVCpu extends Module {
     val ex_reg_rs2_bypass: UInt = Wire(UInt(32.W))
     val ex_op1: UInt = Wire(UInt(32.W))
     val ex_op2: UInt = Wire(UInt(32.W))
+    val alu: ALU = Module(new ALU)
 
     ex_reg_rs1_bypass := MuxCase(ex_rs(0), Seq(
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.csr_cmd =/= CSR.N) -> mem_csr_data,
@@ -240,28 +240,26 @@ class KyogenRVCpu extends Module {
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.csr_cmd =/= CSR.N) -> wb_csr_data
     ))
-
-    // ALU OP1 selector
-    ex_op1 := MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
-        mapping = Seq(
-            OP1_RS1 -> ex_reg_rs1_bypass,
-            OP1_PC -> ex_pc, // PC = pc_cntr-4.U
-            OP1_X -> 0.U(32.W)
-        )
-    )
-
-    // ALU OP2 selector
-    ex_op2 := MuxLookup(key = ex_ctrl.alu_op2, default = 0.U(32.W),
-        mapping = Seq(
-            OP2_RS2 -> ex_reg_rs2_bypass,
-            OP2_IMM -> ex_imm.asUInt, // IMM
-            OP2_X -> 0.U(32.W)
-        )
-    )
-
-    // ALU
-    val alu: ALU    = Module(new ALU)
     withClock(invClock) {
+        // ALU OP1 selector
+        ex_op1 := MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
+            mapping = Seq(
+                OP1_RS1 -> ex_reg_rs1_bypass,
+                OP1_PC -> (ex_pc - 4.U), // PC = pc_cntr-4.U
+                OP1_X -> 0.U(32.W)
+            )
+        )
+
+        // ALU OP2 selector
+        ex_op2 := MuxLookup(key = ex_ctrl.alu_op2, default = 0.U(32.W),
+            mapping = Seq(
+                OP2_RS2 -> ex_reg_rs2_bypass,
+                OP2_IMM -> ex_imm.asUInt, // IMM
+                OP2_X -> 0.U(32.W)
+            )
+        )
+
+        // ALU
         alu.io.alu_op := ex_ctrl.alu_func
         alu.io.op1 := ex_op1
         alu.io.op2 := ex_op2
