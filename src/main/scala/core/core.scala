@@ -83,7 +83,7 @@ class KyogenRVCpu extends Module {
     val inst_kill_branch: Bool = Wire(Bool())
 
     // waitrequest control
-    val waitrequest: Bool = RegInit(true.B)
+    val waitrequest: Bool = RegInit(false.B)
 
     // ------- END: pipeline registers --------
 
