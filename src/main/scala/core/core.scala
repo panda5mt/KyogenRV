@@ -109,24 +109,14 @@ class KyogenRVCpu extends Module {
     val waitrequest: Bool = RegInit(true.B)
     waitrequest := io.sw.w_waitrequest_sig
 
-    val imem_read_sig: Bool = RegInit(false.B)
-
-    when(io.w_imem_dat.req === false.B){
-          imem_read_sig := true.B
-    }.otherwise{
-          imem_read_sig:= false.B
-    }
+    val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, init = false.B)
     io.r_imem_dat.req := imem_read_sig
-
 //    when(io.w_imem_dat.req === false.B){
-//        when(!waitrequest) {
-//            io.r_imem_dat.req := true.B
-//        }.otherwise{
-//            io.r_imem_dat.req := false.B
-//        }
+//        io.r_imem_dat.req := RegNext(true.B)
 //    }.otherwise{
 //        io.r_imem_dat.req := false.B
 //    }
+
     // -------- END: IF stage --------
 
     //val id_valid = (io.r_imem_dat.ack)
