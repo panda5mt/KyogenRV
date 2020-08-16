@@ -187,32 +187,34 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: EX Stage --------
-    when(!stall && !inst_kill) {
-        ex_pc := id_pc
-        ex_npc := id_npc
-        ex_ctrl := id_ctrl
-        ex_inst := idm.io.inst.bits
-        ex_reg_raddr := id_raddr
-        ex_reg_waddr := id_waddr
-        ex_rs := id_rs
-        ex_csr_addr := id_csr_addr
-        ex_csr_cmd := id_ctrl.csr_cmd
-        ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
-        ex_b_check := (id_ctrl.br_type > 3.U)
-    }.otherwise {
-        ex_pc := pc_ini
-        ex_npc := npc_ini
-        ex_ctrl := nop_ctrl
-        ex_inst := inst_nop
-        ex_reg_raddr := VecInit(0.U, 0.U)
-        ex_reg_waddr := 0.U
-        ex_rs := VecInit(0.U, 0.U)
-        ex_csr_addr := 0.U
-        ex_csr_cmd := 0.U
-        ex_j_check := false.B
-        ex_b_check := false.B
-    }
+    withClock(invClock) {
 
+        when(!stall && !inst_kill) {
+            ex_pc := id_pc
+            ex_npc := id_npc
+            ex_ctrl := id_ctrl
+            ex_inst := idm.io.inst.bits
+            ex_reg_raddr := id_raddr
+            ex_reg_waddr := id_waddr
+            ex_rs := id_rs
+            ex_csr_addr := id_csr_addr
+            ex_csr_cmd := id_ctrl.csr_cmd
+            ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
+            ex_b_check := (id_ctrl.br_type > 3.U)
+        }.otherwise {
+            ex_pc := pc_ini
+            ex_npc := npc_ini
+            ex_ctrl := nop_ctrl
+            ex_inst := inst_nop
+            ex_reg_raddr := VecInit(0.U, 0.U)
+            ex_reg_waddr := 0.U
+            ex_rs := VecInit(0.U, 0.U)
+            ex_csr_addr := 0.U
+            ex_csr_cmd := 0.U
+            ex_j_check := false.B
+            ex_b_check := false.B
+        }
+    }
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
 
     // forwarding logic
