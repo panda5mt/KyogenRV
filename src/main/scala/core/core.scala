@@ -122,11 +122,6 @@ class KyogenRVCpu extends Module {
         delay_stall := 0.U(2.W)
     }
 
-//    when(io.w_imem_dat.req === false.B){
-//        io.r_imem_dat.req := RegNext(true.B)
-//    }.otherwise{
-//        io.r_imem_dat.req := false.B
-//    }
 
     // -------- END: IF stage --------
 
