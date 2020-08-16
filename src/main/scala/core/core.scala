@@ -110,7 +110,7 @@ class KyogenRVCpu extends Module {
 
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
     io.r_imem_dat.req := imem_read_sig
-    val delay_imem_req: Bool = RegNext(io.r_imem_dat.req, false.B)
+    val delay_imem_req: Bool = RegNext(imem_read_sig, false.B)
 //    when(io.w_imem_dat.req === false.B){
 //        io.r_imem_dat.req := RegNext(true.B)
 //    }.otherwise{
