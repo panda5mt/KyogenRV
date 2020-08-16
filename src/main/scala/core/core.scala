@@ -110,7 +110,17 @@ class KyogenRVCpu extends Module {
 
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
     io.r_imem_dat.req := imem_read_sig
-    val delay_imem_req: Bool = RegNext(imem_read_sig, false.B)
+
+    val delay_stall: UInt = RegInit(0.U(2.W))
+
+    when (imem_read_sig === true.B) {
+        when(delay_stall =/= 3.U) {
+            delay_stall := delay_stall + 1.U
+        }
+    }.otherwise{
+        delay_stall := 0.U(2.W)
+    }
+
 //    when(io.w_imem_dat.req === false.B){
 //        io.r_imem_dat.req := RegNext(true.B)
 //    }.otherwise{
@@ -172,7 +182,7 @@ class KyogenRVCpu extends Module {
         //waitrequest := io.sw.w_waitrequest_sig
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !delay_imem_req || io.sw.w_waitrequest_sig
+          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig
 
         io.sw.r_stall_sig := stall
 
