@@ -111,8 +111,9 @@ class KyogenRVCpu extends Module {
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
     io.r_imem_dat.req := imem_read_sig
 
+    //delay_stall is "cheat" logic to ready memory mapped logic.
+    // stall 3 or 4 clock after reset.
     val delay_stall: UInt = RegInit(0.U(2.W))
-
     when (imem_read_sig === true.B) {
         when(delay_stall =/= 3.U) {
             delay_stall := delay_stall + 1.U
