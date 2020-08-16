@@ -110,11 +110,7 @@ class KyogenRVCpu extends Module {
     waitrequest := io.sw.w_waitrequest_sig
 
     when(io.w_imem_dat.req === false.B){
-        when(!waitrequest){
             io.r_imem_dat.req := true.B
-        }.otherwise{
-            io.r_imem_dat.req := false.B
-        }
     }.otherwise{
         io.r_imem_dat.req := false.B
     }
@@ -171,7 +167,7 @@ class KyogenRVCpu extends Module {
         }
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_dat.ack || waitrequest
+          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_dat.req || waitrequest
 
         io.sw.r_stall_sig := stall
 
