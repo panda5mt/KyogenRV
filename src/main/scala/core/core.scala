@@ -109,10 +109,8 @@ class KyogenRVCpu extends Module {
     //io.r_imem_add.addr := pc_cntr
 
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
-
-    withClock(invClock){
-        io.r_imem_dat.req := imem_read_sig
-    }
+    io.r_imem_dat.req := imem_read_sig
+    val delay_imem_acq: Bool = RegNext(io.r_imem_dat.req)
 //    when(io.w_imem_dat.req === false.B){
 //        io.r_imem_dat.req := RegNext(true.B)
 //    }.otherwise{
@@ -174,7 +172,7 @@ class KyogenRVCpu extends Module {
         //waitrequest := io.sw.w_waitrequest_sig
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !io.r_imem_dat.req || io.sw.w_waitrequest_sig
+          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || !delay_imem_acq || io.sw.w_waitrequest_sig
 
         io.sw.r_stall_sig := stall
 
@@ -470,27 +468,26 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: PC update --------
-    withClock(invClock) {
-        when(io.sw.halt === false.B) {
-            w_req := false.B
-            when(!stall) {
-                //r_req := r_req
-                pc_cntr := MuxCase(npc, Seq(
-                    csr.io.expt -> csr.io.evec,
-                    (mem_ctrl.br_type === BR_RET) -> csr.io.epc,
-                    ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
-                    (mem_ctrl.br_type === BR_J) -> mem_alu_out,
-                    (mem_ctrl.br_type === BR_JR) -> mem_alu_out
-                ))
-            }
-        }.otherwise { // halt mode
-            // enable imem Write Operation
-            w_addr := io.sw.w_add //w_addr + 4.U(32.W)
-            w_data := io.sw.w_dat
-            w_req := true.B
-            pc_cntr := io.sw.w_pc
+    when(io.sw.halt === false.B) {
+        w_req := false.B
+        when(!stall) {
+            //r_req := r_req
+            pc_cntr := MuxCase(npc, Seq(
+                csr.io.expt -> csr.io.evec,
+                (mem_ctrl.br_type === BR_RET) -> csr.io.epc,
+                ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
+                (mem_ctrl.br_type === BR_J) -> mem_alu_out,
+                (mem_ctrl.br_type === BR_JR) -> mem_alu_out
+            ))
         }
+    }.otherwise { // halt mode
+        // enable imem Write Operation
+        w_addr := io.sw.w_add //w_addr + 4.U(32.W)
+        w_data := io.sw.w_dat
+        w_req := true.B
+        pc_cntr := io.sw.w_pc
     }
+
 
     // for imem test
     io.sw.r_dat  := io.r_imem_dat.data
