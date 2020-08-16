@@ -240,30 +240,26 @@ class KyogenRVCpu extends Module {
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.csr_cmd =/= CSR.N) -> wb_csr_data
     ))
-    withClock(invClock) {
-        // ALU OP1 selector
-        ex_op1 := MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
-            mapping = Seq(
-                OP1_RS1 -> ex_reg_rs1_bypass,
-                OP1_PC -> (ex_pc - 4.U), // PC = pc_cntr-4.U
-                OP1_X -> 0.U(32.W)
-            )
-        )
 
-        // ALU OP2 selector
-        ex_op2 := MuxLookup(key = ex_ctrl.alu_op2, default = 0.U(32.W),
-            mapping = Seq(
-                OP2_RS2 -> ex_reg_rs2_bypass,
-                OP2_IMM -> ex_imm.asUInt, // IMM
-                OP2_X -> 0.U(32.W)
-            )
-        )
+    // ALU OP1 selector
+    ex_op1 := MuxCase(0.U(32.W), Seq(
+        (ex_ctrl.alu_op1 === OP1_RS1)   -> ex_reg_rs1_bypass,
+        (ex_ctrl.alu_op1 === OP1_PC)    -> (ex_pc), // PC = pc_cntr-4.U
+        (ex_ctrl.alu_op1 === OP1_X)     -> 0.U(32.W)
+    ))
 
-        // ALU
-        alu.io.alu_op := ex_ctrl.alu_func
-        alu.io.op1 := ex_op1
-        alu.io.op2 := ex_op2
-    }
+    // ALU OP2 selector
+    ex_op2 := MuxCase(0.U(32.W), Seq(
+        (ex_ctrl.alu_op2 === OP2_RS2) -> ex_reg_rs2_bypass,
+        (ex_ctrl.alu_op2 === OP2_IMM) -> ex_imm.asUInt, // IMM
+        (ex_ctrl.alu_op2 ===OP2_X) -> 0.U(32.W)
+    ))
+
+    // ALU
+    alu.io.alu_op := ex_ctrl.alu_func
+    alu.io.op1 := ex_op1
+    alu.io.op2 := ex_op2
+
     // CSR
     val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),
         Mux(ex_reg_raddr(0) === mem_reg_waddr, Mux(mem_ctrl.csr_cmd =/= CSR.N, mem_csr_data, mem_alu_out),// todo: mem_alu_out -> (mem_)rf_wdata
@@ -455,14 +451,12 @@ class KyogenRVCpu extends Module {
     withClock(invClock) {
         val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
         val rf_waddr: UInt = wb_reg_waddr
-        val rf_wdata: UInt = MuxLookup(wb_ctrl.wb_sel, wb_alu_out, //wb_ctrl.wb_sel, 0.U(32.W),
-            Seq(
-                WB_ALU -> wb_alu_out,   // wb_alu_out,
-                WB_PC4 -> wb_npc,       // pc_cntr = pc + 4
-                WB_CSR -> wb_csr_data,
-                WB_MEM -> wb_dmem_read_data //0.U(32.W),
-            )
-        )
+        val rf_wdata: UInt = MuxCase(wb_alu_out, Seq(
+            (wb_ctrl.wb_sel === WB_ALU) -> wb_alu_out,   // wb_alu_out,
+            (wb_ctrl.wb_sel === WB_PC4) -> wb_npc,       // pc_cntr = pc + 4
+            (wb_ctrl.wb_sel === WB_CSR) -> wb_csr_data,
+            (wb_ctrl.wb_sel === WB_MEM) -> wb_dmem_read_data //0.U(32.W),
+        ))
 
         when(rf_wen === REN_1) {
             reg_f.write(rf_waddr, rf_wdata)
@@ -473,7 +467,6 @@ class KyogenRVCpu extends Module {
         io.sw.r_wb_rf_waddr := rf_waddr
         io.sw.r_wb_rf_wdata := rf_wdata
     }
-
     // -------- END: WB Stage --------
 
 
