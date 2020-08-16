@@ -109,7 +109,10 @@ class KyogenRVCpu extends Module {
     //io.r_imem_add.addr := pc_cntr
 
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
-    io.r_imem_dat.req := RegNext(imem_read_sig)
+
+    withClock(invClock){
+        io.r_imem_dat.req := imem_read_sig
+    }
 //    when(io.w_imem_dat.req === false.B){
 //        io.r_imem_dat.req := RegNext(true.B)
 //    }.otherwise{
