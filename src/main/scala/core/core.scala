@@ -241,31 +241,31 @@ class KyogenRVCpu extends Module {
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.csr_cmd =/= CSR.N) -> wb_csr_data
     ))
 
-    withClock(invClock) {
-        // ALU OP1 selector
-        ex_op1 := MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
-            mapping = Seq(
-                OP1_RS1 -> ex_reg_rs1_bypass,
-                OP1_PC -> ex_pc, // PC = pc_cntr-4.U
-                OP1_X -> 0.U(32.W)
-            )
+    // ALU OP1 selector
+    ex_op1 := MuxLookup(key = ex_ctrl.alu_op1, default = 0.U(32.W),
+        mapping = Seq(
+            OP1_RS1 -> ex_reg_rs1_bypass,
+            OP1_PC -> ex_pc, // PC = pc_cntr-4.U
+            OP1_X -> 0.U(32.W)
         )
+    )
 
-        // ALU OP2 selector
-        ex_op2 := MuxLookup(key = ex_ctrl.alu_op2, default = 0.U(32.W),
-            mapping = Seq(
-                OP2_RS2 -> ex_reg_rs2_bypass,
-                OP2_IMM -> ex_imm.asUInt, // IMM
-                OP2_X -> 0.U(32.W)
-            )
+    // ALU OP2 selector
+    ex_op2 := MuxLookup(key = ex_ctrl.alu_op2, default = 0.U(32.W),
+        mapping = Seq(
+            OP2_RS2 -> ex_reg_rs2_bypass,
+            OP2_IMM -> ex_imm.asUInt, // IMM
+            OP2_X -> 0.U(32.W)
         )
-    }
+    )
+
     // ALU
     val alu: ALU    = Module(new ALU)
-    alu.io.alu_op   := ex_ctrl.alu_func
-    alu.io.op1      := ex_op1
-    alu.io.op2      := ex_op2
-
+    withClock(invClock) {
+        alu.io.alu_op := ex_ctrl.alu_func
+        alu.io.op1 := ex_op1
+        alu.io.op2 := ex_op2
+    }
     // CSR
     val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),
         Mux(ex_reg_raddr(0) === mem_reg_waddr, Mux(mem_ctrl.csr_cmd =/= CSR.N, mem_csr_data, mem_alu_out),// todo: mem_alu_out -> (mem_)rf_wdata
