@@ -380,18 +380,16 @@ class KyogenRVCpu extends Module {
         io.w_dmem_dat.byteenable    := 15.U
     }
 
-
-
-    // bubble logic
-    inst_kill_branch := (
-            ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) || // branch
-            (mem_ctrl.br_type === BR_JR) ||     // jalr
-            (mem_ctrl.br_type === BR_J)  ||     // jal
-            (mem_ctrl.br_type === BR_RET)       // mret / sret
-      )
-
-    inst_kill := (inst_kill_branch || csr.io.expt)
-
+    withClock(invClock) {
+        // bubble logic
+        inst_kill_branch := (
+          ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) || // branch
+            (mem_ctrl.br_type === BR_JR) || // jalr
+            (mem_ctrl.br_type === BR_J) || // jal
+            (mem_ctrl.br_type === BR_RET) // mret / sret
+          )
+        inst_kill := (inst_kill_branch || csr.io.expt)
+    }
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
