@@ -214,7 +214,7 @@ class KyogenRVCpu extends Module {
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
-
+    val ex_wire: UInt = ex_pc
     // forwarding logic
     val ex_reg_rs1_bypass: UInt = Wire(UInt(32.W))
     val ex_reg_rs2_bypass: UInt = Wire(UInt(32.W))
@@ -244,7 +244,7 @@ class KyogenRVCpu extends Module {
     // ALU OP1 selector
     ex_op1 := MuxCase(0.U(32.W), Seq(
         (ex_ctrl.alu_op1 === OP1_RS1)   -> ex_reg_rs1_bypass,
-        (ex_ctrl.alu_op1 === OP1_PC)    -> (ex_pc - 4.U), // PC = pc_cntr-4.U
+        (ex_ctrl.alu_op1 === OP1_PC)    -> (ex_wire), // PC = pc_cntr-4.U
         (ex_ctrl.alu_op1 === OP1_X)     -> 0.U(32.W)
     ))
 
