@@ -167,13 +167,13 @@ class KyogenRVCpu extends Module {
     val mem_stall: Bool = RegInit(false.B)
     // judge if stall needed
 
-    //withClock(invClock) {
-//        when(ex_ctrl.mem_wr === M_XRD) {
-//            mem_stall := true.B
-//        }.elsewhen(wb_dmem_read_ack === true.B) {
-//            mem_stall := false.B
-//        }
-    //}
+    withClock(invClock) {
+        when(ex_ctrl.mem_wr === M_XRD) {
+            mem_stall := true.B
+        }.elsewhen(wb_dmem_read_ack === true.B) {
+            mem_stall := false.B
+        }
+    }
     //waitrequest := io.sw.w_waitrequest_sig
 
     stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
