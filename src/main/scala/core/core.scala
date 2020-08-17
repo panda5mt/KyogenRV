@@ -253,12 +253,12 @@ class KyogenRVCpu extends Module {
             (ex_ctrl.alu_op2 === OP2_IMM) -> ex_imm.asUInt, // IMM
             (ex_ctrl.alu_op2 === OP2_X) -> 0.U(32.W)
         ))
-    }
-    // ALU
-    alu.io.alu_op := ex_ctrl.alu_func
-    alu.io.op1 := ex_op1
-    alu.io.op2 := ex_op2
 
+        // ALU
+        alu.io.alu_op := ex_ctrl.alu_func
+        alu.io.op1 := ex_op1
+        alu.io.op2 := ex_op2
+    }
     // CSR
     val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),
         Mux(ex_reg_raddr(0) === mem_reg_waddr, Mux(mem_ctrl.csr_cmd =/= CSR.N, mem_csr_data, mem_alu_out),// todo: mem_alu_out -> (mem_)rf_wdata
@@ -288,7 +288,7 @@ class KyogenRVCpu extends Module {
     //csr_stall ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.csr_cmd =/= CSR.N)) && !csr.io.expt
 
     // iotesters
-    io.sw.r_ex_raddr1   := ex_reg_raddr(0)
+    io.sw.r_ex_raddr1   := ex_pc //ex_reg_raddr(0) // todo:fixme!!
     io.sw.r_ex_raddr2   := ex_reg_raddr(1)
     io.sw.r_ex_rs1      := ex_reg_rs1_bypass//ex_rs(0)
     io.sw.r_ex_rs2      := ex_reg_rs2_bypass//ex_rs(1)
