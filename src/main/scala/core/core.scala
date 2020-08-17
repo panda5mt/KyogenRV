@@ -164,23 +164,24 @@ class KyogenRVCpu extends Module {
     interrupt_sig := io.sw.w_interrupt_sig
 
     val csr: CSR = Module(new CSR)
-    val mem_stall: Bool = RegInit(false.B)
-    // judge if stall needed
 
+    // judge if stall needed
     withClock(invClock) {
-        when(ex_ctrl.mem_wr === M_XRD) {
+        val mem_stall: Bool = RegInit(false.B)
+        when(mem_ctrl.mem_wr === M_XRD) {
             mem_stall := true.B
         }.elsewhen(wb_dmem_read_ack === true.B) {
             mem_stall := false.B
         }
+
+
+        //waitrequest := io.sw.w_waitrequest_sig
+
+        stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
+          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig
+
+        io.sw.r_stall_sig := stall
     }
-    //waitrequest := io.sw.w_waitrequest_sig
-
-    stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-      (ex_ctrl.mem_wr === M_XRD)) || mem_stall || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig
-
-    io.sw.r_stall_sig := stall
-
     // -------- END: ID stage --------
 
 
@@ -239,19 +240,20 @@ class KyogenRVCpu extends Module {
     ))
 
     // ALU OP1 selector
-    ex_op1 := MuxCase(0.U(32.W), Seq(
-        (ex_ctrl.alu_op1 === OP1_RS1)   -> ex_reg_rs1_bypass,
-        (ex_ctrl.alu_op1 === OP1_PC)    -> ex_pc, //(ex_pc - 4.U), // PC = pc_cntr-4.U
-        (ex_ctrl.alu_op1 === OP1_X)     -> 0.U(32.W)
-    ))
+    withClock(invClock) {
+        ex_op1 := MuxCase(0.U(32.W), Seq(
+            (ex_ctrl.alu_op1 === OP1_RS1) -> ex_reg_rs1_bypass,
+            (ex_ctrl.alu_op1 === OP1_PC) -> ex_pc, //(ex_pc - 4.U), // PC = pc_cntr-4.U
+            (ex_ctrl.alu_op1 === OP1_X) -> 0.U(32.W)
+        ))
 
-    // ALU OP2 selector
-    ex_op2 := MuxCase(0.U(32.W), Seq(
-        (ex_ctrl.alu_op2 === OP2_RS2) -> ex_reg_rs2_bypass,
-        (ex_ctrl.alu_op2 === OP2_IMM) -> ex_imm.asUInt, // IMM
-        (ex_ctrl.alu_op2 ===OP2_X) -> 0.U(32.W)
-    ))
-
+        // ALU OP2 selector
+        ex_op2 := MuxCase(0.U(32.W), Seq(
+            (ex_ctrl.alu_op2 === OP2_RS2) -> ex_reg_rs2_bypass,
+            (ex_ctrl.alu_op2 === OP2_IMM) -> ex_imm.asUInt, // IMM
+            (ex_ctrl.alu_op2 === OP2_X) -> 0.U(32.W)
+        ))
+    }
     // ALU
     alu.io.alu_op := ex_ctrl.alu_func
     alu.io.op1 := ex_op1
