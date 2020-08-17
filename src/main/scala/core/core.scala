@@ -75,8 +75,7 @@ class KyogenRVCpu extends Module {
     val wb_csr_data: UInt = RegInit(0.U(32.W))
 
     // stall control
-    val stall: Bool = Wire(Bool())
-    //val csr_stall: Bool = Wire(Bool())
+    val stall: Bool = Wire(Bool()) //RegInit(true.B)
 
     // branch control
     val inst_kill: Bool = Wire(Bool())
@@ -165,24 +164,23 @@ class KyogenRVCpu extends Module {
     interrupt_sig := io.sw.w_interrupt_sig
 
     val csr: CSR = Module(new CSR)
-
+    val mem_stall: Bool = RegInit(false.B)
     // judge if stall needed
-    withClock(invClock) {
-        val mem_stall: Bool = RegInit(false.B)
-        when(mem_ctrl.mem_wr === M_XRD) {
-            mem_stall := true.B
-        }.elsewhen(wb_dmem_read_ack === true.B) {
-            mem_stall := false.B
-        }
 
-        //waitrequest := io.sw.w_waitrequest_sig
+    //withClock(invClock) {
+//        when(ex_ctrl.mem_wr === M_XRD) {
+//            mem_stall := true.B
+//        }.elsewhen(wb_dmem_read_ack === true.B) {
+//            mem_stall := false.B
+//        }
+    //}
+    //waitrequest := io.sw.w_waitrequest_sig
 
-        stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig
+    stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
+      (ex_ctrl.mem_wr === M_XRD)) || mem_stall || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig
 
-        io.sw.r_stall_sig := stall
+    io.sw.r_stall_sig := stall
 
-    }
     // -------- END: ID stage --------
 
 
@@ -243,7 +241,7 @@ class KyogenRVCpu extends Module {
     // ALU OP1 selector
     ex_op1 := MuxCase(0.U(32.W), Seq(
         (ex_ctrl.alu_op1 === OP1_RS1)   -> ex_reg_rs1_bypass,
-        (ex_ctrl.alu_op1 === OP1_PC)    -> (ex_pc - 4.U), // PC = pc_cntr-4.U
+        (ex_ctrl.alu_op1 === OP1_PC)    -> ex_pc, //(ex_pc - 4.U), // PC = pc_cntr-4.U
         (ex_ctrl.alu_op1 === OP1_X)     -> 0.U(32.W)
     ))
 
