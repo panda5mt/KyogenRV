@@ -31,7 +31,8 @@ class KyogenRVCpu extends Module {
     val nop_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(inst_nop, (new IDecode).table)
 
     // IF stage pipeline register
-    // -> none
+    val if_pc = RegInit(pc_ini)
+    val if_npc = RegInit(npc_ini)
 
     // ID stage pipeline register
     val id_inst: UInt = RegInit(inst_nop)
@@ -41,7 +42,6 @@ class KyogenRVCpu extends Module {
 
     // EX stage pipeline register
     val ex_pc: UInt = RegInit(pc_ini)
-    val now_ex_pc: UInt = RegInit(pc_ini)
     val ex_npc: UInt = RegInit(npc_ini)
     val ex_inst: UInt = RegInit(inst_nop)
     val ex_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
@@ -104,12 +104,9 @@ class KyogenRVCpu extends Module {
     //io.r_dmem_dat.req := RegInit(false.B)
     io.dmem_add.addr := RegInit(0.U(32.W))
 
-
-    // -------- START: IF stage -------
-    //io.r_imem_add.addr := pc_cntr
-
+    // ----- START:initialize logic for avalon-MM -----
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
-    io.r_imem_dat.req := imem_read_sig
+
 
     //delay_stall is "cheat" logic to ready memory mapped logic.
     // stall 3 or 4 clock after reset.
@@ -121,7 +118,24 @@ class KyogenRVCpu extends Module {
     }.otherwise {
         delay_stall := 0.U(2.W)
     }
+    // ----- END:startup logic for avalon-MM -----
 
+
+    // -------- START: IF stage -------
+    io.r_imem_dat.req := DontCare
+    when(!stall && !inst_kill) {
+        if_pc := pc_cntr
+        if_npc := npc
+        io.r_imem_dat.req := imem_read_sig
+    }.elsewhen(inst_kill) {
+        if_pc := pc_ini
+        if_npc := npc_ini
+        io.r_imem_dat.req := false.B
+    }.elsewhen(stall) {
+        //if_pc := pc_ini
+        //if_npc := npc_ini
+        io.r_imem_dat.req := false.B
+    }
 
     // -------- END: IF stage --------
 
@@ -129,18 +143,13 @@ class KyogenRVCpu extends Module {
     // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
     when(!stall && !inst_kill) {
-        id_pc := pc_cntr
-        id_npc := npc
+        id_pc := if_pc//pc_cntr
+        id_npc := if_npc
         id_inst := io.r_imem_dat.data
     }.elsewhen(inst_kill) {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.otherwise{
-        id_pc := id_pc
-        id_npc := id_npc
-        id_inst := id_inst
-
     }
 
     val idm: IDModule = Module(new IDModule)
@@ -193,7 +202,6 @@ class KyogenRVCpu extends Module {
     // -------- START: EX Stage --------
     when(!stall && !inst_kill) {
         ex_pc := id_pc
-        now_ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
         ex_inst := idm.io.inst.bits
@@ -206,7 +214,6 @@ class KyogenRVCpu extends Module {
         ex_b_check := (id_ctrl.br_type > 3.U)
     }.otherwise {
         ex_pc := pc_ini
-        now_ex_pc := now_ex_pc
         ex_npc := npc_ini
         ex_ctrl := nop_ctrl
         ex_inst := inst_nop
@@ -249,10 +256,9 @@ class KyogenRVCpu extends Module {
     // ALU OP1 selector
     ex_op1 := MuxCase(0.U(32.W), Seq(
         (ex_ctrl.alu_op1 === OP1_RS1) -> ex_reg_rs1_bypass,
-        (ex_ctrl.alu_op1 === OP1_PC) -> now_ex_pc,//ex_pc, //(ex_pc - 4.U), // PC = pc_cntr-4.U
+        (ex_ctrl.alu_op1 === OP1_PC) -> ex_pc,//(ex_pc - 4.U), // PC = pc_cntr-4.U
         (ex_ctrl.alu_op1 === OP1_X) -> 0.U(32.W)
     ))
-
     // ALU OP2 selector
     ex_op2 := MuxCase(0.U(32.W), Seq(
         (ex_ctrl.alu_op2 === OP2_RS2) -> ex_reg_rs2_bypass,
@@ -295,7 +301,7 @@ class KyogenRVCpu extends Module {
     //csr_stall ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.csr_cmd =/= CSR.N)) && !csr.io.expt
 
     // iotesters
-    io.sw.r_ex_raddr1   := ex_pc //ex_reg_raddr(0) // todo:fixme!!
+    io.sw.r_ex_raddr1   := ex_reg_raddr(0)
     io.sw.r_ex_raddr2   := ex_reg_raddr(1)
     io.sw.r_ex_rs1      := ex_reg_rs1_bypass//ex_rs(0)
     io.sw.r_ex_rs2      := ex_reg_rs2_bypass//ex_rs(1)
@@ -317,8 +323,8 @@ class KyogenRVCpu extends Module {
         mem_csr_data    := csr.io.out
 
     } .otherwise {
-        mem_pc          :=  pc_ini
-        mem_npc         :=  npc_ini
+        mem_pc          := pc_ini
+        mem_npc         := npc_ini
         mem_ctrl        := nop_ctrl
         mem_reg_waddr   := 0.U
         mem_imm         := 0.S
