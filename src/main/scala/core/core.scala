@@ -124,7 +124,6 @@ class KyogenRVCpu extends Module {
 
     // -------- END: IF stage --------
 
-    //val id_valid = (io.r_imem_dat.ack)
 
     // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
@@ -136,6 +135,11 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
+    }.otherwise{
+        id_pc := id_pc
+        id_npc := id_npc
+        id_inst := id_inst
+
     }
 
     val idm: IDModule = Module(new IDModule)
