@@ -41,6 +41,7 @@ class KyogenRVCpu extends Module {
 
     // EX stage pipeline register
     val ex_pc: UInt = RegInit(pc_ini)
+    val now_ex_pc: UInt = RegInit(pc_ini)
     val ex_npc: UInt = RegInit(npc_ini)
     val ex_inst: UInt = RegInit(inst_nop)
     val ex_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
@@ -192,6 +193,7 @@ class KyogenRVCpu extends Module {
     // -------- START: EX Stage --------
     when(!stall && !inst_kill) {
         ex_pc := id_pc
+        now_ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
         ex_inst := idm.io.inst.bits
@@ -204,6 +206,7 @@ class KyogenRVCpu extends Module {
         ex_b_check := (id_ctrl.br_type > 3.U)
     }.otherwise {
         ex_pc := pc_ini
+        now_ex_pc := now_ex_pc
         ex_npc := npc_ini
         ex_ctrl := nop_ctrl
         ex_inst := inst_nop
@@ -246,7 +249,7 @@ class KyogenRVCpu extends Module {
     // ALU OP1 selector
     ex_op1 := MuxCase(0.U(32.W), Seq(
         (ex_ctrl.alu_op1 === OP1_RS1) -> ex_reg_rs1_bypass,
-        (ex_ctrl.alu_op1 === OP1_PC) -> ex_pc, //(ex_pc - 4.U), // PC = pc_cntr-4.U
+        (ex_ctrl.alu_op1 === OP1_PC) -> now_ex_pc,//ex_pc, //(ex_pc - 4.U), // PC = pc_cntr-4.U
         (ex_ctrl.alu_op1 === OP1_X) -> 0.U(32.W)
     ))
 
@@ -257,12 +260,12 @@ class KyogenRVCpu extends Module {
         (ex_ctrl.alu_op2 === OP2_X) -> 0.U(32.W)
     ))
 
-    withClock(invClock) {
-        // ALU
-        alu.io.alu_op := ex_ctrl.alu_func
-        alu.io.op1 := ex_op1
-        alu.io.op2 := ex_op2
-    }
+
+    // ALU
+    alu.io.alu_op := ex_ctrl.alu_func
+    alu.io.op1 := ex_op1
+    alu.io.op2 := ex_op2
+
     // CSR
     val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),
         Mux(ex_reg_raddr(0) === mem_reg_waddr, Mux(mem_ctrl.csr_cmd =/= CSR.N, mem_csr_data, mem_alu_out),// todo: mem_alu_out -> (mem_)rf_wdata
@@ -320,16 +323,12 @@ class KyogenRVCpu extends Module {
         mem_reg_waddr   := 0.U
         mem_imm         := 0.S
         mem_rs          := VecInit(0.U, 0.U)
-//        mem_alu_out     := 0.U
-//        mem_alu_cmp_out := false.B
+        mem_alu_out     := 0.U
+        mem_alu_cmp_out := false.B
         mem_csr_addr    := 0.U
         mem_csr_data    := 0.U
     }
 
-    withClock(invClock){
-        mem_alu_out     := alu.io.out
-        mem_alu_cmp_out := alu.io.cmp_out
-    }
     // iotesters
     io.sw.r_mem_alu_out := mem_alu_out
 
