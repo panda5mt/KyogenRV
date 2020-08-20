@@ -244,20 +244,20 @@ class KyogenRVCpu extends Module {
     ))
 
     // ALU OP1 selector
+    ex_op1 := MuxCase(0.U(32.W), Seq(
+        (ex_ctrl.alu_op1 === OP1_RS1) -> ex_reg_rs1_bypass,
+        (ex_ctrl.alu_op1 === OP1_PC) -> ex_pc, //(ex_pc - 4.U), // PC = pc_cntr-4.U
+        (ex_ctrl.alu_op1 === OP1_X) -> 0.U(32.W)
+    ))
+
+    // ALU OP2 selector
+    ex_op2 := MuxCase(0.U(32.W), Seq(
+        (ex_ctrl.alu_op2 === OP2_RS2) -> ex_reg_rs2_bypass,
+        (ex_ctrl.alu_op2 === OP2_IMM) -> ex_imm.asUInt, // IMM
+        (ex_ctrl.alu_op2 === OP2_X) -> 0.U(32.W)
+    ))
+
     withClock(invClock) {
-        ex_op1 := MuxCase(0.U(32.W), Seq(
-            (ex_ctrl.alu_op1 === OP1_RS1) -> ex_reg_rs1_bypass,
-            (ex_ctrl.alu_op1 === OP1_PC) -> ex_pc, //(ex_pc - 4.U), // PC = pc_cntr-4.U
-            (ex_ctrl.alu_op1 === OP1_X) -> 0.U(32.W)
-        ))
-
-        // ALU OP2 selector
-        ex_op2 := MuxCase(0.U(32.W), Seq(
-            (ex_ctrl.alu_op2 === OP2_RS2) -> ex_reg_rs2_bypass,
-            (ex_ctrl.alu_op2 === OP2_IMM) -> ex_imm.asUInt, // IMM
-            (ex_ctrl.alu_op2 === OP2_X) -> 0.U(32.W)
-        ))
-
         // ALU
         alu.io.alu_op := ex_ctrl.alu_func
         alu.io.op1 := ex_op1
@@ -320,12 +320,16 @@ class KyogenRVCpu extends Module {
         mem_reg_waddr   := 0.U
         mem_imm         := 0.S
         mem_rs          := VecInit(0.U, 0.U)
-        mem_alu_out     := 0.U
-        mem_alu_cmp_out := false.B
+//        mem_alu_out     := 0.U
+//        mem_alu_cmp_out := false.B
         mem_csr_addr    := 0.U
         mem_csr_data    := 0.U
     }
 
+    withClock(invClock){
+        mem_alu_out     := alu.io.out
+        mem_alu_cmp_out := alu.io.cmp_out
+    }
     // iotesters
     io.sw.r_mem_alu_out := mem_alu_out
 
