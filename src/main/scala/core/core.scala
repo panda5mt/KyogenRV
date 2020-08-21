@@ -150,10 +150,12 @@ class KyogenRVCpu extends Module {
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
     }.elsewhen(inst_kill) {
-        id_pc := if_pc//pc_ini
-        id_npc := if_npc//npc_ini
+        id_pc := pc_ini
+        id_npc := npc_ini
         id_inst := inst_nop
     }.elsewhen(!valid_imem){
+        id_pc := pc_ini
+        id_npc := npc_ini
         id_inst := inst_nop
     }
 
