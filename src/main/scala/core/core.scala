@@ -31,8 +31,8 @@ class KyogenRVCpu extends Module {
     val nop_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(inst_nop, (new IDecode).table)
 
     // IF stage pipeline register
-    val if_pc = RegInit(pc_ini)
-    val if_npc = RegInit(npc_ini)
+    val if_pc: UInt = RegInit(pc_ini)
+    val if_npc: UInt = RegInit(npc_ini)
 
     // ID stage pipeline register
     val id_inst: UInt = RegInit(inst_nop)
@@ -120,6 +120,7 @@ class KyogenRVCpu extends Module {
     }
     // ----- END:startup logic for avalon-MM -----
 
+    val valid_imem: Bool = RegInit(true.B)
 
     // -------- START: IF stage -------
     io.r_imem_dat.req := DontCare
@@ -127,13 +128,15 @@ class KyogenRVCpu extends Module {
         if_pc := pc_cntr
         if_npc := npc
         io.r_imem_dat.req := imem_read_sig
+        valid_imem := true.B
     }.elsewhen(inst_kill) {
         if_pc := pc_ini
         if_npc := npc_ini
         io.r_imem_dat.req := imem_read_sig
+        valid_imem := false.B
     }.elsewhen(stall) {
-        //if_pc := pc_ini
-        //if_npc := npc_ini
+        if_pc := pc_ini
+        if_npc := npc_ini
         io.r_imem_dat.req := false.B
     }
 
@@ -142,13 +145,15 @@ class KyogenRVCpu extends Module {
 
     // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
-    when(!stall && !inst_kill) {
+    when(!stall && !inst_kill && valid_imem) {
         id_pc := if_pc//pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
     }.elsewhen(inst_kill) {
-        id_pc := pc_ini
-        id_npc := npc_ini
+        id_pc := if_pc//pc_ini
+        id_npc := if_npc//npc_ini
+        id_inst := inst_nop
+    }.elsewhen(!valid_imem){
         id_inst := inst_nop
     }
 
@@ -505,7 +510,7 @@ class KyogenRVCpu extends Module {
 
 
     // for imem test
-    io.sw.r_dat  := io.r_imem_dat.data
+    io.sw.r_dat  := id_inst//io.r_imem_dat.data
     io.sw.r_add  := pc_cntr
     io.sw.r_pc   := id_pc//pc_cntr      // program counter
 
