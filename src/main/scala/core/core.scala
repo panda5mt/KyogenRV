@@ -149,14 +149,14 @@ class KyogenRVCpu extends Module {
         id_pc := if_pc//pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
-    }.elsewhen(inst_kill) {
+    }.elsewhen(inst_kill || !valid_imem) {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.elsewhen(!valid_imem){
-        id_pc := pc_ini
-        id_npc := npc_ini
-        id_inst := inst_nop
+    }.elsewhen(stall){
+        id_pc := id_pc
+        id_npc := id_npc
+        id_inst := id_inst
     }
 
     val idm: IDModule = Module(new IDModule)
