@@ -137,7 +137,7 @@ class KyogenRVCpu extends Module {
     }.elsewhen(stall) {
         if_pc := pc_ini
         if_npc := npc_ini
-        io.r_imem_dat.req := false.B
+        io.r_imem_dat.req := imem_read_sig
     }
 
     // -------- END: IF stage --------
