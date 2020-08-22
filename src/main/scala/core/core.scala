@@ -187,6 +187,8 @@ class KyogenRVCpu extends Module {
     val csr: CSR = Module(new CSR)
 
     // judge if stall needed
+    waitrequest := io.sw.w_waitrequest_sig
+
     withClock(invClock) {
         val mem_stall: Bool = RegInit(false.B)
         when(mem_ctrl.mem_wr === M_XRD) {
@@ -196,10 +198,9 @@ class KyogenRVCpu extends Module {
         }
 
 
-        //waitrequest := io.sw.w_waitrequest_sig
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig
+          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig || waitrequest
 
         io.sw.r_stall_sig := stall
     }
