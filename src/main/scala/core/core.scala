@@ -135,8 +135,8 @@ class KyogenRVCpu extends Module {
         io.r_imem_dat.req := imem_read_sig
         valid_imem := false.B
     }.elsewhen(stall) {
-        if_pc := pc_ini
-        if_npc := npc_ini
+        if_pc := if_pc
+        if_npc := if_npc
         io.r_imem_dat.req := false.B
     }
 
@@ -146,14 +146,14 @@ class KyogenRVCpu extends Module {
     // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
     when(!stall && !inst_kill && valid_imem) {
-        id_pc := if_pc//pc_cntr
+        id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
     }.elsewhen(inst_kill || !valid_imem) {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.elsewhen(stall){
+    }.elsewhen(stall) {
         id_pc := id_pc
         id_npc := id_npc
         id_inst := id_inst
@@ -187,9 +187,9 @@ class KyogenRVCpu extends Module {
     val csr: CSR = Module(new CSR)
 
     // judge if stall needed
-    //waitrequest := io.sw.w_waitrequest_sig
-
+    waitrequest := io.sw.w_waitrequest_sig
     withClock(invClock) {
+
         val mem_stall: Bool = RegInit(false.B)
         when(mem_ctrl.mem_wr === M_XRD) {
             mem_stall := true.B
@@ -198,9 +198,8 @@ class KyogenRVCpu extends Module {
         }
 
 
-
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig// || waitrequest
+          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig || waitrequest
 
         io.sw.r_stall_sig := stall
     }
@@ -546,22 +545,22 @@ class KyogenRVCpu extends Module {
 
 class CpuBus extends Module {
     val io: TestIf = IO(new TestIf)
-  
+
     val sw_halt:    Bool = RegInit(true.B)       // input
     val sw_data:    UInt = RegInit(0.U(32.W))    // output
     val sw_addr:    UInt = RegInit(0.U(32.W))    // output
     val sw_rw:      Bool = RegInit(false.B)      // input
     val sw_wdata:   UInt = RegInit(0.U(32.W))    // input
     val sw_waddr:   UInt = RegInit(0.U(32.W))    // input
-    
+
     val w_pc:       UInt = RegInit(0.U(32.W))
 
     val sw_gaddr:   UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
-    
+
     val cpu:    KyogenRVCpu = Module(new KyogenRVCpu)
     val imem:   IMem = Module(new IMem)
     val dmem:   DMem = Module(new DMem)
-    
+
     // Connect Test Module
     sw_halt     := io.sw.halt
     sw_data     := imem.io.r_imem_dat.data
