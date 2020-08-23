@@ -23,6 +23,10 @@ class DMem extends Module {
 
   // initialization
   //val mem: Mem[UInt] = Mem(256*1024, UInt(32.W))
+//  val mem_3: Mem[UInt] = Mem(0x3000, UInt(8.W))
+//  val mem_2: Mem[UInt] = Mem(0x3000, UInt(8.W))
+//  val mem_1: Mem[UInt] = Mem(0x3000, UInt(8.W))
+//  val mem_0: Mem[UInt] = Mem(0x3000, UInt(8.W))
   val mem_3: Mem[UInt] = Mem(0x3000, UInt(8.W))
   val mem_2: Mem[UInt] = Mem(0x3000, UInt(8.W))
   val mem_1: Mem[UInt] = Mem(0x3000, UInt(8.W))
