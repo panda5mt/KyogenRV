@@ -138,6 +138,7 @@ class KyogenRVCpu extends Module {
         if_pc := pc_ini
         if_npc := npc_ini
         io.r_imem_dat.req := imem_read_sig
+        valid_imem := false.B
     }
 
     // -------- END: IF stage --------
@@ -149,15 +150,16 @@ class KyogenRVCpu extends Module {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
-    }.elsewhen(inst_kill || !valid_imem) {
+    }.elsewhen(inst_kill) {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.elsewhen(stall) {
-        id_pc := id_pc
-        id_npc := id_npc
-        id_inst := id_inst
     }
+//    .elsewhen(stall || !valid_imem) {
+//        id_pc := id_pc
+//        id_npc := id_npc
+//        id_inst := inst_nop//id_inst
+//    }
 
     val idm: IDModule = Module(new IDModule)
     idm.io.imem := id_inst
@@ -697,6 +699,7 @@ object Test extends App {
             println(msg = "---------------------------------------------------------")
             poke(signal = c.io.sw.w_pc, value = 0) // restart pc address
             step(1) // fetch pc
+            poke(c.io.sw.w_waitrequest_sig, value = true.B) // after reset, waitrequest = 1
             poke(signal = c.io.sw.halt, value = false.B)
             step(2)
             println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd\t\t\t\tstall")
@@ -719,6 +722,10 @@ object Test extends App {
                 val wbaddr      = peek(c.io.sw.r_wb_rf_waddr)   // write-back rd address
                 val wbdata      = peek(c.io.sw.r_wb_rf_wdata)   // write-back rd data
                 val stallsig    = peek(c.io.sw.r_stall_sig)     // stall signal
+                if(lp > 3){
+                    poke(c.io.sw.w_waitrequest_sig, value = false.B)
+                }
+
                 // if you need fire external interrupt signal uncomment below
                 if(lp == 96){
                     poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
