@@ -14,7 +14,7 @@ class DMem extends Module {
   val w_ack: Bool = RegInit(false.B)
 
   // data memory 0x2000 - 0x3000
-  val valid_address: Bool = (io.dmem_add.addr >= 0x0000.U) && (io.dmem_add.addr <= 0x3000.U)
+  val valid_address: Bool = (io.dmem_add.addr >= 0x2000.U) && (io.dmem_add.addr <= 0x3000.U)
   //val w_valid_address: Bool = (io.w_dmem_add.addr >= 0x0000.U) && (io.w_dmem_add.addr <= 0x3000.U)
   val byteenable: UInt = io.w_dmem_dat.byteenable
 
@@ -27,18 +27,18 @@ class DMem extends Module {
 //  val mem_2: Mem[UInt] = Mem(0x3000, UInt(8.W))
 //  val mem_1: Mem[UInt] = Mem(0x3000, UInt(8.W))
 //  val mem_0: Mem[UInt] = Mem(0x3000, UInt(8.W))
-  val mem_3: Mem[UInt] = Mem(0x3000, UInt(8.W))
-  val mem_2: Mem[UInt] = Mem(0x3000, UInt(8.W))
-  val mem_1: Mem[UInt] = Mem(0x3000, UInt(8.W))
-  val mem_0: Mem[UInt] = Mem(0x3000, UInt(8.W))
+  val mem_3: SyncReadMem[UInt] = SyncReadMem(0x3000, UInt(8.W))
+  val mem_2: SyncReadMem[UInt] = SyncReadMem(0x3000, UInt(8.W))
+  val mem_1: SyncReadMem[UInt] = SyncReadMem(0x3000, UInt(8.W))
+  val mem_0: SyncReadMem[UInt] = SyncReadMem(0x3000, UInt(8.W))
 
   val wdat_3: UInt = io.w_dmem_dat.data(31,24)
   val wdat_2: UInt = io.w_dmem_dat.data(23,16)
   val wdat_1: UInt = io.w_dmem_dat.data(15, 8)
   val wdat_0: UInt = io.w_dmem_dat.data( 7, 0)
 
-  val addr_align: UInt = Mux(r_req,(io.dmem_add.addr >> 2).asUInt() - 0x0000.U,
-    Mux(w_req,(io.dmem_add.addr >> 2).asUInt() - 0x0000.U,
+  val addr_align: UInt = Mux(r_req,(io.dmem_add.addr >> 2).asUInt() - 0x2000.U,
+    Mux(w_req,(io.dmem_add.addr >> 2).asUInt() - 0x2000.U,
       0xffffffffL.U))
 
 

@@ -4,14 +4,13 @@ package core
 import chisel3._
 import chisel3.iotesters._
 import chisel3.util._
-
 import chisel3.Clock
 
 import scala.io.{BufferedSource, Source}
 import _root_.core.ScalarOpConstants._
-
 import MemoryOpConstants._
 import bus.{HostIf, TestIf}
+import chisel3.internal.firrtl.Width
 import mem._
 
 
@@ -70,7 +69,6 @@ class KyogenRVCpu extends Module {
     val wb_ctrl: IntCtrlSigs = RegInit(nop_ctrl)
     val wb_reg_waddr: UInt = RegInit(0.U(5.W))
     val wb_alu_out: UInt = RegInit(0.U(32.W))
-    val wb_dmem_read_data: UInt = RegInit(0.U(32.W))
     val wb_dmem_read_ack: Bool = RegInit(false.B)
     val wb_csr_addr: UInt = RegInit(0.U(32.W))
     val wb_csr_data: UInt = RegInit(0.U(32.W))
@@ -191,17 +189,8 @@ class KyogenRVCpu extends Module {
     // judge if stall needed
     waitrequest := io.sw.w_waitrequest_sig
     withClock(invClock) {
-
-        val mem_stall: Bool = RegInit(false.B)
-        when(mem_ctrl.mem_wr === M_XRD) {
-            mem_stall := true.B
-        }.elsewhen(wb_dmem_read_ack === true.B) {
-            mem_stall := false.B
-        }
-
-
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          (ex_ctrl.mem_wr === M_XRD)) || mem_stall || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig || waitrequest
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD))) || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig || waitrequest
 
         io.sw.r_stall_sig := stall
     }
@@ -424,47 +413,48 @@ wb_ctrl := mem_ctrl
 wb_reg_waddr := mem_reg_waddr
 wb_alu_out := mem_alu_out
 wb_dmem_read_ack := io.r_dmem_dat.ack
-//wb_dmem_read_data := io.r_dmem_dat.data
 wb_csr_addr := mem_csr_addr
 wb_csr_data := mem_csr_data
 
+val dmem_data: UInt = Wire(UInt(32.W))
+    dmem_data := DontCare
 
-when(mem_ctrl.mem_wr === M_XRD) {
-    when(mem_ctrl.mask_type === MT_B) { // byte read
-        switch(mem_alu_out(1, 0)){
-            is("b00".U){ wb_dmem_read_data := Cat(Fill(24, io.r_dmem_dat.data(7)), io.r_dmem_dat.data( 7, 0)) }
-            is("b01".U){ wb_dmem_read_data := Cat(Fill(24, io.r_dmem_dat.data(15)),io.r_dmem_dat.data(15, 8)) }
-            is("b10".U){ wb_dmem_read_data := Cat(Fill(24, io.r_dmem_dat.data(23)),io.r_dmem_dat.data(23,16)) }
-            is("b11".U){ wb_dmem_read_data := Cat(Fill(24, io.r_dmem_dat.data(31)),io.r_dmem_dat.data(31,24)) }
+when(wb_ctrl.mem_wr === M_XRD) {
+    when(wb_ctrl.mask_type === MT_B) { // byte read
+        switch(wb_alu_out(1, 0)){
+            is("b00".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(7)), io.r_dmem_dat.data( 7, 0)) }
+            is("b01".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(15)),io.r_dmem_dat.data(15, 8)) }
+            is("b10".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(23)),io.r_dmem_dat.data(23,16)) }
+            is("b11".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(31)),io.r_dmem_dat.data(31,24)) }
         }
-    }.elsewhen(mem_ctrl.mask_type === MT_BU) { // byte read unsigned
-        switch(mem_alu_out(1, 0)){
-            is("b00".U){ wb_dmem_read_data := Cat(0.U(24.W), io.r_dmem_dat.data( 7, 0)) }
-            is("b01".U){ wb_dmem_read_data := Cat(0.U(24.W), io.r_dmem_dat.data(15, 8)) }
-            is("b10".U){ wb_dmem_read_data := Cat(0.U(24.W), io.r_dmem_dat.data(23,16)) }
-            is("b11".U){ wb_dmem_read_data := Cat(0.U(24.W), io.r_dmem_dat.data(31,24)) }
+    }.elsewhen(wb_ctrl.mask_type === MT_BU) { // byte read unsigned
+        switch(wb_alu_out(1, 0)){
+            is("b00".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data( 7, 0)) }
+            is("b01".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data(15, 8)) }
+            is("b10".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data(23,16)) }
+            is("b11".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data(31,24)) }
         }
-    }.elsewhen(mem_ctrl.mask_type === MT_H) {
-        switch(mem_alu_out(1, 0)){
-            is("b00".U){ wb_dmem_read_data := Cat(Fill(16, io.r_dmem_dat.data(15)), io.r_dmem_dat.data( 15, 0)) }
-            is("b10".U){ wb_dmem_read_data := Cat(Fill(16, io.r_dmem_dat.data(31)), io.r_dmem_dat.data( 31, 16)) }
+    }.elsewhen(wb_ctrl.mask_type === MT_H) {
+        switch(wb_alu_out(1, 0)){
+            is("b00".U){ dmem_data := Cat(Fill(16, io.r_dmem_dat.data(15)), io.r_dmem_dat.data( 15, 0)) }
+            is("b10".U){ dmem_data := Cat(Fill(16, io.r_dmem_dat.data(31)), io.r_dmem_dat.data( 31, 16)) }
             // others
-            is("b01".U){ wb_dmem_read_data := 0.U }
-            is("b11".U){ wb_dmem_read_data := 0.U }
+            is("b01".U){ dmem_data := 0.U }
+            is("b11".U){ dmem_data := 0.U }
         }
-    }.elsewhen(mem_ctrl.mask_type === MT_HU) {
-        switch(mem_alu_out(1, 0)){
-            is("b00".U){ wb_dmem_read_data := Cat(0.U(16.W), io.r_dmem_dat.data( 15, 0 )) }
-            is("b10".U){ wb_dmem_read_data := Cat(0.U(16.W), io.r_dmem_dat.data( 31, 16)) }
+    }.elsewhen(wb_ctrl.mask_type === MT_HU) {
+        switch(wb_alu_out(1, 0)){
+            is("b00".U){ dmem_data := Cat(0.U(16.W), io.r_dmem_dat.data( 15, 0 )) }
+            is("b10".U){ dmem_data := Cat(0.U(16.W), io.r_dmem_dat.data( 31, 16)) }
             // others
-            is("b01".U){ wb_dmem_read_data := 0.U }
-            is("b11".U){ wb_dmem_read_data := 0.U }
+            is("b01".U){ dmem_data := 0.U }
+            is("b11".U){ dmem_data := 0.U }
         }
     }.otherwise {
-        wb_dmem_read_data := io.r_dmem_dat.data
+        dmem_data := io.r_dmem_dat.data
     }
 }.otherwise {
-    wb_dmem_read_data := io.r_dmem_dat.data
+    dmem_data := io.r_dmem_dat.data
 }
 
 
@@ -473,10 +463,10 @@ withClock(invClock) {
     val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
     val rf_waddr: UInt = wb_reg_waddr
     val rf_wdata: UInt = MuxCase(wb_alu_out, Seq(
-        (wb_ctrl.wb_sel === WB_ALU) -> wb_alu_out,   // wb_alu_out,
-        (wb_ctrl.wb_sel === WB_PC4) -> wb_npc,       // pc_cntr = pc + 4
+        (wb_ctrl.wb_sel === WB_ALU) -> wb_alu_out, // wb_alu_out,
+        (wb_ctrl.wb_sel === WB_PC4) -> wb_npc, // pc_cntr = pc + 4
         (wb_ctrl.wb_sel === WB_CSR) -> wb_csr_data,
-        (wb_ctrl.wb_sel === WB_MEM) -> wb_dmem_read_data //0.U(32.W),
+        (wb_ctrl.wb_sel === WB_MEM) -> dmem_data //0.U(32.W),
     ))
 
     when(rf_wen === REN_1) {
@@ -484,7 +474,7 @@ withClock(invClock) {
     }
 
     // iotesters
-    io.sw.r_wb_alu_out  := wb_alu_out
+    io.sw.r_wb_alu_out := wb_alu_out
     io.sw.r_wb_rf_waddr := rf_waddr
     io.sw.r_wb_rf_wdata := rf_wdata
 }
