@@ -717,12 +717,12 @@ iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
             }
 
             // if you need fire external interrupt signal uncomment below
-            if(lp == 96){
-                poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
-            }
-            else{
-                poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
-            }
+//            if(lp == 96){
+//                poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
+//            }
+//            else{
+//                poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
+//            }
 
             step(1)
             println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%x") //peek(c.io.sw.data)

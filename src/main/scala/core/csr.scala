@@ -96,7 +96,7 @@ object CsrAddr {
   val mtvec:      UInt = 0x305.U(SZ)
 
   val mtimecmp:   UInt = 0x321.U(SZ)
-  val mtval:      UInt = 0x343.U(SZ)
+  //val mtval:      UInt = 0x343.U(SZ)
   
   // Timers and Counters
   val mtime:      UInt = 0x701.U(SZ)
@@ -105,7 +105,7 @@ object CsrAddr {
   val mscratch:   UInt = 0x340.U(SZ)
   val mepc:       UInt = 0x341.U(SZ)
   val mcause:     UInt = 0x342.U(SZ)
-  val mbadaddr:   UInt = 0x343.U(SZ)
+  val mtval:      UInt = 0x343.U(SZ)
   val mip:        UInt = 0x344.U(SZ)
 
   // HITF
@@ -116,7 +116,7 @@ object CsrAddr {
       cycle, time, instret, cycleh, timeh, instreth,
     satp, cyclew, timew, instretw, cyclehw, timehw, instrethw,
       mcpuid, mimpid, mhartid, mtvec, medeleg, mie,
-      mtimecmp, mtime, mtimeh, mscratch, mepc, mcause, mbadaddr, mip,
+      mtimecmp, mtime, mtimeh, mscratch, mepc, mcause, mtval, mip,
       mtohost, mfromhost, mstatus
   )
 }
@@ -234,7 +234,6 @@ class CSR extends Module {
   
   val mepc:       UInt = Reg(UInt(32.W))
   val mcause:     UInt = Reg(UInt(32.W))
-  val mbadaddr:   UInt = Reg(UInt(32.W))
   
   val mtohost:    UInt = RegInit(0.U(32.W))
   val mfromhost:  UInt = Reg(UInt(32.W))
@@ -271,7 +270,6 @@ class CSR extends Module {
       BitPat(CsrAddr.mscratch)  -> mscratch,
       BitPat(CsrAddr.mepc)      -> mepc,
       BitPat(CsrAddr.mcause)    -> mcause,
-      BitPat(CsrAddr.mbadaddr)  -> mbadaddr,
       BitPat(CsrAddr.mip)       -> mip,
       BitPat(CsrAddr.mstatus)   -> mstatus,
       BitPat(CsrAddr.misa)      -> misa,
@@ -302,7 +300,7 @@ class CSR extends Module {
 
   // branch instruction check (for InstAddrMisalign)
   val pre_mepc:     UInt = RegInit(0.U(32.W)) // save mepc if branch inst exsists
-  val pre_mtval:    UInt = RegInit(0.U(32.W)) // save mtval if branch inst exsists
+  val pre_mtval:    UInt = RegInit(Instructions.NOP) // save mtval if branch inst exsists
 
   when(io.b_check || io.j_check){
     pre_mepc  := io.pc
@@ -336,15 +334,20 @@ class CSR extends Module {
     valid_pc := io.pc >> 2 << 2
   }
 
+
   when(!io.stall) {
     when(io.expt) {
       when(isExtInt){
         mepc := valid_pc
-      }.elsewhen(iaddrInvalid_b){
-        mepc  := pre_mepc
+        mtval := io.inst
+      }.elsewhen(iaddrInvalid_b) {
+        mepc := pre_mepc
         mtval := pre_mtval
+      }.elsewhen(laddrInvalid || saddrInvalid){
+        mepc := io.pc
+        mtval := alu_calc_addr
       }.otherwise {
-        mepc := io.pc >> 2 << 2
+        mepc := io.pc //>> 2 << 2
         mtval := io.inst
       }
       mcause := Mux(isEcall, Cause.Ecall + PRV,
@@ -360,7 +363,8 @@ class CSR extends Module {
       IE := false.B
       PRV1 := PRV
       IE1 := IE
-      //when(iaddrInvalid || laddrInvalid || saddrInvalid) { mbadaddr := io.addr }
+      //when(iaddrInvalid_j || iaddrInvalid_b || laddrInvalid || saddrInvalid) { mtval := io.pc }
+
     }.elsewhen(wen) {
       when(csr_addr === CsrAddr.mstatus) {
         PRV1 := wdata(5, 4)
@@ -396,8 +400,8 @@ class CSR extends Module {
       .elsewhen(csr_addr === CsrAddr.mcause) {
         mcause := wdata & (BigInt(1) << (32 - 1) | 0x0f).U
       } // cause12-16:reserved
-      .elsewhen(csr_addr === CsrAddr.mbadaddr) {
-        mbadaddr := wdata
+      .elsewhen(csr_addr === CsrAddr.mtval) {
+        mtval := wdata
       }
       .elsewhen(csr_addr === CsrAddr.mtohost) {
         mtohost := wdata
