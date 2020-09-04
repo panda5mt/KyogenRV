@@ -108,9 +108,9 @@ class KyogenRVCpu extends Module {
 
     //delay_stall is "cheat" logic to ready memory mapped logic.
     // stall 3 or 4 clock after reset.
-    val delay_stall: UInt = RegInit(0.U(2.W))
+    val delay_stall: UInt = RegInit(0.U(3.W))
     when(imem_read_sig === true.B) {
-        when(delay_stall =/= 3.U) {
+        when(delay_stall =/= 6.U) {
             delay_stall := delay_stall + 1.U
         }
     }.otherwise {
@@ -190,7 +190,7 @@ class KyogenRVCpu extends Module {
     waitrequest := io.sw.w_waitrequest_sig
     withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig //|| waitrequest
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || io.sw.w_waitrequest_sig //|| waitrequest
 
         io.sw.r_stall_sig := stall
     }
