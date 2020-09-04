@@ -299,12 +299,14 @@ class CSR extends Module {
   val isIllegal:    Bool = !io.legal && !io.pc_invalid
 
   // branch instruction check (for InstAddrMisalign)
-  val pre_mepc:     UInt = RegInit(0.U(32.W)) // save mepc if branch inst exsists
-  val pre_mtval:    UInt = RegInit(Instructions.NOP) // save mtval if branch inst exsists
+  val pre_mepc:       UInt = RegInit(0.U(32.W)) // save mepc if branch inst exsists
+  val pre_mtval:      UInt = RegInit(Instructions.NOP) // save mtval if branch inst exsists
+  val pre_calc_addr:  UInt = RegInit(0.U(32.W))
 
   when(io.b_check || io.j_check){
     pre_mepc  := io.pc
     pre_mtval := io.inst
+    pre_calc_addr := alu_calc_addr
   }
 
   // priority: InstAddrMisalign > InvalidInstruction (if both illegal occur)
@@ -334,7 +336,6 @@ class CSR extends Module {
     valid_pc := io.pc >> 2 << 2
   }
 
-
   when(!io.stall) {
     when(io.expt) {
       when(isExtInt){
@@ -342,12 +343,19 @@ class CSR extends Module {
         mtval := io.inst
       }.elsewhen(iaddrInvalid_b) {
         mepc := pre_mepc
-        mtval := pre_mtval
+        mtval := pre_calc_addr//mtval
       }.elsewhen(laddrInvalid || saddrInvalid){
         mepc := io.pc
         mtval := alu_calc_addr
+      }.elsewhen(iaddrInvalid_j) {
+        mepc := io.pc
+        when(alu_calc_addr(0) && !alu_calc_addr(1)) {
+          mtval := (alu_calc_addr >> 1 << 1).asUInt() + 2.U // 16bit address mis-align
+        }.otherwise {
+          mtval := (alu_calc_addr >> 1 << 1).asUInt()
+        }
       }.otherwise {
-        mepc := io.pc //>> 2 << 2
+        mepc := io.pc
         mtval := io.inst
       }
       mcause := Mux(isEcall, Cause.Ecall + PRV,
@@ -400,9 +408,9 @@ class CSR extends Module {
       .elsewhen(csr_addr === CsrAddr.mcause) {
         mcause := wdata & (BigInt(1) << (32 - 1) | 0x0f).U
       } // cause12-16:reserved
-      .elsewhen(csr_addr === CsrAddr.mtval) {
-        mtval := wdata
-      }
+      //.elsewhen(csr_addr === CsrAddr.mtval) {
+      //  mtval := wdata
+      //}
       .elsewhen(csr_addr === CsrAddr.mtohost) {
         mtohost := wdata
       }
