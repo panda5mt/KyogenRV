@@ -190,7 +190,7 @@ class KyogenRVCpu extends Module {
     waitrequest := io.sw.w_waitrequest_sig
     withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig || waitrequest
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 3.U) || io.sw.w_waitrequest_sig //|| waitrequest
 
         io.sw.r_stall_sig := stall
     }
@@ -484,7 +484,7 @@ withClock(invClock) {
 // -------- START: PC update --------
 when(io.sw.halt === false.B) {
     w_req := false.B
-    when(!stall) {
+    when(!stall && io.r_imem_dat.req) {
         //r_req := r_req
         pc_cntr := MuxCase(npc, Seq(
             csr.io.expt -> csr.io.evec,
