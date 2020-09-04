@@ -152,12 +152,11 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
+    }.elsewhen(!valid_imem) {
+        id_pc := id_pc
+        id_npc := id_npc
+        id_inst := inst_nop//id_inst
     }
-    //    .elsewhen(stall || !valid_imem) {
-    //        id_pc := id_pc
-    //        id_npc := id_npc
-    //        id_inst := inst_nop//id_inst
-    //    }
 
     val idm: IDModule = Module(new IDModule)
     idm.io.imem := id_inst
@@ -192,7 +191,7 @@ class KyogenRVCpu extends Module {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || io.sw.w_waitrequest_sig //|| waitrequest
 
-        io.sw.r_stall_sig := stall
+        io.sw.r_stall_sig := io.w_dmem_dat.req//stall
     }
 // -------- END: ID stage --------
 
