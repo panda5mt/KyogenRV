@@ -306,7 +306,7 @@ io.sw.r_ex_imm      := ex_imm.asUInt
 // -------- END: EX Stage --------
 
 // -------- START: MEM Stage --------
-when (!inst_kill) {
+when (!inst_kill && !io.sw.w_waitrequest_sig) {
     mem_pc          := ex_pc
     mem_npc         := ex_npc
     mem_ctrl        := ex_ctrl
