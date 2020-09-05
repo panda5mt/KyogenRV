@@ -319,7 +319,7 @@ when (!inst_kill && !io.sw.w_waitrequest_sig) {
     mem_csr_addr    := ex_csr_addr
     mem_csr_data    := csr.io.out
 
-} .otherwise {
+} .elsewhen(inst_kill) {
     mem_pc          := pc_ini
     mem_npc         := npc_ini
     mem_ctrl        := nop_ctrl
