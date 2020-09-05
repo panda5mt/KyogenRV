@@ -80,9 +80,6 @@ class KyogenRVCpu extends Module {
     val inst_kill: Bool = Wire(Bool())
     val inst_kill_branch: Bool = Wire(Bool())
 
-    // waitrequest control
-    val waitrequest: Bool = RegInit(false.B)
-
     // ------- END: pipeline registers --------
 
     // Program Counter 
@@ -186,12 +183,11 @@ class KyogenRVCpu extends Module {
     val csr: CSR = Module(new CSR)
 
     // judge if stall needed
-    waitrequest := io.sw.w_waitrequest_sig
     withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || io.sw.w_waitrequest_sig //|| waitrequest
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || io.sw.w_waitrequest_sig
 
-        io.sw.r_stall_sig := io.w_dmem_dat.req//stall
+        io.sw.r_stall_sig := stall
     }
 // -------- END: ID stage --------
 
