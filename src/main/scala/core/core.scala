@@ -10,7 +10,6 @@ import scala.io.{BufferedSource, Source}
 import _root_.core.ScalarOpConstants._
 import MemoryOpConstants._
 import bus.{HostIf, TestIf}
-import chisel3.internal.firrtl.Width
 import mem._
 
 
