@@ -218,315 +218,307 @@ when(!stall && !inst_kill) {
     ex_b_check := false.B
 }
 
-val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
-// forwarding logic
-val ex_reg_rs1_bypass: UInt = Wire(UInt(32.W))
-val ex_reg_rs2_bypass: UInt = Wire(UInt(32.W))
-val ex_op1: UInt = Wire(UInt(32.W))
-val ex_op2: UInt = Wire(UInt(32.W))
-val alu: ALU = Module(new ALU)
+    val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
+    // forwarding logic
+    val ex_reg_rs1_bypass: UInt = Wire(UInt(32.W))
+    val ex_reg_rs2_bypass: UInt = Wire(UInt(32.W))
+    val ex_op1: UInt = Wire(UInt(32.W))
+    val ex_op2: UInt = Wire(UInt(32.W))
+    val alu: ALU = Module(new ALU)
 
-ex_reg_rs1_bypass := MuxCase(ex_rs(0), Seq(
-    (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.csr_cmd =/= CSR.N) -> mem_csr_data,
-    (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-    (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 && wb_ctrl.csr_cmd === CSR.N) -> io.r_dmem_dat.data,
-    (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0 && wb_ctrl.csr_cmd === CSR.N) -> wb_alu_out,
-    (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
-    (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.csr_cmd =/= CSR.N) -> wb_csr_data
-
-
-))
-ex_reg_rs2_bypass := MuxCase(ex_rs(1), Seq(
-    (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.csr_cmd =/= CSR.N) -> mem_csr_data,
-    (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
-    (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 && wb_ctrl.csr_cmd === CSR.N) -> io.r_dmem_dat.data,
-    (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0 && wb_ctrl.csr_cmd === CSR.N) -> wb_alu_out,
-    (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
-    (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.csr_cmd =/= CSR.N) -> wb_csr_data
-))
-
-// ALU OP1 selector
-ex_op1 := MuxCase(0.U(32.W), Seq(
-    (ex_ctrl.alu_op1 === OP1_RS1) -> ex_reg_rs1_bypass,
-    (ex_ctrl.alu_op1 === OP1_PC) -> ex_pc,//(ex_pc - 4.U), // PC = pc_cntr-4.U
-    (ex_ctrl.alu_op1 === OP1_X) -> 0.U(32.W)
-))
-// ALU OP2 selector
-ex_op2 := MuxCase(0.U(32.W), Seq(
-    (ex_ctrl.alu_op2 === OP2_RS2) -> ex_reg_rs2_bypass,
-    (ex_ctrl.alu_op2 === OP2_IMM) -> ex_imm.asUInt, // IMM
-    (ex_ctrl.alu_op2 === OP2_X) -> 0.U(32.W)
-))
+    ex_reg_rs1_bypass := MuxCase(ex_rs(0), Seq(
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.csr_cmd =/= CSR.N) -> mem_csr_data,
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 && wb_ctrl.csr_cmd === CSR.N) -> io.r_dmem_dat.data,
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0 && wb_ctrl.csr_cmd === CSR.N) -> wb_alu_out,
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
+        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.csr_cmd =/= CSR.N) -> wb_csr_data
 
 
-// ALU
-alu.io.alu_op := ex_ctrl.alu_func
-alu.io.op1 := ex_op1
-alu.io.op2 := ex_op2
+    ))
+    ex_reg_rs2_bypass := MuxCase(ex_rs(1), Seq(
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.csr_cmd =/= CSR.N) -> mem_csr_data,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 && wb_ctrl.csr_cmd === CSR.N) -> io.r_dmem_dat.data,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0 && wb_ctrl.csr_cmd === CSR.N) -> wb_alu_out,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
+        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.csr_cmd =/= CSR.N) -> wb_csr_data
+    ))
 
-// CSR
-val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),
-    Mux(ex_reg_raddr(0) === mem_reg_waddr, Mux(mem_ctrl.csr_cmd =/= CSR.N, mem_csr_data, mem_alu_out),// todo: mem_alu_out -> (mem_)rf_wdata
-        Mux(ex_reg_raddr(0) === wb_reg_waddr, Mux(wb_ctrl.csr_cmd =/= CSR.N, wb_csr_data, wb_alu_out),// todo: wb_alu_out -> (wb_)rf_wdata
-            ex_reg_rs1_bypass.asUInt())
+    // ALU OP1 selector
+    ex_op1 := MuxCase(0.U(32.W), Seq(
+        (ex_ctrl.alu_op1 === OP1_RS1) -> ex_reg_rs1_bypass,
+        (ex_ctrl.alu_op1 === OP1_PC) -> ex_pc,//(ex_pc - 4.U), // PC = pc_cntr-4.U
+        (ex_ctrl.alu_op1 === OP1_X) -> 0.U(32.W)
+    ))
+    // ALU OP2 selector
+    ex_op2 := MuxCase(0.U(32.W), Seq(
+        (ex_ctrl.alu_op2 === OP2_RS2) -> ex_reg_rs2_bypass,
+        (ex_ctrl.alu_op2 === OP2_IMM) -> ex_imm.asUInt, // IMM
+        (ex_ctrl.alu_op2 === OP2_X) -> 0.U(32.W)
+    ))
+
+
+    // ALU
+    alu.io.alu_op := ex_ctrl.alu_func
+    alu.io.op1 := ex_op1
+    alu.io.op2 := ex_op2
+
+    // CSR
+    val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),
+        Mux(ex_reg_raddr(0) === mem_reg_waddr, Mux(mem_ctrl.csr_cmd =/= CSR.N, mem_csr_data, mem_alu_out),// todo: mem_alu_out -> (mem_)rf_wdata
+            Mux(ex_reg_raddr(0) === wb_reg_waddr, Mux(wb_ctrl.csr_cmd =/= CSR.N, wb_csr_data, wb_alu_out),// todo: wb_alu_out -> (wb_)rf_wdata
+                ex_reg_rs1_bypass.asUInt())
+        )
     )
-)
-//val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),ex_reg_rs1_bypass)
+    //val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),ex_reg_rs1_bypass)
 
 
-csr.io.pc           := ex_pc
-csr.io.addr         := ex_csr_addr
-csr.io.cmd          := ex_csr_cmd
-csr.io.in           := csr_in
-csr.io.inst         := ex_inst
-csr.io.mem_wr       := ex_ctrl.mem_wr
-csr.io.mask_type    := ex_ctrl.mask_type
-csr.io.alu_op1      := ex_op1
-csr.io.alu_op2      := ex_op2
-csr.io.legal        := (ex_ctrl.legal === true.B)
-csr.io.rs1_addr     := ex_inst(19, 15) //ex_rs(0)
-csr.io.stall        := stall
-csr.io.pc_invalid   := pc_invalid
-csr.io.j_check     := ex_j_check
-csr.io.b_check     := ex_b_check
-csr.io.interrupt_sig:= interrupt_sig
-//csr_stall ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.csr_cmd =/= CSR.N)) && !csr.io.expt
+    csr.io.pc           := ex_pc
+    csr.io.addr         := ex_csr_addr
+    csr.io.cmd          := ex_csr_cmd
+    csr.io.in           := csr_in
+    csr.io.inst         := ex_inst
+    csr.io.mem_wr       := ex_ctrl.mem_wr
+    csr.io.mask_type    := ex_ctrl.mask_type
+    csr.io.alu_op1      := ex_op1
+    csr.io.alu_op2      := ex_op2
+    csr.io.legal        := (ex_ctrl.legal === true.B)
+    csr.io.rs1_addr     := ex_inst(19, 15) //ex_rs(0)
+    csr.io.stall        := stall
+    csr.io.pc_invalid   := pc_invalid
+    csr.io.j_check     := ex_j_check
+    csr.io.b_check     := ex_b_check
+    csr.io.interrupt_sig:= interrupt_sig
+    //csr_stall ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) && (ex_ctrl.csr_cmd =/= CSR.N)) && !csr.io.expt
 
-// iotesters
-io.sw.r_ex_raddr1   := ex_reg_raddr(0)
-io.sw.r_ex_raddr2   := ex_reg_raddr(1)
-io.sw.r_ex_rs1      := ex_reg_rs1_bypass//ex_rs(0)
-io.sw.r_ex_rs2      := ex_reg_rs2_bypass//ex_rs(1)
-io.sw.r_ex_imm      := ex_imm.asUInt
-// -------- END: EX Stage --------
+    // iotesters
+    io.sw.r_ex_raddr1   := ex_reg_raddr(0)
+    io.sw.r_ex_raddr2   := ex_reg_raddr(1)
+    io.sw.r_ex_rs1      := ex_reg_rs1_bypass//ex_rs(0)
+    io.sw.r_ex_rs2      := ex_reg_rs2_bypass//ex_rs(1)
+    io.sw.r_ex_imm      := ex_imm.asUInt
+    // -------- END: EX Stage --------
 
-// -------- START: MEM Stage --------
-when (!inst_kill && !io.sw.w_waitrequest_sig) {
-    mem_pc          := ex_pc
-    mem_npc         := ex_npc
-    mem_ctrl        := ex_ctrl
-    mem_reg_waddr   := ex_reg_waddr
-    mem_imm         := ex_imm
-    mem_rs(0)       := ex_reg_rs1_bypass
-    mem_rs(1)       := ex_reg_rs2_bypass
-    mem_alu_out     := alu.io.out
-    mem_alu_cmp_out := alu.io.cmp_out
-    mem_csr_addr    := ex_csr_addr
-    mem_csr_data    := csr.io.out
+    // -------- START: MEM Stage --------
+    when (!inst_kill && !io.sw.w_waitrequest_sig) {
+        mem_pc          := ex_pc
+        mem_npc         := ex_npc
+        mem_ctrl        := ex_ctrl
+        mem_reg_waddr   := ex_reg_waddr
+        mem_imm         := ex_imm
+        mem_rs(0)       := ex_reg_rs1_bypass
+        mem_rs(1)       := ex_reg_rs2_bypass
+        mem_alu_out     := alu.io.out
+        mem_alu_cmp_out := alu.io.cmp_out
+        mem_csr_addr    := ex_csr_addr
+        mem_csr_data    := csr.io.out
 
-} .elsewhen(inst_kill) {
-    mem_pc          := pc_ini
-    mem_npc         := npc_ini
-    mem_ctrl        := nop_ctrl
-    mem_reg_waddr   := 0.U
-    mem_imm         := 0.S
-    mem_rs          := VecInit(0.U, 0.U)
-    mem_alu_out     := 0.U
-    mem_alu_cmp_out := false.B
-    mem_csr_addr    := 0.U
-    mem_csr_data    := 0.U
-}
-
-// iotesters
-io.sw.r_mem_alu_out := mem_alu_out
-
-//dmem connection
-when (io.sw.halt === false.B) { // CPU active
-    //io.w_dmem_add.addr          := mem_alu_out
-    io.dmem_add.addr            := mem_alu_out
-    io.w_dmem_dat.req           := (mem_ctrl.mem_wr === M_XWR)
-    io.w_dmem_dat.data          := DontCare
-    io.r_dmem_dat.req           := (mem_ctrl.mem_wr === M_XRD)
-
-}.otherwise{    // CPU halt
-    // dmem connection
-    io.dmem_add.addr          := io.sw.w_add
-    io.w_dmem_dat.data          := io.sw.w_dat
-    io.w_dmem_dat.req           := true.B
-    io.w_dmem_dat.byteenable    := 15.U
-    //io.r_dmem_add.addr          := 0.U
-    io.r_dmem_dat.req           := false.B
-
-}
-
-// send bus write size
-io.w_dmem_dat.byteenable := DontCare
-//  mem_rs(1)
-when(mem_ctrl.mem_wr === M_XWR) {
-    when(mem_ctrl.mask_type === MT_B) { // byte write
-        switch(mem_alu_out(1, 0)){
-            is("b00".U){
-                io.w_dmem_dat.byteenable := "b0001".U
-                io.w_dmem_dat.data := mem_rs(1)
-            }
-            is("b01".U){
-                io.w_dmem_dat.byteenable := "b0010".U
-                io.w_dmem_dat.data := mem_rs(1) << 8.U
-            }
-            is("b10".U){
-                io.w_dmem_dat.byteenable := "b0100".U
-                io.w_dmem_dat.data := mem_rs(1) << 16.U
-            }
-            is("b11".U){
-                io.w_dmem_dat.byteenable := "b1000".U
-                io.w_dmem_dat.data := mem_rs(1) << 24.U
-            }
-        }
-    }.elsewhen(mem_ctrl.mask_type === MT_H) {
-        switch(mem_alu_out(1, 0)){
-            is("b00".U){
-                io.w_dmem_dat.byteenable := "b0011".U
-                io.w_dmem_dat.data := mem_rs(1)
-            }
-            is("b10".U){
-                io.w_dmem_dat.byteenable := "b1100".U
-                io.w_dmem_dat.data := (mem_rs(1) << 16.U)
-            }
-        }
-    }.otherwise { // MT_W
-        io.w_dmem_dat.byteenable := "b1111".U
-        io.w_dmem_dat.data := mem_rs(1)
+    } .elsewhen(inst_kill) {
+        mem_pc          := pc_ini
+        mem_npc         := npc_ini
+        mem_ctrl        := nop_ctrl
+        mem_reg_waddr   := 0.U
+        mem_imm         := 0.S
+        mem_rs          := VecInit(0.U, 0.U)
+        mem_alu_out     := 0.U
+        mem_alu_cmp_out := false.B
+        mem_csr_addr    := 0.U
+        mem_csr_data    := 0.U
     }
-}.otherwise{
-    io.w_dmem_dat.byteenable    := 15.U
-}
 
-// bubble logic
-inst_kill_branch := (
-  ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) || // branch
-    (mem_ctrl.br_type === BR_JR) || // jalr
-    (mem_ctrl.br_type === BR_J) || // jal
-    (mem_ctrl.br_type === BR_RET) // mret / sret
-  )
-inst_kill := (inst_kill_branch || csr.io.expt)
-// -------- END: MEM Stage --------
+    // iotesters
+    io.sw.r_mem_alu_out := mem_alu_out
 
-// -------- START: WB Stage --------
-wb_npc := mem_npc
-wb_ctrl := mem_ctrl
-wb_reg_waddr := mem_reg_waddr
-wb_alu_out := mem_alu_out
-wb_dmem_read_ack := io.r_dmem_dat.ack
-wb_csr_addr := mem_csr_addr
-wb_csr_data := mem_csr_data
+    //dmem connection
+    when (io.sw.halt === false.B) { // CPU active
+        //io.w_dmem_add.addr          := mem_alu_out
+        io.dmem_add.addr            := mem_alu_out
+        io.w_dmem_dat.req           := (mem_ctrl.mem_wr === M_XWR)
+        io.w_dmem_dat.data          := DontCare
+        io.r_dmem_dat.req           := (mem_ctrl.mem_wr === M_XRD)
 
-val dmem_data: UInt = Wire(UInt(32.W))
-    dmem_data := DontCare
+    }.otherwise{    // CPU halt
+        // dmem connection
+        io.dmem_add.addr          := io.sw.w_add
+        io.w_dmem_dat.data          := io.sw.w_dat
+        io.w_dmem_dat.req           := true.B
+        io.w_dmem_dat.byteenable    := 15.U
+        //io.r_dmem_add.addr          := 0.U
+        io.r_dmem_dat.req           := false.B
 
-when(wb_ctrl.mem_wr === M_XRD) {
-    when(wb_ctrl.mask_type === MT_B) { // byte read
-        switch(wb_alu_out(1, 0)){
-            is("b00".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(7)), io.r_dmem_dat.data( 7, 0)) }
-            is("b01".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(15)),io.r_dmem_dat.data(15, 8)) }
-            is("b10".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(23)),io.r_dmem_dat.data(23,16)) }
-            is("b11".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(31)),io.r_dmem_dat.data(31,24)) }
+    }
+
+    // send bus write size
+    io.w_dmem_dat.byteenable := DontCare
+    //  mem_rs(1)
+    when(mem_ctrl.mem_wr === M_XWR) {
+        when(mem_ctrl.mask_type === MT_B) { // byte write
+            switch(mem_alu_out(1, 0)){
+                is("b00".U){
+                    io.w_dmem_dat.byteenable := "b0001".U
+                    io.w_dmem_dat.data := mem_rs(1)
+                }
+                is("b01".U){
+                    io.w_dmem_dat.byteenable := "b0010".U
+                    io.w_dmem_dat.data := mem_rs(1) << 8.U
+                }
+                is("b10".U){
+                    io.w_dmem_dat.byteenable := "b0100".U
+                    io.w_dmem_dat.data := mem_rs(1) << 16.U
+                }
+                is("b11".U){
+                    io.w_dmem_dat.byteenable := "b1000".U
+                    io.w_dmem_dat.data := mem_rs(1) << 24.U
+                }
+            }
+        }.elsewhen(mem_ctrl.mask_type === MT_H) {
+            switch(mem_alu_out(1, 0)){
+                is("b00".U){
+                    io.w_dmem_dat.byteenable := "b0011".U
+                    io.w_dmem_dat.data := mem_rs(1)
+                }
+                is("b10".U){
+                    io.w_dmem_dat.byteenable := "b1100".U
+                    io.w_dmem_dat.data := (mem_rs(1) << 16.U)
+                }
+            }
+        }.otherwise { // MT_W
+            io.w_dmem_dat.byteenable := "b1111".U
+            io.w_dmem_dat.data := mem_rs(1)
         }
-    }.elsewhen(wb_ctrl.mask_type === MT_BU) { // byte read unsigned
-        switch(wb_alu_out(1, 0)){
-            is("b00".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data( 7, 0)) }
-            is("b01".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data(15, 8)) }
-            is("b10".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data(23,16)) }
-            is("b11".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data(31,24)) }
-        }
-    }.elsewhen(wb_ctrl.mask_type === MT_H) {
-        switch(wb_alu_out(1, 0)){
-            is("b00".U){ dmem_data := Cat(Fill(16, io.r_dmem_dat.data(15)), io.r_dmem_dat.data( 15, 0)) }
-            is("b10".U){ dmem_data := Cat(Fill(16, io.r_dmem_dat.data(31)), io.r_dmem_dat.data( 31, 16)) }
-            // others
-            is("b01".U){ dmem_data := 0.U }
-            is("b11".U){ dmem_data := 0.U }
-        }
-    }.elsewhen(wb_ctrl.mask_type === MT_HU) {
-        switch(wb_alu_out(1, 0)){
-            is("b00".U){ dmem_data := Cat(0.U(16.W), io.r_dmem_dat.data( 15, 0 )) }
-            is("b10".U){ dmem_data := Cat(0.U(16.W), io.r_dmem_dat.data( 31, 16)) }
-            // others
-            is("b01".U){ dmem_data := 0.U }
-            is("b11".U){ dmem_data := 0.U }
+    }.otherwise{
+        io.w_dmem_dat.byteenable    := 15.U
+    }
+
+    // bubble logic
+    inst_kill_branch := (
+      ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) || // branch
+        (mem_ctrl.br_type === BR_JR) || // jalr
+        (mem_ctrl.br_type === BR_J) || // jal
+        (mem_ctrl.br_type === BR_RET) // mret / sret
+      )
+    inst_kill := (inst_kill_branch || csr.io.expt)
+    // -------- END: MEM Stage --------
+
+    // -------- START: WB Stage --------
+    wb_npc := mem_npc
+    wb_ctrl := mem_ctrl
+    wb_reg_waddr := mem_reg_waddr
+    wb_alu_out := mem_alu_out
+    wb_dmem_read_ack := io.r_dmem_dat.ack
+    wb_csr_addr := mem_csr_addr
+    wb_csr_data := mem_csr_data
+
+    val dmem_data: UInt = Wire(UInt(32.W))
+        dmem_data := DontCare
+
+    when(wb_ctrl.mem_wr === M_XRD) {
+        when(wb_ctrl.mask_type === MT_B) { // byte read
+            switch(wb_alu_out(1, 0)){
+                is("b00".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(7)), io.r_dmem_dat.data( 7, 0)) }
+                is("b01".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(15)),io.r_dmem_dat.data(15, 8)) }
+                is("b10".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(23)),io.r_dmem_dat.data(23,16)) }
+                is("b11".U){ dmem_data := Cat(Fill(24, io.r_dmem_dat.data(31)),io.r_dmem_dat.data(31,24)) }
+            }
+        }.elsewhen(wb_ctrl.mask_type === MT_BU) { // byte read unsigned
+            switch(wb_alu_out(1, 0)){
+                is("b00".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data( 7, 0)) }
+                is("b01".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data(15, 8)) }
+                is("b10".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data(23,16)) }
+                is("b11".U){ dmem_data := Cat(0.U(24.W), io.r_dmem_dat.data(31,24)) }
+            }
+        }.elsewhen(wb_ctrl.mask_type === MT_H) {
+            switch(wb_alu_out(1, 0)){
+                is("b00".U){ dmem_data := Cat(Fill(16, io.r_dmem_dat.data(15)), io.r_dmem_dat.data( 15, 0)) }
+                is("b10".U){ dmem_data := Cat(Fill(16, io.r_dmem_dat.data(31)), io.r_dmem_dat.data( 31, 16)) }
+                // others
+                is("b01".U){ dmem_data := 0.U }
+                is("b11".U){ dmem_data := 0.U }
+            }
+        }.elsewhen(wb_ctrl.mask_type === MT_HU) {
+            switch(wb_alu_out(1, 0)){
+                is("b00".U){ dmem_data := Cat(0.U(16.W), io.r_dmem_dat.data( 15, 0 )) }
+                is("b10".U){ dmem_data := Cat(0.U(16.W), io.r_dmem_dat.data( 31, 16)) }
+                // others
+                is("b01".U){ dmem_data := 0.U }
+                is("b11".U){ dmem_data := 0.U }
+            }
+        }.otherwise {
+            dmem_data := io.r_dmem_dat.data
         }
     }.otherwise {
         dmem_data := io.r_dmem_dat.data
     }
-}.otherwise {
-    dmem_data := io.r_dmem_dat.data
-}
 
-
-
-withClock(invClock) {
-    val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
-    val rf_waddr: UInt = wb_reg_waddr
-    val rf_wdata: UInt = MuxCase(wb_alu_out, Seq(
-        (wb_ctrl.wb_sel === WB_ALU) -> wb_alu_out, // wb_alu_out,
-        (wb_ctrl.wb_sel === WB_PC4) -> wb_npc, // pc_cntr = pc + 4
-        (wb_ctrl.wb_sel === WB_CSR) -> wb_csr_data,
-        (wb_ctrl.wb_sel === WB_MEM) -> dmem_data //0.U(32.W),
-    ))
-
-    when(rf_wen === REN_1) {
-        reg_f.write(rf_waddr, rf_wdata)
-    }
-
-    // iotesters
-    io.sw.r_wb_alu_out := wb_alu_out
-    io.sw.r_wb_rf_waddr := rf_waddr
-    io.sw.r_wb_rf_wdata := rf_wdata
-}
-// -------- END: WB Stage --------
-
-
-// -------- START: PC update --------
-when(io.sw.halt === false.B) {
-    w_req := false.B
-    when(!stall && io.r_imem_dat.req) {
-        //r_req := r_req
-        pc_cntr := MuxCase(npc, Seq(
-            csr.io.expt -> csr.io.evec,
-            (mem_ctrl.br_type === BR_RET) -> csr.io.epc,
-            ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
-            (mem_ctrl.br_type === BR_J) -> mem_alu_out,
-            (mem_ctrl.br_type === BR_JR) -> mem_alu_out
+    withClock(invClock) {
+        val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
+        val rf_waddr: UInt = wb_reg_waddr
+        val rf_wdata: UInt = MuxCase(wb_alu_out, Seq(
+            (wb_ctrl.wb_sel === WB_ALU) -> wb_alu_out, // wb_alu_out,
+            (wb_ctrl.wb_sel === WB_PC4) -> wb_npc, // pc_cntr = pc + 4
+            (wb_ctrl.wb_sel === WB_CSR) -> wb_csr_data,
+            (wb_ctrl.wb_sel === WB_MEM) -> dmem_data //0.U(32.W),
         ))
+
+        when(rf_wen === REN_1) {
+            reg_f.write(rf_waddr, rf_wdata)
+        }
+
+        // iotesters
+        io.sw.r_wb_alu_out := wb_alu_out
+        io.sw.r_wb_rf_waddr := rf_waddr
+        io.sw.r_wb_rf_wdata := rf_wdata
     }
-}.otherwise { // halt mode
-    // enable imem Write Operation
-    w_addr := io.sw.w_add //w_addr + 4.U(32.W)
-    w_data := io.sw.w_dat
-    w_req := true.B
-    pc_cntr := io.sw.w_pc
-}
+    // -------- END: WB Stage --------
 
 
-// for imem test
-io.sw.r_dat  := id_inst//io.r_imem_dat.data
-io.sw.r_add  := pc_cntr
-io.sw.r_pc   := id_pc//pc_cntr      // program counter
+    // -------- START: PC update --------
+    when(io.sw.halt === false.B) {
+        w_req := false.B
+        when(!stall && io.r_imem_dat.req) {
+            //r_req := r_req
+            pc_cntr := MuxCase(npc, Seq(
+                csr.io.expt -> csr.io.evec,
+                (mem_ctrl.br_type === BR_RET) -> csr.io.epc,
+                ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
+                (mem_ctrl.br_type === BR_J) -> mem_alu_out,
+                (mem_ctrl.br_type === BR_JR) -> mem_alu_out
+            ))
+        }
+    }.otherwise { // halt mode
+        // enable imem Write Operation
+        w_addr := io.sw.w_add //w_addr + 4.U(32.W)
+        w_data := io.sw.w_dat
+        w_req := true.B
+        pc_cntr := io.sw.w_pc
+    }
 
+    // for imem test
+    io.sw.r_dat  := id_inst//io.r_imem_dat.data
+    io.sw.r_add  := pc_cntr
+    io.sw.r_pc   := id_pc//pc_cntr      // program counter
 
-// address update
-when(w_req){    // write request
-    io.imem_add.addr    := w_addr
-}.otherwise{
-    io.imem_add.addr    := pc_cntr
-}
+    // address update
+    when(w_req){    // write request
+        io.imem_add.addr    := w_addr
+    }.otherwise{
+        io.imem_add.addr    := pc_cntr
+    }
 
-// write process
-io.w_imem_dat.data   := w_data
-io.w_imem_dat.req    := w_req
-io.w_imem_dat.byteenable := 15.U
+    // write process
+    io.w_imem_dat.data   := w_data
+    io.w_imem_dat.req    := w_req
+    io.w_imem_dat.byteenable := 15.U
 
-// read process
-//r_ack  := io.r_imem_dat.ack
-//r_data := io.r_imem_dat.data
-
-// x0 - x31
-val v_radd = IndexedSeq(io.sw.g_add,0.U) // treat as 64bit-Addressed SRAM
-when (io.sw.halt === true.B){
-    val v_rs: IndexedSeq[UInt] = v_radd.map(reg_f.read)
-    io.sw.g_dat := v_rs(0)
-}.otherwise{
-    io.sw.g_dat := 0.U
-}
+    // x0 - x31
+    val v_radd = IndexedSeq(io.sw.g_add,0.U) // treat as 64bit-Addressed SRAM
+    when (io.sw.halt === true.B){
+        val v_rs: IndexedSeq[UInt] = v_radd.map(reg_f.read)
+        io.sw.g_dat := v_rs(0)
+    }.otherwise{
+        io.sw.g_dat := 0.U
+    }
 }
 
 class CpuBus extends Module {
