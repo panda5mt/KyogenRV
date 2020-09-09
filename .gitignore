@@ -174,7 +174,7 @@ tramp
 # AUCTeX auto folder
 /auto/
 # Quartus folder
-#/fpga/output_files
+/fpga/db
 /db/
 /incremental_db/
 *.tdf
