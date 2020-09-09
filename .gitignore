@@ -176,7 +176,7 @@ tramp
 # Quartus folder
 /fpga/db
 /db/
-/fpga/incremental_db
+/fpga/incremental_db/
 *.tdf
 *.cdb
 *.hdb
