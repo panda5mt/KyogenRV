@@ -118,7 +118,7 @@ class KyogenRVCpu extends Module {
 
     // -------- START: IF stage -------
     io.r_imem_dat.req := DontCare
-    when(!stall && !inst_kill && !io.sw.w_waitrequest_sig) {
+    when(!stall && !inst_kill) {
         if_pc := pc_cntr
         if_npc := npc
         io.r_imem_dat.req := imem_read_sig
@@ -140,7 +140,7 @@ class KyogenRVCpu extends Module {
 
     // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
-    when(!stall && !inst_kill && valid_imem && !io.sw.w_waitrequest_sig) {
+    when(!stall && !inst_kill && valid_imem) {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
@@ -184,7 +184,7 @@ class KyogenRVCpu extends Module {
     // judge if stall needed
     withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U)// || io.sw.w_waitrequest_sig
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || io.sw.w_waitrequest_sig
 
         io.sw.r_stall_sig := stall
     }
@@ -192,7 +192,7 @@ class KyogenRVCpu extends Module {
 
 
 // -------- START: EX Stage --------
-when(!stall && !inst_kill && !io.sw.w_waitrequest_sig) {
+when(!stall && !inst_kill) {
     ex_pc := id_pc
     ex_npc := id_npc
     ex_ctrl := id_ctrl
@@ -478,7 +478,7 @@ withClock(invClock) {
 // -------- START: PC update --------
 when(io.sw.halt === false.B) {
     w_req := false.B
-    when(!stall && io.r_imem_dat.req && !io.sw.w_waitrequest_sig) {
+    when(!stall && io.r_imem_dat.req) {
         //r_req := r_req
         pc_cntr := MuxCase(npc, Seq(
             csr.io.expt -> csr.io.evec,
