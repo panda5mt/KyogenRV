@@ -173,7 +173,15 @@ tramp
 
 # AUCTeX auto folder
 /auto/
-/fpga/
+# Quartus folder
+#/fpga/output_files
+/db/
+/incremental_db/
+*.tdf
+*.cdb
+*.hdb
+/output_files
+*rpt
 # cask packages
 .cask/
 ### Vim template

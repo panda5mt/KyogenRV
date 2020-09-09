@@ -1,0 +1,78 @@
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|wb_ctrl_csr_cmd
+Name wb_ctrl_csr_cmd.011 wb_ctrl_csr_cmd.010 wb_ctrl_csr_cmd.001 wb_ctrl_csr_cmd.000 wb_ctrl_csr_cmd.100 
+wb_ctrl_csr_cmd.000 0 0 0 0 0 
+wb_ctrl_csr_cmd.001 0 0 1 1 0 
+wb_ctrl_csr_cmd.010 0 1 0 1 0 
+wb_ctrl_csr_cmd.011 1 0 0 1 0 
+wb_ctrl_csr_cmd.100 0 0 0 1 1 
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|wb_ctrl_mem_wr
+Name wb_ctrl_mem_wr.00 wb_ctrl_mem_wr.10 wb_ctrl_mem_wr.01 
+wb_ctrl_mem_wr.00 0 0 0 
+wb_ctrl_mem_wr.01 1 0 1 
+wb_ctrl_mem_wr.10 1 1 0 
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|wb_ctrl_wb_sel
+Name wb_ctrl_wb_sel.11 wb_ctrl_wb_sel.10 wb_ctrl_wb_sel.00 wb_ctrl_wb_sel.01 
+wb_ctrl_wb_sel.01 0 0 0 0 
+wb_ctrl_wb_sel.00 0 0 1 1 
+wb_ctrl_wb_sel.10 0 1 0 1 
+wb_ctrl_wb_sel.11 1 0 0 1 
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|mem_ctrl_csr_cmd
+Name mem_ctrl_csr_cmd.011 mem_ctrl_csr_cmd.010 mem_ctrl_csr_cmd.001 mem_ctrl_csr_cmd.000 mem_ctrl_csr_cmd.100 
+mem_ctrl_csr_cmd.000 0 0 0 0 0 
+mem_ctrl_csr_cmd.001 0 0 1 1 0 
+mem_ctrl_csr_cmd.010 0 1 0 1 0 
+mem_ctrl_csr_cmd.011 1 0 0 1 0 
+mem_ctrl_csr_cmd.100 0 0 0 1 1 
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|mem_ctrl_mem_wr
+Name mem_ctrl_mem_wr.00 mem_ctrl_mem_wr.10 mem_ctrl_mem_wr.01 
+mem_ctrl_mem_wr.00 0 0 0 
+mem_ctrl_mem_wr.01 1 0 1 
+mem_ctrl_mem_wr.10 1 1 0 
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|mem_ctrl_wb_sel
+Name mem_ctrl_wb_sel.11 mem_ctrl_wb_sel.10 mem_ctrl_wb_sel.00 mem_ctrl_wb_sel.01 
+mem_ctrl_wb_sel.01 0 0 0 0 
+mem_ctrl_wb_sel.00 0 0 1 1 
+mem_ctrl_wb_sel.10 0 1 0 1 
+mem_ctrl_wb_sel.11 1 0 0 1 
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|ex_ctrl_csr_cmd
+Name ex_ctrl_csr_cmd.011 ex_ctrl_csr_cmd.010 ex_ctrl_csr_cmd.001 ex_ctrl_csr_cmd.000 ex_ctrl_csr_cmd.100 
+ex_ctrl_csr_cmd.000 0 0 0 0 0 
+ex_ctrl_csr_cmd.001 0 0 1 1 0 
+ex_ctrl_csr_cmd.010 0 1 0 1 0 
+ex_ctrl_csr_cmd.011 1 0 0 1 0 
+ex_ctrl_csr_cmd.100 0 0 0 1 1 
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|ex_ctrl_mem_wr
+Name ex_ctrl_mem_wr.00 ex_ctrl_mem_wr.10 ex_ctrl_mem_wr.01 
+ex_ctrl_mem_wr.00 0 0 0 
+ex_ctrl_mem_wr.01 1 0 1 
+ex_ctrl_mem_wr.10 1 1 0 
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|ex_ctrl_wb_sel
+Name ex_ctrl_wb_sel.11 ex_ctrl_wb_sel.10 ex_ctrl_wb_sel.00 ex_ctrl_wb_sel.01 
+ex_ctrl_wb_sel.01 0 0 0 0 
+ex_ctrl_wb_sel.00 0 0 1 1 
+ex_ctrl_wb_sel.10 0 1 0 1 
+ex_ctrl_wb_sel.11 1 0 0 1 
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|ex_ctrl_imm_type
+Name ex_ctrl_imm_type.101 ex_ctrl_imm_type.100 ex_ctrl_imm_type.011 ex_ctrl_imm_type.010 ex_ctrl_imm_type.001 ex_ctrl_imm_type.000 
+ex_ctrl_imm_type.000 0 0 0 0 0 0 
+ex_ctrl_imm_type.001 0 0 0 0 1 1 
+ex_ctrl_imm_type.010 0 0 0 1 0 1 
+ex_ctrl_imm_type.011 0 0 1 0 0 1 
+ex_ctrl_imm_type.100 0 1 0 0 0 1 
+ex_ctrl_imm_type.101 1 0 0 0 0 1 
+
+State Machine - |kyogenrv_fpga_top|kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|KyogenRVCpu:krv|ex_ctrl_alu_op2
+Name ex_ctrl_alu_op2.00 ex_ctrl_alu_op2.10 ex_ctrl_alu_op2.01 
+ex_ctrl_alu_op2.10 0 0 0 
+ex_ctrl_alu_op2.01 0 1 1 
+ex_ctrl_alu_op2.00 1 1 0 

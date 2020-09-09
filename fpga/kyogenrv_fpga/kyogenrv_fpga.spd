@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file path="simulation/kyogenrv_fpga.v" type="VERILOG" />
+ <topLevel name="kyogenrv_fpga" />
+ <deviceFamily name="cyclone10lp" />
+ <modelMap
+   controllerPath="kyogenrv_fpga.onchip_memory2_0"
+   modelPath="kyogenrv_fpga.onchip_memory2_0" />
+</simPackage>

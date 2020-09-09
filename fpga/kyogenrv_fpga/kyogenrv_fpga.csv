@@ -1,0 +1,22 @@
+# system info kyogenrv_fpga on 2020.08.15.00:41:54
+system_info:
+name,value
+DEVICE,10CL025YU256C8G
+DEVICE_FAMILY,Cyclone 10 LP
+GENERATION_ID,1597419710
+#
+#
+# Files generated for kyogenrv_fpga on 2020.08.15.00:41:54
+files:
+filepath,kind,attributes,module,is_top
+simulation/kyogenrv_fpga.v,VERILOG,,kyogenrv_fpga,true
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+kyogenrv_fpga.KyogenRV_0,kyogenrv_fpga_KyogenRV_0
+kyogenrv_fpga.onchip_memory2_0,kyogenrv_fpga_onchip_memory2_0
+kyogenrv_fpga.pio_0,kyogenrv_fpga_pio_0
+kyogenrv_fpga.mm_interconnect_0,kyogenrv_fpga_mm_interconnect_0
+kyogenrv_fpga.mm_interconnect_1,kyogenrv_fpga_mm_interconnect_1
+kyogenrv_fpga.rst_controller,altera_reset_controller

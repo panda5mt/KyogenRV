@@ -1,0 +1,61 @@
+{
+	"partitions" : [
+		{
+			"name" : "Top",
+			"pins" : [
+				{
+					"name" : "pio[0]",
+					"strict" : false
+				},
+				{
+					"name" : "pio[1]",
+					"strict" : false
+				},
+				{
+					"name" : "pio[2]",
+					"strict" : false
+				},
+				{
+					"name" : "pio[3]",
+					"strict" : false
+				},
+				{
+					"name" : "pio[4]",
+					"strict" : false
+				},
+				{
+					"name" : "pio[5]",
+					"strict" : false
+				},
+				{
+					"name" : "pio[6]",
+					"strict" : false
+				},
+				{
+					"name" : "pio[7]",
+					"strict" : false
+				},
+				{
+					"name" : "reset",
+					"strict" : false
+				},
+				{
+					"name" : "altera_reserved_tms",
+					"strict" : false
+				},
+				{
+					"name" : "altera_reserved_tck",
+					"strict" : false
+				},
+				{
+					"name" : "altera_reserved_tdi",
+					"strict" : false
+				},
+				{
+					"name" : "altera_reserved_tdo",
+					"strict" : false
+				}
+			]
+		}
+	]
+}

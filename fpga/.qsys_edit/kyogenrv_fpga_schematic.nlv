@@ -1,0 +1,16 @@
+# # File gsaved with Nlview version 6.3.8  2013-12-19 bk=1.2992 VDI=34 GEI=35
+# 
+preplace inst kyogenrv_fpga.clk_0 -pg 1 -lvl 1 -y 90
+preplace inst kyogenrv_fpga.KyogenRV_0 -pg 1 -lvl 4 -y 30
+preplace inst kyogenrv_fpga.pio_0 -pg 1 -lvl 5 -y 130
+preplace inst kyogenrv_fpga.onchip_memory2_0 -pg 1 -lvl 5 -y 40
+preplace inst kyogenrv_fpga -pg 1 -lvl 1 -y 40 -regy -20
+preplace netloc EXPORT<net_container>kyogenrv_fpga</net_container>(SLAVE)pio_0.external_connection,(SLAVE)kyogenrv_fpga.pio_0_external_connection) 1 0 5 NJ 160 NJ 160 NJ 160 NJ 160 NJ
+preplace netloc EXPORT<net_container>kyogenrv_fpga</net_container>(SLAVE)clk_0.clk_in,(SLAVE)kyogenrv_fpga.clk) 1 0 1 NJ
+preplace netloc INTERCONNECT<net_container>kyogenrv_fpga</net_container>(MASTER)KyogenRV_0.avalon_data_master,(SLAVE)onchip_memory2_0.s1,(SLAVE)pio_0.s1,(MASTER)KyogenRV_0.avalon_inst_master) 1 4 1 1260
+preplace netloc FAN_OUT<net_container>kyogenrv_fpga</net_container>(SLAVE)onchip_memory2_0.reset1,(SLAVE)pio_0.reset,(MASTER)clk_0.clk_reset,(SLAVE)KyogenRV_0.reset) 1 1 4 N 120 NJ 120 830 140 1280
+preplace netloc EXPORT<net_container>kyogenrv_fpga</net_container>(SLAVE)clk_0.clk_in_reset,(SLAVE)kyogenrv_fpga.reset) 1 0 1 NJ
+preplace netloc EXPORT<net_container>kyogenrv_fpga</net_container>(SLAVE)KyogenRV_0.expc,(SLAVE)kyogenrv_fpga.kyogenrv_0_expc) 1 0 4 NJ 60 NJ 60 NJ 60 NJ
+preplace netloc FAN_OUT<net_container>kyogenrv_fpga</net_container>(SLAVE)KyogenRV_0.clock,(MASTER)clk_0.clk,(SLAVE)pio_0.clk,(SLAVE)onchip_memory2_0.clk1) 1 1 4 380 40 NJ 40 850 120 1300
+levelinfo -pg 1 0 170 1530
+levelinfo -hier kyogenrv_fpga 180 210 450 810 1070 1370 1520

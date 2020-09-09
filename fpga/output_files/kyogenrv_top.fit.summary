@@ -1,0 +1,16 @@
+Fitter Status : Successful - Wed Sep 09 18:45:31 2020
+Quartus Prime Version : 20.1.0 Build 711 06/05/2020 SJ Lite Edition
+Revision Name : kyogenrv_top
+Top-level Entity Name : kyogenrv_fpga_top
+Family : Cyclone 10 LP
+Device : 10CL025YU256C8G
+Timing Models : Final
+Total logic elements : 7,035 / 24,624 ( 29 % )
+    Total combinational functions : 5,206 / 24,624 ( 21 % )
+    Dedicated logic registers : 4,101 / 24,624 ( 17 % )
+Total registers : 4101
+Total pins : 4 / 151 ( 3 % )
+Total virtual pins : 6
+Total memory bits : 435,200 / 608,256 ( 72 % )
+Embedded Multiplier 9-bit elements : 0 / 132 ( 0 % )
+Total PLLs : 1 / 4 ( 25 % )
