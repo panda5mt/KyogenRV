@@ -1,9 +1,0 @@
-	component kyogenrv_fpga is
-		port (
-			clk_clk                          : in  std_logic                     := 'X'; -- clk
-			kyogenrv_0_expc_readdata         : out std_logic_vector(31 downto 0);        -- readdata
-			pio_0_external_connection_export : out std_logic_vector(31 downto 0);        -- export
-			reset_reset_n                    : in  std_logic                     := 'X'  -- reset_n
-		);
-	end component kyogenrv_fpga;
-

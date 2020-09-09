@@ -285,8 +285,4 @@
    end="onchip_memory2_0.reset1" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="AUTO" />
  <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
- <interconnectRequirement
-   for="onchip_memory2_0.s1"
-   name="qsys_mm.arbitrationScheme"
-   value="round-robin" />
 </system>

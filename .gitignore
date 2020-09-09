@@ -177,6 +177,7 @@ tramp
 /fpga/db
 /db/
 /fpga/incremental_db
+/fpga/kyogenrv_fpga/*
 /incremental_db/
 *.tdf
 *.cdb

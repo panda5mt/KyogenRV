@@ -33,23 +33,9 @@ module kyogenrv_fpga_avalonMM (
 
 );
 
-logic [3:0] waitdelay;
-logic		res;
-always_ff @(posedge clock or posedge reset)
-begin
-	if (reset)    waitdelay <= '0;
-	else if(waitdelay == 4'hA) 
-	begin 
-		waitdelay = 4'hA;	
-	end         
-	else
-		waitdelay <= waitdelay + 1'b1;
-end
-
 logic	waitrequest;
 //logic	waitreqdata;
 
-assign	res = (waitdelay == 4'hA)? 1'b1 : 1'b0;
 assign	waitrequest = (r_imem_data_req & imem_waitrequest) | ((r_dmem_data_req | w_dmem_data_req) & dmem_waitrequest);
 //assign	waitreqdata = ((r_dmem_data_req | w_dmem_data_req) & dmem_waitrequest);
 	
@@ -60,7 +46,7 @@ assign	waitrequest = (r_imem_data_req & imem_waitrequest) | ((r_dmem_data_req | 
 KyogenRVCpu krv(
 
   /*input        */ .clock						(clock),
-  /*input        */ .reset						(res),
+  /*input        */ .reset						(reset),
   /*output       */ .io_r_imem_dat_req			(r_imem_data_req),
   /*output [31:0]*/ .io_imem_add_addr			(imem_addr),
   /*input        */ .io_r_imem_dat_ack			(r_imem_data_ack),
