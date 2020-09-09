@@ -176,12 +176,13 @@ tramp
 # Quartus folder
 /fpga/db
 /db/
-/incremental_db/
+/fpga/incremental_db
 *.tdf
 *.cdb
 *.hdb
 /output_files
-*rpt
+*.rpt
+*.stp
 # cask packages
 .cask/
 ### Vim template
