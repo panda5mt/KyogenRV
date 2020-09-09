@@ -46,7 +46,7 @@ class CtrlSwChannel extends Bundle {
     val w_waitrequest_sig: Bool = Input(Bool())
 
     // waitrequest data signal
-    val w_waitreqdata_sig: Bool = Input(Bool())
+    //val w_waitreqdata_sig: Bool = Input(Bool())
 
 }
 

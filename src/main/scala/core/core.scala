@@ -301,7 +301,7 @@ when(!stall && !inst_kill) {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill && !io.sw.w_waitreqdata_sig) {
+    when (!inst_kill && !io.sw.w_waitrequest_sig) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
@@ -581,7 +581,7 @@ cpu.io.sw.w_interrupt_sig <> io.sw.w_interrupt_sig
 
 // WAITREQUEST
 cpu.io.sw.w_waitrequest_sig <> io.sw.w_waitrequest_sig
-cpu.io.sw.w_waitreqdata_sig <> io.sw.w_waitreqdata_sig
+//cpu.io.sw.w_waitreqdata_sig <> io.sw.w_waitreqdata_sig
 
 w_pc        := io.sw.w_pc
 
@@ -659,7 +659,7 @@ iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
         step(1)
         poke(signal = c.io.sw.halt, value = true.B)
         poke(c.io.sw.w_waitrequest_sig, false.B)
-        poke(c.io.sw.w_waitreqdata_sig, false.B)
+        //poke(c.io.sw.w_waitreqdata_sig, false.B)
         step(1)
 
         for (addr <- 0 until buffs.length * 4 by 4) {
