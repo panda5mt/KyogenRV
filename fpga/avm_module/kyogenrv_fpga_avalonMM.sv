@@ -38,10 +38,19 @@ logic	waitrequest;
 
 assign	waitrequest = (r_imem_data_req & imem_waitrequest) | ((r_dmem_data_req | w_dmem_data_req) & dmem_waitrequest);
 //assign	waitreqdata = ((r_dmem_data_req | w_dmem_data_req) & dmem_waitrequest);
+
+logic 	reset_halt;
+logic	cpu_halt;
+
 	
-	
+always_ff @(posedge clock or posedge reset)
+begin
+	if(reset) 	reset_halt <= 1'b1;
+	else		reset_halt <= 1'b0;
+end	
 
 
+assign cpu_halt = /* ext_halt_logic & */ reset_halt;
 
 KyogenRVCpu krv(
 
@@ -69,7 +78,7 @@ KyogenRVCpu krv(
   
   // debug system
   
-  /*input        */ .io_sw_halt						(1'b0),
+  /*input        */ .io_sw_halt						(cpu_halt),
   /*output [31:0]*/ .io_sw_r_add						(),
   /*output [31:0]*/ .io_sw_r_dat						(),
   /*input  [31:0]*/ .io_sw_w_add						(1'b0),
