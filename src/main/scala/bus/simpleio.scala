@@ -45,6 +45,9 @@ class CtrlSwChannel extends Bundle {
     // waitrequest signal
     val w_waitrequest_sig: Bool = Input(Bool())
 
+    // waitrequest data signal
+    val w_waitreqdata_sig: Bool = Input(Bool())
+
 }
 
 // address channel bundle
