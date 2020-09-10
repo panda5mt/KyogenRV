@@ -117,7 +117,7 @@ class KyogenRVCpu extends Module {
     val valid_imem: Bool = RegInit(true.B)
 
     // -------- START: IF stage -------
-    io.r_imem_dat.req := DontCare
+    io.r_imem_dat.req := false.B
     when(!stall && !inst_kill) {
         if_pc := pc_cntr
         if_npc := npc
@@ -128,12 +128,13 @@ class KyogenRVCpu extends Module {
         if_npc := npc_ini
         io.r_imem_dat.req := imem_read_sig
         valid_imem := false.B
-    }.elsewhen(io.sw.w_waitrequest_sig) {
-        if_pc := pc_ini
-        if_npc := npc_ini
-        io.r_imem_dat.req := false.B
-        valid_imem := false.B
     }
+//      .elsewhen(io.sw.w_waitrequest_sig) {
+//        if_pc := pc_ini
+//        if_npc := npc_ini
+//        io.r_imem_dat.req := false.B
+//        valid_imem := false.B
+//    }
 
     // -------- END: IF stage --------
 
@@ -301,7 +302,7 @@ when(!stall && !inst_kill) {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill && !io.sw.w_waitrequest_sig) {
+    when (!inst_kill) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
