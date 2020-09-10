@@ -1,14 +1,14 @@
-Analysis & Synthesis Status : Successful - Wed Sep 09 22:35:25 2020
+Analysis & Synthesis Status : Successful - Thu Sep 10 21:04:23 2020
 Quartus Prime Version : 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 Revision Name : kyogenrv_top
 Top-level Entity Name : kyogenrv_fpga_top
 Family : Cyclone 10 LP
-Total logic elements : 7,126
-    Total combinational functions : 5,257
-    Dedicated logic registers : 4,108
-Total registers : 4108
+Total logic elements : 7,192
+    Total combinational functions : 5,322
+    Dedicated logic registers : 4,105
+Total registers : 4105
 Total pins : 4
 Total virtual pins : 6
-Total memory bits : 435,200
+Total memory bits : 436,224
 Embedded Multiplier 9-bit elements : 0
 Total PLLs : 1
