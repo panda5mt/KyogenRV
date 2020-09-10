@@ -184,8 +184,14 @@ class KyogenRVCpu extends Module {
 
     // judge if stall needed
     withClock(invClock) {
+        var mem_stall: Bool = RegInit(false.B)
+        when(mem_ctrl.mem_wr === M_XRD){mem_stall := true.B}
+        when(io.r_dmem_dat.ack === true.B || io.sw.w_waitrequest_sig === false.B){mem_stall := false.B}
+
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || io.sw.w_waitrequest_sig
+            ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
+            (delay_stall =/= 6.U) || mem_stall ||
+            io.sw.w_waitrequest_sig
 
         io.sw.r_stall_sig := stall
     }
@@ -302,7 +308,7 @@ when(!stall && !inst_kill) {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill) {
+    when (!inst_kill /*&& !stall*/) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
