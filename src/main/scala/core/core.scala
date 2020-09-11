@@ -129,12 +129,12 @@ class KyogenRVCpu extends Module {
         io.r_imem_dat.req := imem_read_sig
         valid_imem := false.B
     }
-//      .elsewhen(io.sw.w_waitrequest_sig) {
-//        if_pc := pc_ini
-//        if_npc := npc_ini
-//        io.r_imem_dat.req := false.B
-//        valid_imem := false.B
-//    }
+    //      .elsewhen(io.sw.w_waitrequest_sig) {
+    //        if_pc := pc_ini
+    //        if_npc := npc_ini
+    //        io.r_imem_dat.req := false.B
+    //        valid_imem := false.B
+    //    }
 
     // -------- END: IF stage --------
 
@@ -184,46 +184,46 @@ class KyogenRVCpu extends Module {
 
     // judge if stall needed
     withClock(invClock) {
-        var mem_stall: Bool = RegInit(false.B)
-        when(mem_ctrl.mem_wr === M_XRD){mem_stall := true.B}
-        when(io.r_dmem_dat.ack === true.B || io.sw.w_waitrequest_sig === false.B){mem_stall := false.B}
+        //var mem_stall: Bool = RegInit(false.B)
+        //when(ex_ctrl.mem_wr === M_XRD){mem_stall := true.B}
+        //when(io.sw.w_waitrequest_sig === false.B){mem_stall := false.B}
 
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-            ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
-            (delay_stall =/= 6.U) || mem_stall ||
-            io.sw.w_waitrequest_sig
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
+          //(delay_stall =/= 6.U) || mem_stall ||
+          io.sw.w_waitrequest_sig
 
         io.sw.r_stall_sig := stall
     }
-// -------- END: ID stage --------
+    // -------- END: ID stage --------
 
 
-// -------- START: EX Stage --------
-when(!stall && !inst_kill) {
-    ex_pc := id_pc
-    ex_npc := id_npc
-    ex_ctrl := id_ctrl
-    ex_inst := idm.io.inst.bits
-    ex_reg_raddr := id_raddr
-    ex_reg_waddr := id_waddr
-    ex_rs := id_rs
-    ex_csr_addr := id_csr_addr
-    ex_csr_cmd := id_ctrl.csr_cmd
-    ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
-    ex_b_check := (id_ctrl.br_type > 3.U)
-}.otherwise {
-    ex_pc := pc_ini
-    ex_npc := npc_ini
-    ex_ctrl := nop_ctrl
-    ex_inst := inst_nop
-    ex_reg_raddr := VecInit(0.U, 0.U)
-    ex_reg_waddr := 0.U
-    ex_rs := VecInit(0.U, 0.U)
-    ex_csr_addr := 0.U
-    ex_csr_cmd := 0.U
-    ex_j_check := false.B
-    ex_b_check := false.B
-}
+    // -------- START: EX Stage --------
+    when(!stall && !inst_kill) {
+        ex_pc := id_pc
+        ex_npc := id_npc
+        ex_ctrl := id_ctrl
+        ex_inst := idm.io.inst.bits
+        ex_reg_raddr := id_raddr
+        ex_reg_waddr := id_waddr
+        ex_rs := id_rs
+        ex_csr_addr := id_csr_addr
+        ex_csr_cmd := id_ctrl.csr_cmd
+        ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
+        ex_b_check := (id_ctrl.br_type > 3.U)
+    }.otherwise {
+        ex_pc := pc_ini
+        ex_npc := npc_ini
+        ex_ctrl := nop_ctrl
+        ex_inst := inst_nop
+        ex_reg_raddr := VecInit(0.U, 0.U)
+        ex_reg_waddr := 0.U
+        ex_rs := VecInit(0.U, 0.U)
+        ex_csr_addr := 0.U
+        ex_csr_cmd := 0.U
+        ex_j_check := false.B
+        ex_b_check := false.B
+    }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
     // forwarding logic
@@ -308,7 +308,7 @@ when(!stall && !inst_kill) {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill /*&& !stall*/) {
+    when (!inst_kill /*&& !io.sw.w_waitrequest_sig*/) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
@@ -418,7 +418,7 @@ when(!stall && !inst_kill) {
     wb_csr_data := mem_csr_data
 
     val dmem_data: UInt = Wire(UInt(32.W))
-        dmem_data := DontCare
+    dmem_data := DontCare
 
     when(wb_ctrl.mem_wr === M_XRD) {
         when(wb_ctrl.mask_type === MT_B) { // byte read
@@ -529,216 +529,216 @@ when(!stall && !inst_kill) {
 }
 
 class CpuBus extends Module {
-val io: TestIf = IO(new TestIf)
+    val io: TestIf = IO(new TestIf)
 
-val sw_halt:    Bool = RegInit(true.B)       // input
-val sw_data:    UInt = RegInit(0.U(32.W))    // output
-val sw_addr:    UInt = RegInit(0.U(32.W))    // output
-val sw_rw:      Bool = RegInit(false.B)      // input
-val sw_wdata:   UInt = RegInit(0.U(32.W))    // input
-val sw_waddr:   UInt = RegInit(0.U(32.W))    // input
+    val sw_halt:    Bool = RegInit(true.B)       // input
+    val sw_data:    UInt = RegInit(0.U(32.W))    // output
+    val sw_addr:    UInt = RegInit(0.U(32.W))    // output
+    val sw_rw:      Bool = RegInit(false.B)      // input
+    val sw_wdata:   UInt = RegInit(0.U(32.W))    // input
+    val sw_waddr:   UInt = RegInit(0.U(32.W))    // input
 
-val w_pc:       UInt = RegInit(0.U(32.W))
+    val w_pc:       UInt = RegInit(0.U(32.W))
 
-val sw_gaddr:   UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
+    val sw_gaddr:   UInt  = RegInit(0.U(32.W))    // general reg.(x0 to x31)
 
-val cpu:    KyogenRVCpu = Module(new KyogenRVCpu)
-val imem:   IMem = Module(new IMem)
-val dmem:   DMem = Module(new DMem)
+    val cpu:    KyogenRVCpu = Module(new KyogenRVCpu)
+    val imem:   IMem = Module(new IMem)
+    val dmem:   DMem = Module(new DMem)
 
-// Connect Test Module
-sw_halt     := io.sw.halt
-sw_data     := imem.io.r_imem_dat.data
-sw_addr     := imem.io.imem_add.addr
+    // Connect Test Module
+    sw_halt     := io.sw.halt
+    sw_data     := imem.io.r_imem_dat.data
+    sw_addr     := imem.io.imem_add.addr
 
-// imem
-sw_wdata    := io.sw.w_dat // data to write imem
-sw_waddr    := io.sw.w_add
-sw_gaddr    := io.sw.g_add
-io.sw.r_dat := sw_data
-io.sw.r_add := sw_addr
+    // imem
+    sw_wdata    := io.sw.w_dat // data to write imem
+    sw_waddr    := io.sw.w_add
+    sw_gaddr    := io.sw.g_add
+    io.sw.r_dat := sw_data
+    io.sw.r_add := sw_addr
 
-// dmem
-//    io.sw.r_dadd := cpu.io.sw.r_dadd
-//    io.sw.r_ddat := cpu.io.sw.r_ddat
+    // dmem
+    //    io.sw.r_dadd := cpu.io.sw.r_dadd
+    //    io.sw.r_ddat := cpu.io.sw.r_ddat
 
-io.sw.g_dat <> cpu.io.sw.g_dat
-io.sw.r_pc  <> cpu.io.sw.r_pc
+    io.sw.g_dat <> cpu.io.sw.g_dat
+    io.sw.r_pc  <> cpu.io.sw.r_pc
 
-// IOTESTERS: EX Stage
-io.sw.r_ex_raddr1   <> cpu.io.sw.r_ex_raddr1
-io.sw.r_ex_raddr2   <> cpu.io.sw.r_ex_raddr2
-io.sw.r_ex_rs1      <> cpu.io.sw.r_ex_rs1
-io.sw.r_ex_rs2      <> cpu.io.sw.r_ex_rs2
-io.sw.r_ex_imm      <> cpu.io.sw.r_ex_imm
+    // IOTESTERS: EX Stage
+    io.sw.r_ex_raddr1   <> cpu.io.sw.r_ex_raddr1
+    io.sw.r_ex_raddr2   <> cpu.io.sw.r_ex_raddr2
+    io.sw.r_ex_rs1      <> cpu.io.sw.r_ex_rs1
+    io.sw.r_ex_rs2      <> cpu.io.sw.r_ex_rs2
+    io.sw.r_ex_imm      <> cpu.io.sw.r_ex_imm
 
-//IOTESTERS: MEM Stage
-io.sw.r_mem_alu_out <> cpu.io.sw.r_mem_alu_out
+    //IOTESTERS: MEM Stage
+    io.sw.r_mem_alu_out <> cpu.io.sw.r_mem_alu_out
 
-//IOTESTERS: WB Stage
-io.sw.r_wb_alu_out  <> cpu.io.sw.r_wb_alu_out
-io.sw.r_wb_rf_wdata <> cpu.io.sw.r_wb_rf_wdata
-io.sw.r_wb_rf_waddr <> cpu.io.sw.r_wb_rf_waddr
+    //IOTESTERS: WB Stage
+    io.sw.r_wb_alu_out  <> cpu.io.sw.r_wb_alu_out
+    io.sw.r_wb_rf_wdata <> cpu.io.sw.r_wb_rf_wdata
+    io.sw.r_wb_rf_waddr <> cpu.io.sw.r_wb_rf_waddr
 
-//IOTESTERS: STALL
-io.sw.r_stall_sig <> cpu.io.sw.r_stall_sig
+    //IOTESTERS: STALL
+    io.sw.r_stall_sig <> cpu.io.sw.r_stall_sig
 
-//IOTESTERS: External Interrupt Signal
-cpu.io.sw.w_interrupt_sig <> io.sw.w_interrupt_sig
+    //IOTESTERS: External Interrupt Signal
+    cpu.io.sw.w_interrupt_sig <> io.sw.w_interrupt_sig
 
-// WAITREQUEST
-cpu.io.sw.w_waitrequest_sig <> io.sw.w_waitrequest_sig
-//cpu.io.sw.w_waitreqdata_sig <> io.sw.w_waitreqdata_sig
+    // WAITREQUEST
+    cpu.io.sw.w_waitrequest_sig <> io.sw.w_waitrequest_sig
+    //cpu.io.sw.w_waitreqdata_sig <> io.sw.w_waitreqdata_sig
 
-w_pc        := io.sw.w_pc
+    w_pc        := io.sw.w_pc
 
-cpu.io.sw.halt  <> sw_halt
-cpu.io.sw.w_dat <> sw_wdata
-cpu.io.sw.w_add <> sw_waddr
-cpu.io.sw.g_add <> sw_gaddr
-cpu.io.sw.w_pc  := w_pc
+    cpu.io.sw.halt  <> sw_halt
+    cpu.io.sw.w_dat <> sw_wdata
+    cpu.io.sw.w_add <> sw_waddr
+    cpu.io.sw.g_add <> sw_gaddr
+    cpu.io.sw.w_pc  := w_pc
 
 
-// imem address connection
-imem.io.imem_add.addr           <> cpu.io.imem_add.addr
+    // imem address connection
+    imem.io.imem_add.addr           <> cpu.io.imem_add.addr
 
-// Read imem
-imem.io.r_imem_dat.req          <> cpu.io.r_imem_dat.req
-cpu.io.r_imem_dat.data          <> imem.io.r_imem_dat.data
-cpu.io.r_imem_dat.ack           <> imem.io.r_imem_dat.ack
+    // Read imem
+    imem.io.r_imem_dat.req          <> cpu.io.r_imem_dat.req
+    cpu.io.r_imem_dat.data          <> imem.io.r_imem_dat.data
+    cpu.io.r_imem_dat.ack           <> imem.io.r_imem_dat.ack
 
-// write imem
-imem.io.w_imem_dat.req          <> cpu.io.w_imem_dat.req
-imem.io.w_imem_dat.data         <> cpu.io.w_imem_dat.data
-cpu.io.w_imem_dat.ack           <> imem.io.w_imem_dat.ack
-cpu.io.w_imem_dat.byteenable    <> imem.io.w_imem_dat.byteenable
+    // write imem
+    imem.io.w_imem_dat.req          <> cpu.io.w_imem_dat.req
+    imem.io.w_imem_dat.data         <> cpu.io.w_imem_dat.data
+    cpu.io.w_imem_dat.ack           <> imem.io.w_imem_dat.ack
+    cpu.io.w_imem_dat.byteenable    <> imem.io.w_imem_dat.byteenable
 
-// Read dmem
-dmem.io.r_dmem_dat.req          <> cpu.io.r_dmem_dat.req
-dmem.io.dmem_add.addr           <> cpu.io.dmem_add.addr
-cpu.io.r_dmem_dat.data          <> dmem.io.r_dmem_dat.data
-cpu.io.r_dmem_dat.ack           <> dmem.io.r_dmem_dat.ack
+    // Read dmem
+    dmem.io.r_dmem_dat.req          <> cpu.io.r_dmem_dat.req
+    dmem.io.dmem_add.addr           <> cpu.io.dmem_add.addr
+    cpu.io.r_dmem_dat.data          <> dmem.io.r_dmem_dat.data
+    cpu.io.r_dmem_dat.ack           <> dmem.io.r_dmem_dat.ack
 
-// write dmem
-dmem.io.w_dmem_dat.req          <> cpu.io.w_dmem_dat.req
-dmem.io.w_dmem_dat.data         <> cpu.io.w_dmem_dat.data
-cpu.io.w_dmem_dat.ack           <> dmem.io.w_dmem_dat.ack
-cpu.io.w_dmem_dat.byteenable    <> dmem.io.w_dmem_dat.byteenable
+    // write dmem
+    dmem.io.w_dmem_dat.req          <> cpu.io.w_dmem_dat.req
+    dmem.io.w_dmem_dat.data         <> cpu.io.w_dmem_dat.data
+    cpu.io.w_dmem_dat.ack           <> dmem.io.w_dmem_dat.ack
+    cpu.io.w_dmem_dat.byteenable    <> dmem.io.w_dmem_dat.byteenable
 
 }
 //noinspection ScalaStyle
 // x0 - x31
 class RegRAM {
-val ram: Mem[UInt] = Mem(32, UInt(32.W))
-// read process
-def read(addr: UInt): UInt = {
-    Mux(addr === 0.U, 0.U, ram(addr))
-}
-// write process
-def write(addr:UInt, data:UInt): WhenContext = {
-    when((addr > 0.U) && (addr < 32.U)) {
-        ram(addr) := data
+    val ram: Mem[UInt] = Mem(32, UInt(32.W))
+    // read process
+    def read(addr: UInt): UInt = {
+        Mux(addr === 0.U, 0.U, ram(addr))
     }
-}
+    // write process
+    def write(addr:UInt, data:UInt): WhenContext = {
+        when((addr > 0.U) && (addr < 32.U)) {
+            ram(addr) := data
+        }
+    }
 }
 
 //noinspection ScalaStyle
 object kyogenrv extends App {
-val name = "KyogenRVCpu"
+    val name = "KyogenRVCpu"
 
-(new stage.ChiselStage).execute(
-    Array("-td=fpga/chisel_generated", s"-o=$name"),
-    Seq(chisel3.stage.ChiselGeneratorAnnotation(
-        () => new KyogenRVCpu())))
+    (new stage.ChiselStage).execute(
+        Array("-td=fpga/chisel_generated", s"-o=$name"),
+        Seq(chisel3.stage.ChiselGeneratorAnnotation(
+            () => new KyogenRVCpu())))
 }
 
 object Test extends App {
-iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
-    new PeekPokeTester(c) {
-        // read from binary file
-        val s: BufferedSource = Source.fromFile("src/sw/test.hex")
-        var buffs: Array[String] = _
-        try {
-            buffs = s.getLines.toArray
-        } finally {
-            s.close()
-        }
-        step(1)
-        poke(signal = c.io.sw.halt, value = true.B)
-        poke(c.io.sw.w_waitrequest_sig, false.B)
-        //poke(c.io.sw.w_waitreqdata_sig, false.B)
-        step(1)
-
-        for (addr <- 0 until buffs.length * 4 by 4) {
-            val mem_val = buffs(addr / 4).replace(" ", "")
-            val mem = Integer.parseUnsignedInt(mem_val, 16)
-
-            poke(signal = c.io.sw.w_add, value = addr)
-            step(1)
-            poke(signal = c.io.sw.w_dat, value = mem)
-            println(msg = f"write: addr = 0x$addr%04X,\tdata = 0x$mem%08X")
-            step(1)
-        }
-
-        step(1)
-        println(msg = "---------------------------------------------------------")
-        poke(signal = c.io.sw.w_pc, value = 0) // restart pc address
-        step(1) // fetch pc
-        poke(c.io.sw.w_waitrequest_sig, value = true.B) // after reset, waitrequest = 1
-        poke(signal = c.io.sw.halt, value = false.B)
-        step(2)
-        println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd\t\t\t\tstall")
-
-        // external interrupt signal(true = rising edge, false = off)
-        poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
-
-        // about 1000 cycle, we can finish 'riscv-tests'.
-        // change parameters on your another projects.
-        for (lp <- 0 until 1000 by 1) {
-            val a           = peek(signal = c.io.sw.r_pc)   // pc count
-            val d           = peek(signal = c.io.sw.r_dat)  // instruction
-            val exraddr1    = peek(c.io.sw.r_ex_raddr1)     // rs1 address
-            val exraddr2    = peek(c.io.sw.r_ex_raddr2)     // rs2 address
-            val exrs1       = peek(c.io.sw.r_ex_rs1)        // rs1 data
-            val exrs2       = peek(c.io.sw.r_ex_rs2)        // rs2 data
-            val eximm       = peek(c.io.sw.r_ex_imm)        // imm
-            val memaluo     = peek(c.io.sw.r_mem_alu_out)   // alu(MEM stage)
-            val wbaluo      = peek(c.io.sw.r_wb_alu_out)    // alu(WB stage)
-            val wbaddr      = peek(c.io.sw.r_wb_rf_waddr)   // write-back rd address
-            val wbdata      = peek(c.io.sw.r_wb_rf_wdata)   // write-back rd data
-            val stallsig    = peek(c.io.sw.r_stall_sig)     // stall signal
-            if(lp > 3){
-                poke(c.io.sw.w_waitrequest_sig, value = false.B)
+    iotesters.Driver.execute(args, () => new CpuBus())(testerGen = c => {
+        new PeekPokeTester(c) {
+            // read from binary file
+            val s: BufferedSource = Source.fromFile("src/sw/test.hex")
+            var buffs: Array[String] = _
+            try {
+                buffs = s.getLines.toArray
+            } finally {
+                s.close()
             }
+            step(1)
+            poke(signal = c.io.sw.halt, value = true.B)
+            poke(c.io.sw.w_waitrequest_sig, false.B)
+            //poke(c.io.sw.w_waitreqdata_sig, false.B)
+            step(1)
 
-            // if you need fire external interrupt signal uncomment below
-            if(lp == 96){
-                poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
-            }
-            else{
-                poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
+            for (addr <- 0 until buffs.length * 4 by 4) {
+                val mem_val = buffs(addr / 4).replace(" ", "")
+                val mem = Integer.parseUnsignedInt(mem_val, 16)
+
+                poke(signal = c.io.sw.w_add, value = addr)
+                step(1)
+                poke(signal = c.io.sw.w_dat, value = mem)
+                println(msg = f"write: addr = 0x$addr%04X,\tdata = 0x$mem%08X")
+                step(1)
             }
 
             step(1)
-            println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%x") //peek(c.io.sw.data)
+            println(msg = "---------------------------------------------------------")
+            poke(signal = c.io.sw.w_pc, value = 0) // restart pc address
+            step(1) // fetch pc
+            poke(c.io.sw.w_waitrequest_sig, value = true.B) // after reset, waitrequest = 1
+            poke(signal = c.io.sw.halt, value = false.B)
+            step(2)
+            println(msg = f"count\tINST\t\t| EX STAGE:rs1 ,\t\t\trs2 ,\t\timm\t\t\t| MEM:ALU out\t| WB:ALU out, rd\t\t\t\tstall")
 
-        }
-        step(1)
-        println("---------------------------------------------------------")
+            // external interrupt signal(true = rising edge, false = off)
+            poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
 
-        poke(signal = c.io.sw.halt, value = true.B)
-        step(2)
-        for (lp <- 0.U(32.W) to 31.U(32.W) by 1) {
+            // about 1000 cycle, we can finish 'riscv-tests'.
+            // change parameters on your another projects.
+            for (lp <- 0 until 1000 by 1) {
+                val a           = peek(signal = c.io.sw.r_pc)   // pc count
+                val d           = peek(signal = c.io.sw.r_dat)  // instruction
+                val exraddr1    = peek(c.io.sw.r_ex_raddr1)     // rs1 address
+                val exraddr2    = peek(c.io.sw.r_ex_raddr2)     // rs2 address
+                val exrs1       = peek(c.io.sw.r_ex_rs1)        // rs1 data
+                val exrs2       = peek(c.io.sw.r_ex_rs2)        // rs2 data
+                val eximm       = peek(c.io.sw.r_ex_imm)        // imm
+                val memaluo     = peek(c.io.sw.r_mem_alu_out)   // alu(MEM stage)
+                val wbaluo      = peek(c.io.sw.r_wb_alu_out)    // alu(WB stage)
+                val wbaddr      = peek(c.io.sw.r_wb_rf_waddr)   // write-back rd address
+                val wbdata      = peek(c.io.sw.r_wb_rf_wdata)   // write-back rd data
+                val stallsig    = peek(c.io.sw.r_stall_sig)     // stall signal
+                if(lp > 3){
+                    poke(c.io.sw.w_waitrequest_sig, value = false.B)
+                }
 
-            poke(signal = c.io.sw.g_add, value = lp)
-            step(1)
-            val d = {
-                peek(signal = c.io.sw.g_dat)
+                // if you need fire external interrupt signal uncomment below
+                if(lp == 96){
+                    poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
+                }
+                else{
+                    poke(signal = c.io.sw.w_interrupt_sig, value = false.B)
+                }
+
+                step(1)
+                println(msg = f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%x") //peek(c.io.sw.data)
+
             }
-
             step(1)
-            println(msg = f"read : x$lp%2d = 0x$d%08X ") //peek(c.io.sw.data)
+            println("---------------------------------------------------------")
+
+            poke(signal = c.io.sw.halt, value = true.B)
+            step(2)
+            for (lp <- 0.U(32.W) to 31.U(32.W) by 1) {
+
+                poke(signal = c.io.sw.g_add, value = lp)
+                step(1)
+                val d = {
+                    peek(signal = c.io.sw.g_dat)
+                }
+
+                step(1)
+                println(msg = f"read : x$lp%2d = 0x$d%08X ") //peek(c.io.sw.data)
+            }
         }
-    }
-})
+    })
 }
