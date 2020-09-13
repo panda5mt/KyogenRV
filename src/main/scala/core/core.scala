@@ -106,25 +106,25 @@ class KyogenRVCpu extends Module {
     val valid_imem: Bool = RegInit(true.B)
 
     // -------- START: IF stage -------
-    io.r_imem_dat.req := false.B
+    io.imem_add.addr := DontCare
+    io.r_imem_dat.req := DontCare
     when(!stall && !inst_kill) {
         if_pc := pc_cntr
         if_npc := npc
         io.r_imem_dat.req := imem_read_sig
+        io.imem_add.addr  := pc_cntr
         valid_imem := true.B
     }.elsewhen(inst_kill) {
         if_pc := pc_ini
         if_npc := npc_ini
         io.r_imem_dat.req := imem_read_sig
         valid_imem := false.B
+    }.otherwise{
+        if_pc := pc_ini
+        if_npc := npc_ini
+        io.r_imem_dat.req := false.B // stop count up PC
+        //valid_imem := false.B
     }
-    //      .elsewhen(io.sw.w_waitrequest_sig) {
-    //        if_pc := pc_ini
-    //        if_npc := npc_ini
-    //        io.r_imem_dat.req := false.B
-    //        valid_imem := false.B
-    //    }
-
     // -------- END: IF stage --------
 
 
@@ -138,11 +138,11 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.elsewhen(!valid_imem) {
+    }/*.elsewhen(!valid_imem) {
         id_pc := id_pc
         id_npc := id_npc
-        id_inst := inst_nop//id_inst
-    }
+        id_inst := id_inst
+    }*/
 
     val idm: IDModule = Module(new IDModule)
     idm.io.imem := id_inst
@@ -466,7 +466,7 @@ class KyogenRVCpu extends Module {
     // -------- START: PC update --------
     when(io.sw.halt === false.B) {
         w_req := false.B
-        when(!stall && io.r_imem_dat.req) {
+        when(!stall /*&& io.r_imem_dat.ack*/) {
             //r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
@@ -492,9 +492,9 @@ class KyogenRVCpu extends Module {
     // address update
     when(w_req){    // write request
         io.imem_add.addr    := w_addr
-    }.otherwise{
+    }/*.otherwise{
         io.imem_add.addr    := pc_cntr
-    }
+    }*/
 
     // write process
     io.w_imem_dat.data   := w_data
