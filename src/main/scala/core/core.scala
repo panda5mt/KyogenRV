@@ -101,17 +101,6 @@ class KyogenRVCpu extends Module {
     // ----- START:initialize logic for avalon-MM -----
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
 
-
-    //delay_stall is "cheat" logic to ready memory mapped logic.
-    // stall 3 or 4 clock after reset.
-    val delay_stall: UInt = RegInit(0.U(3.W))
-    when(imem_read_sig === true.B) {
-        when(delay_stall =/= 6.U) {
-            delay_stall := delay_stall + 1.U
-        }
-    }.otherwise {
-        delay_stall := 0.U(2.W)
-    }
     // ----- END:startup logic for avalon-MM -----
 
     val valid_imem: Bool = RegInit(true.B)
@@ -183,16 +172,10 @@ class KyogenRVCpu extends Module {
     val csr: CSR = Module(new CSR)
 
     // judge if stall needed
-    withClock(invClock) {
-        //var mem_stall: Bool = RegInit(false.B)
-        //when(ex_ctrl.mem_wr === M_XRD){mem_stall := true.B}
-        //when(io.sw.w_waitrequest_sig === false.B){mem_stall := false.B}
+    stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
+      ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || ex_ctrl.mem_wr =/= M_X || mem_ctrl.mem_wr === M_XRD || io.sw.w_waitrequest_sig
 
-        stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || io.sw.w_waitrequest_sig
-
-        io.sw.r_stall_sig := stall
-    }
+    io.sw.r_stall_sig := stall
     // -------- END: ID stage --------
 
 
