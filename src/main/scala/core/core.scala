@@ -289,7 +289,7 @@ class KyogenRVCpu extends Module {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill && !io.sw.w_waitrequest_sig) {
+    when (!inst_kill /*&& !io.sw.w_waitrequest_sig*/) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
@@ -390,7 +390,7 @@ class KyogenRVCpu extends Module {
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
-    when(!io.sw.w_waitrequest_sig) {
+    //when(!io.sw.w_waitrequest_sig) {
         wb_npc := mem_npc
         wb_ctrl := mem_ctrl
         wb_reg_waddr := mem_reg_waddr
@@ -398,7 +398,7 @@ class KyogenRVCpu extends Module {
         wb_dmem_read_ack := io.r_dmem_dat.ack
         wb_csr_addr := mem_csr_addr
         wb_csr_data := mem_csr_data
-    }
+    //}
 
     val dmem_data: UInt = Wire(UInt(32.W))
     dmem_data := DontCare
@@ -466,7 +466,7 @@ class KyogenRVCpu extends Module {
     // -------- START: PC update --------
     when(io.sw.halt === false.B) {
         w_req := false.B
-        when(!stall /*&& io.r_imem_dat.ack*/) {
+        when(!stall && io.r_imem_dat.ack) {
             //r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
