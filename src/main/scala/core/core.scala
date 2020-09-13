@@ -130,7 +130,7 @@ class KyogenRVCpu extends Module {
 
     // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
-    when((!stall && !inst_kill) && valid_imem) {
+    when(!stall && !inst_kill && valid_imem) {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
@@ -142,10 +142,6 @@ class KyogenRVCpu extends Module {
         id_pc := id_pc
         id_npc := id_npc
         id_inst := inst_nop//id_inst
-    }.elsewhen(stall && valid_imem) {
-        if_pc := id_pc //pc_cntr
-        if_npc := id_npc
-        //id_inst := io.r_imem_dat.data
     }
 
     val idm: IDModule = Module(new IDModule)
@@ -177,7 +173,7 @@ class KyogenRVCpu extends Module {
 
     // judge if stall needed
     stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-      ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || /*ex_ctrl.mem_wr =/= M_X || mem_ctrl.mem_wr === M_XRD ||*/ io.sw.w_waitrequest_sig
+      ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || io.sw.w_waitrequest_sig
 
     io.sw.r_stall_sig := stall
     // -------- END: ID stage --------
