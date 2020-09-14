@@ -170,13 +170,10 @@ class KyogenRVCpu extends Module {
     interrupt_sig := io.sw.w_interrupt_sig
 
     val csr: CSR = Module(new CSR)
-    val delay_stall = RegInit(0.U(4.W))
-    when (delay_stall =/= 7.U){
-        delay_stall := delay_stall + 1.U
-    }
+
     // judge if stall needed
     stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-      ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || delay_stall =/= 7.U || io.sw.w_waitrequest_sig
+      ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || io.sw.w_waitrequest_sig
 
     io.sw.r_stall_sig := stall
     // -------- END: ID stage --------
