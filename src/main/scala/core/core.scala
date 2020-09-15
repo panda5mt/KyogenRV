@@ -441,25 +441,24 @@ class KyogenRVCpu extends Module {
         dmem_data := io.r_dmem_dat.data
     }
 
+    val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
+    val rf_waddr: UInt = wb_reg_waddr
+    val rf_wdata: UInt = MuxCase(wb_alu_out, Seq(
+        (wb_ctrl.wb_sel === WB_ALU) -> wb_alu_out, // wb_alu_out,
+        (wb_ctrl.wb_sel === WB_PC4) -> wb_npc, // pc_cntr = pc + 4
+        (wb_ctrl.wb_sel === WB_CSR) -> wb_csr_data,
+        (wb_ctrl.wb_sel === WB_MEM) -> dmem_data //0.U(32.W),
+    ))
     withClock(invClock) {
-        val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
-        val rf_waddr: UInt = wb_reg_waddr
-        val rf_wdata: UInt = MuxCase(wb_alu_out, Seq(
-            (wb_ctrl.wb_sel === WB_ALU) -> wb_alu_out, // wb_alu_out,
-            (wb_ctrl.wb_sel === WB_PC4) -> wb_npc, // pc_cntr = pc + 4
-            (wb_ctrl.wb_sel === WB_CSR) -> wb_csr_data,
-            (wb_ctrl.wb_sel === WB_MEM) -> dmem_data //0.U(32.W),
-        ))
-
         when(rf_wen === REN_1) {
             reg_f.write(rf_waddr, rf_wdata)
         }
-
-        // iotesters
-        io.sw.r_wb_alu_out := wb_alu_out
-        io.sw.r_wb_rf_waddr := rf_waddr
-        io.sw.r_wb_rf_wdata := rf_wdata
     }
+    // iotesters
+    io.sw.r_wb_alu_out := wb_alu_out
+    io.sw.r_wb_rf_waddr := rf_waddr
+    io.sw.r_wb_rf_wdata := rf_wdata
+
     // -------- END: WB Stage --------
 
 
