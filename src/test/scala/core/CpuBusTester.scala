@@ -69,9 +69,16 @@ case class CpuBusTester(c: CpuBus, hexname: String, logname: String) extends Pee
     //    else{
     //      poke(signal = c.io.sw.w_interrupt_sig, value = 0)
     //    }
-    if(lp > 3){
+    if(lp > 3) {
       poke(c.io.sw.w_waitrequest_sig, value = 0)
     }
+    if( (lp >= 20 && lp<=25) || lp == 75 || lp == 90){
+      poke(signal = c.io.sw.w_waitrequest_sig, value = 1)
+    }
+    else{
+      poke(signal = c.io.sw.w_waitrequest_sig, value = 0)
+    }
+
     step(1)
     pw.println(f"0x$a%04X,\t0x$d%08X\t| x($exraddr1)=>0x$exrs1%08X, x($exraddr2)=>0x$exrs2%08X,\t0x$eximm%08X\t| 0x$memaluo%08X\t| 0x$wbaluo%08X, x($wbaddr%d)\t<= 0x$wbdata%08X, $stallsig%x") //peek(c.io.sw.data)
 
