@@ -120,8 +120,8 @@ class KyogenRVCpu extends Module {
         io.r_imem_dat.req := imem_read_sig
         valid_imem := false.B
     }.otherwise{
-        //if_pc := pc_ini
-        //if_npc := npc_ini
+        if_pc := pc_ini
+        if_npc := npc_ini
         io.r_imem_dat.req := false.B // stop count up PC
         //valid_imem := false.B
     }
@@ -138,8 +138,11 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
+    }.otherwise {
+        id_pc := pc_ini
+        id_npc := npc_ini
+        //id_inst := inst_nop
     }
-
 
 
     val idm: IDModule = Module(new IDModule)
