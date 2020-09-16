@@ -43,7 +43,7 @@ class IMem extends Module {
 
 
     io.w_imem_dat.ack   := w_ack
-    io.r_imem_dat.data  := DontCare
+    io.r_imem_dat.data  := 0xFFFFFFFFL.U//DontCare
     io.r_imem_dat.ack   := r_ack
 
     // read operation
