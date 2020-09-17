@@ -122,14 +122,14 @@ class KyogenRVCpu extends Module {
     }.otherwise{
         //if_pc := pc_ini
         // if_npc := npc_ini
-        io.r_imem_dat.req := RegNext(false.B) // stop count up PC
+        io.r_imem_dat.req := RegNext(true.B)
         //valid_imem := false.B
     }
     // -------- END: IF stage --------
 
     // -------- START: ID stage --------
     val inst: UInt = io.r_imem_dat.data
-    when(!stall && !inst_kill && valid_imem) {
+    when(/*!stall &&*/ !inst_kill && io.r_imem_dat.ack){
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := inst//io.r_imem_dat.data
