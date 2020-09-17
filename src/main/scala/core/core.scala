@@ -100,10 +100,7 @@ class KyogenRVCpu extends Module {
 
     // ----- START:initialize logic for avalon-MM -----
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
-
     // ----- END:startup logic for avalon-MM -----
-
-    val valid_imem: Bool = RegInit(true.B)
 
     // -------- START: IF stage -------
     io.r_imem_dat.req := DontCare
@@ -113,17 +110,12 @@ class KyogenRVCpu extends Module {
         if_pc := pc_cntr
         if_npc := npc
         io.r_imem_dat.req := RegNext(imem_read_sig)
-        valid_imem := true.B
     }.elsewhen(inst_kill) {
         if_pc := pc_ini
         if_npc := npc_ini
         io.r_imem_dat.req := RegNext(false.B)//imem_read_sig
-        valid_imem := false.B
     }.otherwise{
-        //if_pc := pc_ini
-        // if_npc := npc_ini
-        io.r_imem_dat.req := RegNext(true.B)
-        //valid_imem := false.B
+        io.r_imem_dat.req := RegNext(imem_read_sig)
     }
     // -------- END: IF stage --------
 
@@ -137,11 +129,11 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.otherwise {
+    }/*.otherwise {
         id_pc := if_pc
         id_npc := if_npc
         //id_inst := inst_nop
-    }
+    }*/
 
 
     val idm: IDModule = Module(new IDModule)
