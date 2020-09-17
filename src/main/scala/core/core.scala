@@ -117,16 +117,18 @@ class KyogenRVCpu extends Module {
     }.elsewhen(inst_kill) {
         if_pc := pc_ini
         if_npc := npc_ini
-        io.r_imem_dat.req := imem_read_sig
+        io.r_imem_dat.req := false.B//imem_read_sig
         valid_imem := false.B
     }.otherwise{
-        if_pc := pc_ini
-        if_npc := npc_ini
+        //if_pc := pc_ini
+        // if_npc := npc_ini
         io.r_imem_dat.req := false.B // stop count up PC
         //valid_imem := false.B
     }
     // -------- END: IF stage --------
 
+    val imem_ack = RegInit(true.B)
+    imem_ack := valid_imem//io.r_imem_dat.ack//
 
     // -------- START: ID stage --------
     // iotesters: id_pc, id_inst
@@ -139,8 +141,8 @@ class KyogenRVCpu extends Module {
         id_npc := npc_ini
         id_inst := inst_nop
     }.otherwise {
-        id_pc := pc_ini
-        id_npc := npc_ini
+        id_pc := if_pc
+        id_npc := if_npc
         //id_inst := inst_nop
     }
 
