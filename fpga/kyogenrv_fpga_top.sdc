@@ -1,1 +1,0 @@
-create_clock  -name CY10_CLK_24M       -period 20  [get_ports {CY10_CLK_24M}]
