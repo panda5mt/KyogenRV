@@ -382,7 +382,7 @@ class KyogenRVCpu extends Module {
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
-    when(!io.sw.w_waitrequest_sig) {
+    when(!io.sw.w_waitrequest_sig || (ex_ctrl.mem_wr === M_XRD && io.r_dmem_dat.ack)) {
         wb_npc := mem_npc
         wb_ctrl := mem_ctrl
         wb_reg_waddr := mem_reg_waddr
