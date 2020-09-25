@@ -164,10 +164,13 @@ class KyogenRVCpu extends Module {
     val csr: CSR = Module(new CSR)
 
     // judge if stall needed
-    stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-      ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || io.sw.w_waitrequest_sig
+    val wrequest = RegNext(io.sw.w_waitrequest_sig)
 
-    io.sw.r_stall_sig := stall
+    stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
+      ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || wrequest
+
+    io.sw.r_stall_sig := stall//ex_inst
+
     // -------- END: ID stage --------
 
 
@@ -281,7 +284,7 @@ class KyogenRVCpu extends Module {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill && !io.sw.w_waitrequest_sig) {
+    when (!inst_kill && !wrequest) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
@@ -382,7 +385,7 @@ class KyogenRVCpu extends Module {
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
-    when(!io.sw.w_waitrequest_sig || (ex_ctrl.mem_wr === M_XRD && io.r_dmem_dat.ack)) {
+    when(!wrequest /*|| (ex_ctrl.mem_wr === M_XRD && io.r_dmem_dat.ack)*/) {
         wb_npc := mem_npc
         wb_ctrl := mem_ctrl
         wb_reg_waddr := mem_reg_waddr
