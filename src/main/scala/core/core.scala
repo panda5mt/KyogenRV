@@ -164,7 +164,7 @@ class KyogenRVCpu extends Module {
     val csr: CSR = Module(new CSR)
 
     // judge if stall needed
-    val wrequest = RegNext(io.sw.w_waitrequest_sig)
+    val wrequest: Bool = io.sw.w_waitrequest_sig
 
     stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
       ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || wrequest
