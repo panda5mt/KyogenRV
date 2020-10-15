@@ -135,10 +135,8 @@ class KyogenRVCpu extends Module {
         //id_inst := inst_nop
     }*/
 
-
     val idm: IDModule = Module(new IDModule)
     idm.io.imem := id_inst
-
 
     // instruction decode
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits, (new IDecode).table)
