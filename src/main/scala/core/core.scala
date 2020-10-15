@@ -158,11 +158,12 @@ class KyogenRVCpu extends Module {
     val interrupt_sig: Bool = RegInit(false.B)
     interrupt_sig := io.sw.w_interrupt_sig
 
-    val csr: CSR = Module(new CSR)
+
+    val wrequest:               Bool = io.sw.w_waitrequest_sig
+    val prev_wrequest:          Bool = RegNext(io.sw.w_waitrequest_sig)
+    val fallingEdge_wrequest:   Bool = !wrequest && prev_wrequest
 
     // judge if stall needed
-    val wrequest: Bool = io.sw.w_waitrequest_sig
-
     stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
       ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || wrequest
 
@@ -253,7 +254,7 @@ class KyogenRVCpu extends Module {
     )
     //val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),ex_reg_rs1_bypass)
 
-
+    val csr: CSR = Module(new CSR)
     csr.io.pc           := ex_pc
     csr.io.addr         := ex_csr_addr
     csr.io.cmd          := ex_csr_cmd
@@ -476,9 +477,9 @@ class KyogenRVCpu extends Module {
     }
 
     // for imem test
-    io.sw.r_dat  := id_inst//io.r_imem_dat.data
+    io.sw.r_dat  := id_inst //io.r_imem_dat.data
     io.sw.r_add  := pc_cntr
-    io.sw.r_pc   := id_pc//pc_cntr      // program counter
+    io.sw.r_pc   := id_pc   //pc_cntr      // program counter
 
     // address update
     when(w_req){    // write request
