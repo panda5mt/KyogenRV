@@ -33,6 +33,7 @@ class KyogenRVCpu extends Module {
 
     // ID stage pipeline register
     val id_inst: UInt = RegInit(inst_nop)
+    val id_fifo: UInt = RegInit(inst_nop)
     val id_pc: UInt = RegInit(pc_ini)
     val id_npc: UInt = RegInit(npc_ini)
     //val id_csr_addr: UInt = RegInit(0.U)
@@ -101,6 +102,10 @@ class KyogenRVCpu extends Module {
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
     // ----- END:startup logic for avalon-MM -----
 
+    val wrequest:               Bool = io.sw.w_waitrequest_sig
+    val prev_wrequest:          Bool = RegNext(io.sw.w_waitrequest_sig)
+    val fallingEdge_wrequest:   Bool = !wrequest && prev_wrequest
+
     // -------- START: IF stage -------
     io.r_imem_dat.req := DontCare
     io.imem_add.addr  := pc_cntr
@@ -120,7 +125,7 @@ class KyogenRVCpu extends Module {
 
     // -------- START: ID stage --------
     val inst: UInt = io.r_imem_dat.data
-    when(/*!stall &&*/ !inst_kill && io.r_imem_dat.ack){
+    when(!stall && !inst_kill && io.r_imem_dat.ack && !fallingEdge_wrequest){
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := inst//io.r_imem_dat.data
@@ -128,7 +133,18 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }/*.otherwise {
+    }.elsewhen(stall && !inst_kill && io.r_imem_dat.ack){
+        id_pc := if_pc
+        id_npc := if_npc
+        id_fifo := inst     // now instruction
+        id_inst := inst     // previous instruction
+    }.elsewhen(!stall && !inst_kill && fallingEdge_wrequest){
+        id_pc := if_pc
+        id_npc := if_npc
+        id_inst := id_fifo
+        id_fifo := inst_nop
+    }
+    /*.otherwise {
         id_pc := if_pc
         id_npc := if_npc
         //id_inst := inst_nop
@@ -158,10 +174,6 @@ class KyogenRVCpu extends Module {
     val interrupt_sig: Bool = RegInit(false.B)
     interrupt_sig := io.sw.w_interrupt_sig
 
-
-    val wrequest:               Bool = io.sw.w_waitrequest_sig
-    val prev_wrequest:          Bool = RegNext(io.sw.w_waitrequest_sig)
-    val fallingEdge_wrequest:   Bool = !wrequest && prev_wrequest
 
     // judge if stall needed
     stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
