@@ -110,7 +110,7 @@ class KyogenRVCpu extends Module {
     io.r_imem_dat.req := DontCare
     io.imem_add.addr  := pc_cntr
 
-    when(!stall && !inst_kill) {
+    when(!stall && !inst_kill && !fallingEdge_wrequest) {
         if_pc := pc_cntr
         if_npc := npc
         io.r_imem_dat.req := RegNext(imem_read_sig)
@@ -125,7 +125,7 @@ class KyogenRVCpu extends Module {
 
     // -------- START: ID stage --------
     val inst: UInt = io.r_imem_dat.data
-    when(!stall && !inst_kill && io.r_imem_dat.ack && !fallingEdge_wrequest){
+    when(!wrequest && !inst_kill && io.r_imem_dat.ack && !fallingEdge_wrequest){
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := inst//io.r_imem_dat.data
@@ -133,12 +133,12 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.elsewhen(stall && !inst_kill && io.r_imem_dat.ack){
+    }.elsewhen(wrequest && !inst_kill && io.r_imem_dat.ack){
         id_pc := if_pc
         id_npc := if_npc
-        id_fifo := inst     // now instruction
-        id_inst := inst     // previous instruction
-    }.elsewhen(!stall && !inst_kill && fallingEdge_wrequest){
+        id_fifo := inst        // now instruction
+        id_inst := id_inst     // previous instruction
+    }.elsewhen(!wrequest && !inst_kill && fallingEdge_wrequest){
         id_pc := if_pc
         id_npc := if_npc
         id_inst := id_fifo
@@ -179,7 +179,7 @@ class KyogenRVCpu extends Module {
     stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
       ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || wrequest
 
-    io.sw.r_stall_sig := stall//ex_inst
+    io.sw.r_stall_sig := ex_inst
 
     // -------- END: ID stage --------
 
@@ -470,7 +470,7 @@ class KyogenRVCpu extends Module {
     // -------- START: PC update --------
     when(io.sw.halt === false.B) {
         w_req := false.B
-        when(!stall /*&& io.r_imem_dat.ack*/) {
+        when(!stall && !fallingEdge_wrequest) {
             //r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
