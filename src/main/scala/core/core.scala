@@ -33,6 +33,7 @@ class KyogenRVCpu extends Module {
 
     // ID stage pipeline register
     val id_inst: UInt = RegInit(inst_nop)
+    val id_fifo: UInt = RegInit(inst_nop)
     val id_pc: UInt = RegInit(pc_ini)
     val id_npc: UInt = RegInit(npc_ini)
     //val id_csr_addr: UInt = RegInit(0.U)
@@ -80,7 +81,7 @@ class KyogenRVCpu extends Module {
 
     // ------- END: pipeline registers --------
 
-    // Program Counter 
+    // Program Counter
     val pc_cntr: UInt = RegInit(0.U(32.W)) // pc
     val npc: UInt = pc_cntr + 4.U(32.W) // next pc counter
 
@@ -101,14 +102,15 @@ class KyogenRVCpu extends Module {
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
     // ----- END:startup logic for avalon-MM -----
 
-    val wrequest:   Bool = io.sw.w_waitrequest_sig
-
+    val wrequest:                   Bool = io.sw.w_waitrequest_sig
+    val prev_wrequest:              Bool = RegNext(io.sw.w_waitrequest_sig)
+    val restart_after_waitrequest:  Bool = !wrequest && prev_wrequest
 
     // -------- START: IF stage -------
     io.r_imem_dat.req := DontCare
     io.imem_add.addr  := pc_cntr
 
-    when(!stall && !inst_kill) {
+    when(!stall && !inst_kill && !restart_after_waitrequest) {
         if_pc := pc_cntr
         if_npc := npc
         io.r_imem_dat.req := RegNext(imem_read_sig)
@@ -123,7 +125,7 @@ class KyogenRVCpu extends Module {
 
     // -------- START: ID stage --------
     val inst: UInt = io.r_imem_dat.data
-    when(/*!stall && */!inst_kill && io.r_imem_dat.ack){
+    when(!wrequest && !inst_kill && io.r_imem_dat.ack && !restart_after_waitrequest){
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := inst//io.r_imem_dat.data
@@ -131,6 +133,16 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
+    }.elsewhen(wrequest && !inst_kill && io.r_imem_dat.ack){
+        id_pc := if_pc
+        id_npc := if_npc
+        id_fifo := inst        // now instruction
+        id_inst := id_inst     // previous instruction
+    }.elsewhen(!wrequest && !inst_kill && restart_after_waitrequest){
+        id_pc := if_pc
+        id_npc := if_npc
+        id_inst := id_fifo
+        id_fifo := inst_nop
     }
     /*.otherwise {
         id_pc := if_pc
@@ -282,7 +294,7 @@ class KyogenRVCpu extends Module {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill) {
+    when (!inst_kill && !wrequest) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
@@ -383,7 +395,7 @@ class KyogenRVCpu extends Module {
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
-    //when(!wrequest) {
+    when(!wrequest /*|| (ex_ctrl.mem_wr === M_XRD && io.r_dmem_dat.ack)*/) {
         wb_npc := mem_npc
         wb_ctrl := mem_ctrl
         wb_reg_waddr := mem_reg_waddr
@@ -391,7 +403,7 @@ class KyogenRVCpu extends Module {
         wb_dmem_read_ack := io.r_dmem_dat.ack
         wb_csr_addr := mem_csr_addr
         wb_csr_data := mem_csr_data
-    //}
+    }
 
     val dmem_data: UInt = Wire(UInt(32.W))
     dmem_data := DontCare
@@ -458,7 +470,7 @@ class KyogenRVCpu extends Module {
     // -------- START: PC update --------
     when(io.sw.halt === false.B) {
         w_req := false.B
-        when(!stall) {
+        when(!stall && !restart_after_waitrequest) {
             //r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
