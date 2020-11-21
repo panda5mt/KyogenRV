@@ -5,10 +5,12 @@ import chisel3._
 import chisel3.iotesters._
 import chisel3.util._
 import chisel3.Clock
+
 import scala.io.{BufferedSource, Source}
 import _root_.core.ScalarOpConstants._
 import MemoryOpConstants._
 import bus.{HostIf, TestIf}
+import chisel3.internal.firrtl.Width
 import mem._
 
 
@@ -33,7 +35,6 @@ class KyogenRVCpu extends Module {
 
     // ID stage pipeline register
     val id_inst: UInt = RegInit(inst_nop)
-    val id_fifo: UInt = RegInit(inst_nop)
     val id_pc: UInt = RegInit(pc_ini)
     val id_npc: UInt = RegInit(npc_ini)
     //val id_csr_addr: UInt = RegInit(0.U)
@@ -100,58 +101,63 @@ class KyogenRVCpu extends Module {
 
     // ----- START:initialize logic for avalon-MM -----
     val imem_read_sig: Bool = RegNext(!io.w_imem_dat.req, false.B)
+
+
+    //delay_stall is "cheat" logic to ready memory mapped logic.
+    // stall 3 or 4 clock after reset.
+    val delay_stall: UInt = RegInit(0.U(3.W))
+    when(imem_read_sig === true.B) {
+        when(delay_stall =/= 6.U) {
+            delay_stall := delay_stall + 1.U
+        }
+    }.otherwise {
+        delay_stall := 0.U(2.W)
+    }
     // ----- END:startup logic for avalon-MM -----
 
-    val wrequest:                   Bool = io.sw.w_waitrequest_sig
-    val prev_wrequest:              Bool = RegNext(io.sw.w_waitrequest_sig)
-    val restart_after_waitrequest:  Bool = !wrequest && prev_wrequest
+    val valid_imem: Bool = RegInit(true.B)
 
     // -------- START: IF stage -------
     io.r_imem_dat.req := DontCare
-    io.imem_add.addr  := pc_cntr
-
-    when(!stall && !inst_kill && !restart_after_waitrequest) {
+    when(!stall && !inst_kill) {
         if_pc := pc_cntr
         if_npc := npc
-        io.r_imem_dat.req := RegNext(imem_read_sig)
+        io.r_imem_dat.req := imem_read_sig
+        valid_imem := true.B
     }.elsewhen(inst_kill) {
         if_pc := pc_ini
         if_npc := npc_ini
-        io.r_imem_dat.req := RegNext(false.B)//imem_read_sig
-    }.otherwise{
-        io.r_imem_dat.req := RegNext(imem_read_sig)
+        io.r_imem_dat.req := imem_read_sig
+        valid_imem := false.B
+    }.elsewhen(io.sw.w_waitrequest_sig) {
+        if_pc := pc_ini
+        if_npc := npc_ini
+        io.r_imem_dat.req := false.B
+        valid_imem := false.B
     }
+
     // -------- END: IF stage --------
 
+
     // -------- START: ID stage --------
-    val inst: UInt = io.r_imem_dat.data
-    when(!wrequest && !inst_kill && io.r_imem_dat.ack && !restart_after_waitrequest){
+    // iotesters: id_pc, id_inst
+    when(!stall && !inst_kill && valid_imem) {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
-        id_inst := inst//io.r_imem_dat.data
+        id_inst := io.r_imem_dat.data
     }.elsewhen(inst_kill) {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.elsewhen(wrequest && !inst_kill && io.r_imem_dat.ack){
-        id_pc := if_pc
-        id_npc := if_npc
-        id_fifo := inst        // now instruction
-        id_inst := id_inst     // previous instruction
-    }.elsewhen(!wrequest && !inst_kill && restart_after_waitrequest){
-        id_pc := if_pc
-        id_npc := if_npc
-        id_inst := id_fifo
-        id_fifo := inst_nop
+    }.elsewhen(!valid_imem) {
+        id_pc := id_pc
+        id_npc := id_npc
+        id_inst := inst_nop//id_inst
     }
-    /*.otherwise {
-        id_pc := if_pc
-        id_npc := if_npc
-        //id_inst := inst_nop
-    }*/
 
     val idm: IDModule = Module(new IDModule)
     idm.io.imem := id_inst
+
 
     // instruction decode
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits, (new IDecode).table)
@@ -174,13 +180,15 @@ class KyogenRVCpu extends Module {
     val interrupt_sig: Bool = RegInit(false.B)
     interrupt_sig := io.sw.w_interrupt_sig
 
+    val csr: CSR = Module(new CSR)
 
     // judge if stall needed
-    stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-      ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || wrequest
+    withClock(invClock) {
+        stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || io.sw.w_waitrequest_sig
 
-    io.sw.r_stall_sig := ex_inst
-
+        io.sw.r_stall_sig := stall
+    }
     // -------- END: ID stage --------
 
 
@@ -266,7 +274,7 @@ class KyogenRVCpu extends Module {
     )
     //val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),ex_reg_rs1_bypass)
 
-    val csr: CSR = Module(new CSR)
+
     csr.io.pc           := ex_pc
     csr.io.addr         := ex_csr_addr
     csr.io.cmd          := ex_csr_cmd
@@ -294,7 +302,7 @@ class KyogenRVCpu extends Module {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill && !wrequest) {
+    when (!inst_kill && !io.sw.w_waitrequest_sig) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
@@ -395,15 +403,13 @@ class KyogenRVCpu extends Module {
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
-    when(!wrequest /*|| (ex_ctrl.mem_wr === M_XRD && io.r_dmem_dat.ack)*/) {
-        wb_npc := mem_npc
-        wb_ctrl := mem_ctrl
-        wb_reg_waddr := mem_reg_waddr
-        wb_alu_out := mem_alu_out
-        wb_dmem_read_ack := io.r_dmem_dat.ack
-        wb_csr_addr := mem_csr_addr
-        wb_csr_data := mem_csr_data
-    }
+    wb_npc := mem_npc
+    wb_ctrl := mem_ctrl
+    wb_reg_waddr := mem_reg_waddr
+    wb_alu_out := mem_alu_out
+    wb_dmem_read_ack := io.r_dmem_dat.ack
+    wb_csr_addr := mem_csr_addr
+    wb_csr_data := mem_csr_data
 
     val dmem_data: UInt = Wire(UInt(32.W))
     dmem_data := DontCare
@@ -446,31 +452,34 @@ class KyogenRVCpu extends Module {
         dmem_data := io.r_dmem_dat.data
     }
 
-    val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
-    val rf_waddr: UInt = wb_reg_waddr
-    val rf_wdata: UInt = MuxCase(wb_alu_out, Seq(
-        (wb_ctrl.wb_sel === WB_ALU) -> wb_alu_out, // wb_alu_out,
-        (wb_ctrl.wb_sel === WB_PC4) -> wb_npc, // pc_cntr = pc + 4
-        (wb_ctrl.wb_sel === WB_CSR) -> wb_csr_data,
-        (wb_ctrl.wb_sel === WB_MEM) -> dmem_data //0.U(32.W),
-    ))
+
+
     withClock(invClock) {
+        val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
+        val rf_waddr: UInt = wb_reg_waddr
+        val rf_wdata: UInt = MuxCase(wb_alu_out, Seq(
+            (wb_ctrl.wb_sel === WB_ALU) -> wb_alu_out, // wb_alu_out,
+            (wb_ctrl.wb_sel === WB_PC4) -> wb_npc, // pc_cntr = pc + 4
+            (wb_ctrl.wb_sel === WB_CSR) -> wb_csr_data,
+            (wb_ctrl.wb_sel === WB_MEM) -> dmem_data //0.U(32.W),
+        ))
+
         when(rf_wen === REN_1) {
             reg_f.write(rf_waddr, rf_wdata)
         }
-    }
-    // iotesters
-    io.sw.r_wb_alu_out := wb_alu_out
-    io.sw.r_wb_rf_waddr := rf_waddr
-    io.sw.r_wb_rf_wdata := rf_wdata
 
+        // iotesters
+        io.sw.r_wb_alu_out := wb_alu_out
+        io.sw.r_wb_rf_waddr := rf_waddr
+        io.sw.r_wb_rf_wdata := rf_wdata
+    }
     // -------- END: WB Stage --------
 
 
     // -------- START: PC update --------
     when(io.sw.halt === false.B) {
         w_req := false.B
-        when(!stall && !restart_after_waitrequest) {
+        when(!stall && io.r_imem_dat.req) {
             //r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
@@ -488,22 +497,28 @@ class KyogenRVCpu extends Module {
         pc_cntr := io.sw.w_pc
     }
 
+
     // for imem test
-    io.sw.r_dat  := id_inst //io.r_imem_dat.data
+    io.sw.r_dat  := id_inst//io.r_imem_dat.data
     io.sw.r_add  := pc_cntr
-    io.sw.r_pc   := id_pc   //pc_cntr      // program counter
+    io.sw.r_pc   := id_pc//pc_cntr      // program counter
+
 
     // address update
     when(w_req){    // write request
         io.imem_add.addr    := w_addr
-    }/*.otherwise{
+    }.otherwise{
         io.imem_add.addr    := pc_cntr
-    }*/
+    }
 
     // write process
     io.w_imem_dat.data   := w_data
     io.w_imem_dat.req    := w_req
     io.w_imem_dat.byteenable := 15.U
+
+    // read process
+    //r_ack  := io.r_imem_dat.ack
+    //r_data := io.r_imem_dat.data
 
     // x0 - x31
     val v_radd = IndexedSeq(io.sw.g_add,0.U) // treat as 64bit-Addressed SRAM
@@ -575,7 +590,6 @@ class CpuBus extends Module {
 
     // WAITREQUEST
     cpu.io.sw.w_waitrequest_sig <> io.sw.w_waitrequest_sig
-    //cpu.io.sw.w_waitreqdata_sig <> io.sw.w_waitreqdata_sig
 
     w_pc        := io.sw.w_pc
 
@@ -653,7 +667,6 @@ object Test extends App {
             step(1)
             poke(signal = c.io.sw.halt, value = true.B)
             poke(c.io.sw.w_waitrequest_sig, false.B)
-            //poke(c.io.sw.w_waitreqdata_sig, false.B)
             step(1)
 
             for (addr <- 0 until buffs.length * 4 by 4) {
