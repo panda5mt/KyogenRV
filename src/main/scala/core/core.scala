@@ -184,7 +184,7 @@ class KyogenRVCpu extends Module {
     // judge if stall needed
     withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || wrequest
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) //|| wrequest
 
         io.sw.r_stall_sig := stall
     }
@@ -340,7 +340,7 @@ class KyogenRVCpu extends Module {
 
     }.otherwise{    // CPU halt
         // dmem connection
-        io.dmem_add.addr          := io.sw.w_add
+        io.dmem_add.addr            := io.sw.w_add
         io.w_dmem_dat.data          := io.sw.w_dat
         io.w_dmem_dat.req           := true.B
         io.w_dmem_dat.byteenable    := 15.U
@@ -479,7 +479,7 @@ class KyogenRVCpu extends Module {
     // -------- START: PC update --------
     when(io.sw.halt === false.B) {
         w_req := false.B
-        when(!stall && io.r_imem_dat.req) {
+        when(!stall/* && io.r_imem_dat.req*/) {
             //r_req := r_req
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
