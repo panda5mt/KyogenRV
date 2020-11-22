@@ -10,7 +10,6 @@ import scala.io.{BufferedSource, Source}
 import _root_.core.ScalarOpConstants._
 import MemoryOpConstants._
 import bus.{HostIf, TestIf}
-import chisel3.internal.firrtl.Width
 import mem._
 
 
@@ -116,7 +115,7 @@ class KyogenRVCpu extends Module {
     // ----- END:startup logic for avalon-MM -----
 
     val valid_imem: Bool = RegInit(true.B)
-
+    val wrequest: Bool = RegNext(io.sw.w_waitrequest_sig)
     // -------- START: IF stage -------
     io.r_imem_dat.req := DontCare
     when(!stall && !inst_kill) {
@@ -129,7 +128,7 @@ class KyogenRVCpu extends Module {
         if_npc := npc_ini
         io.r_imem_dat.req := imem_read_sig
         valid_imem := false.B
-    }.elsewhen(io.sw.w_waitrequest_sig) {
+    }.elsewhen(wrequest) {
         if_pc := pc_ini
         if_npc := npc_ini
         io.r_imem_dat.req := false.B
@@ -185,7 +184,7 @@ class KyogenRVCpu extends Module {
     // judge if stall needed
     withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || io.sw.w_waitrequest_sig
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || wrequest
 
         io.sw.r_stall_sig := stall
     }
@@ -302,7 +301,7 @@ class KyogenRVCpu extends Module {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill && !io.sw.w_waitrequest_sig) {
+    when (!inst_kill && !wrequest) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
@@ -403,14 +402,15 @@ class KyogenRVCpu extends Module {
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
-    wb_npc := mem_npc
-    wb_ctrl := mem_ctrl
-    wb_reg_waddr := mem_reg_waddr
-    wb_alu_out := mem_alu_out
-    wb_dmem_read_ack := io.r_dmem_dat.ack
-    wb_csr_addr := mem_csr_addr
-    wb_csr_data := mem_csr_data
-
+    when (!wrequest) {
+        wb_npc := mem_npc
+        wb_ctrl := mem_ctrl
+        wb_reg_waddr := mem_reg_waddr
+        wb_alu_out := mem_alu_out
+        wb_dmem_read_ack := io.r_dmem_dat.ack
+        wb_csr_addr := mem_csr_addr
+        wb_csr_data := mem_csr_data
+    }
     val dmem_data: UInt = Wire(UInt(32.W))
     dmem_data := DontCare
 
@@ -709,6 +709,9 @@ object Test extends App {
                 val stallsig    = peek(c.io.sw.r_stall_sig)     // stall signal
                 if(lp > 3){
                     poke(c.io.sw.w_waitrequest_sig, value = false.B)
+                }
+                if(lp == 16){
+                    poke(c.io.sw.w_waitrequest_sig, value = true.B)
                 }
 
                 // if you need fire external interrupt signal uncomment below
