@@ -116,6 +116,7 @@ class KyogenRVCpu extends Module {
 
     val valid_imem: Bool = RegInit(true.B)
     val imem_wait: Bool = RegNext(io.sw.w_waitrequest_sig)
+    val dmem_wait: Bool = RegInit(io.sw.w_datawaitreq_sig)
     // -------- START: IF stage -------
     io.r_imem_dat.req := false.B
     when(!stall && !inst_kill) {
@@ -301,7 +302,7 @@ class KyogenRVCpu extends Module {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill /*&& !imem_wait*/) {
+    when (!inst_kill && !dmem_wait) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
@@ -395,14 +396,14 @@ class KyogenRVCpu extends Module {
     inst_kill_branch := (
       ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) || // branch
         (mem_ctrl.br_type === BR_JR) || // jalr
-        (mem_ctrl.br_type === BR_J) || // jal
-        (mem_ctrl.br_type === BR_RET) // mret / sret
+        (mem_ctrl.br_type === BR_J) ||  // jal
+        (mem_ctrl.br_type === BR_RET)   // mret / sret
       )
     inst_kill := (inst_kill_branch || csr.io.expt)
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
-    //when (!imem_wait) {
+    when (!dmem_wait) {
         wb_npc := mem_npc
         wb_ctrl := mem_ctrl
         wb_reg_waddr := mem_reg_waddr
@@ -410,7 +411,7 @@ class KyogenRVCpu extends Module {
         wb_dmem_read_ack := io.r_dmem_dat.ack
         wb_csr_addr := mem_csr_addr
         wb_csr_data := mem_csr_data
-    //}
+    }
     val dmem_data: UInt = Wire(UInt(32.W))
     dmem_data := DontCare
 
@@ -590,7 +591,7 @@ class CpuBus extends Module {
 
     // WAITREQUEST
     cpu.io.sw.w_waitrequest_sig <> io.sw.w_waitrequest_sig
-
+    cpu.io.sw.w_datawaitreq_sig <> io.sw.w_datawaitreq_sig
     w_pc        := io.sw.w_pc
 
     cpu.io.sw.halt  <> sw_halt
@@ -667,6 +668,7 @@ object Test extends App {
             step(1)
             poke(signal = c.io.sw.halt, value = true.B)
             poke(c.io.sw.w_waitrequest_sig, false.B)
+            poke(c.io.sw.w_datawaitreq_sig, false.B)
             step(1)
 
             for (addr <- 0 until buffs.length * 4 by 4) {
