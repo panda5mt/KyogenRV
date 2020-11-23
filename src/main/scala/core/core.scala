@@ -115,7 +115,7 @@ class KyogenRVCpu extends Module {
     // ----- END:startup logic for avalon-MM -----
 
     val valid_imem: Bool = RegInit(true.B)
-    val wrequest: Bool = RegNext(io.sw.w_waitrequest_sig)
+    val imem_wait: Bool = RegNext(io.sw.w_waitrequest_sig)
     // -------- START: IF stage -------
     io.r_imem_dat.req := false.B
     when(!stall && !inst_kill) {
@@ -128,7 +128,7 @@ class KyogenRVCpu extends Module {
         if_npc := npc_ini
         io.r_imem_dat.req := imem_read_sig
         valid_imem := false.B
-    }.elsewhen(wrequest) {
+    }.elsewhen(imem_wait) {
         if_pc := pc_ini
         if_npc := npc_ini
         io.r_imem_dat.req := false.B
@@ -184,7 +184,7 @@ class KyogenRVCpu extends Module {
     // judge if stall needed
     withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || wrequest
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || imem_wait
 
         io.sw.r_stall_sig := ex_inst
     }
@@ -301,7 +301,7 @@ class KyogenRVCpu extends Module {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill /*&& !wrequest*/) {
+    when (!inst_kill /*&& !imem_wait*/) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
@@ -402,7 +402,7 @@ class KyogenRVCpu extends Module {
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
-    //when (!wrequest) {
+    //when (!imem_wait) {
         wb_npc := mem_npc
         wb_ctrl := mem_ctrl
         wb_reg_waddr := mem_reg_waddr
