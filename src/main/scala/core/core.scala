@@ -197,7 +197,7 @@ class KyogenRVCpu extends Module {
         ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
-        ex_inst := idm.io.inst.bits
+        ex_inst := id_inst //idm.io.inst.bits
         ex_reg_raddr := id_raddr
         ex_reg_waddr := id_waddr
         ex_rs := id_rs
