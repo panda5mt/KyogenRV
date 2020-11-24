@@ -115,8 +115,8 @@ class KyogenRVCpu extends Module {
     // ----- END:startup logic for avalon-MM -----
 
     val valid_imem: Bool = RegInit(true.B)
-    val imem_wait: Bool = RegNext(io.sw.w_waitrequest_sig)
-    val dmem_wait: Bool = RegNext(io.sw.w_datawaitreq_sig)
+    val imem_wait: Bool = (io.sw.w_waitrequest_sig)
+    val dmem_wait: Bool = (io.sw.w_datawaitreq_sig)
     // -------- START: IF stage -------
     io.r_imem_dat.req := false.B
     when(!stall && !inst_kill) {
@@ -153,6 +153,10 @@ class KyogenRVCpu extends Module {
         id_pc := id_pc
         id_npc := id_npc
         id_inst := inst_nop//id_inst
+    }.otherwise {
+        id_pc := id_pc
+        id_npc := id_npc
+        id_inst := id_inst
     }
 
     val idm: IDModule = Module(new IDModule)
@@ -187,7 +191,7 @@ class KyogenRVCpu extends Module {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || imem_wait || dmem_wait
 
-        io.sw.r_stall_sig := id_inst
+        io.sw.r_stall_sig := ex_inst
     //}
     // -------- END: ID stage --------
 
