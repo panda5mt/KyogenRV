@@ -8,7 +8,7 @@ The Simple RISC-V KyogenRV(響玄RV)
     - Privileged ISA Version 1.11
 - Interrupt:External
 - Pipelines: 5-stage(IF/ID/EX/MEM/WB)
-- Written: in Chisel-lang v.3.3 + Makefile
+- Written: in Chisel-lang v.3.4 + Makefile
 
 ## I.Usage
 #### 1.Simulation

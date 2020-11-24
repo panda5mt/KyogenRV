@@ -7,7 +7,7 @@ The Simple RISC-V KyogenRV(響玄RV)
     - Privileged ISA Version 1.11
 - 割り込み:外部割り込み
 - パイプライン: 5ステージ(IF/ID/EX/MEM/WB stage)
-- 言語:Chisel v.3.3
+- 言語:Chisel v.3.4
 
 ## I.使い方
 #### 1.シミュレーション
