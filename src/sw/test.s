@@ -24,6 +24,6 @@
         sw      x2, 0(x1)       # dmem[0x2000] = 0xAA
         lw      x3, 0(x1)       # x3 = dmem[0x2000]
         addi    x3, x3, 1       # x3 = x3 + 1
-        sw      x3, 0(x1)       # dmem[0x8000] = x3
+        sw      x3, 0(x1)       # dmem[0x2000] = x3
 _loop:
         jal     x0, _loop       # loop

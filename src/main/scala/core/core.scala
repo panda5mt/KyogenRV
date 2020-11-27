@@ -142,12 +142,10 @@ class KyogenRVCpu extends Module {
 
     // -------- START: ID stage -------
 
-    val id_fifo: UInt = RegInit(0.U)
-    when(risingEdge(stall) && id_pc =/= pc_ini) {
-        id_fifo := io.r_imem_dat.data
-    }.elsewhen(fallingEdge(stall) && id_pc =/= pc_ini) {
-        id_fifo := 0.U
-    }
+    val re_stall: Bool = RegInit(false.B)
+    val fe_stall: Bool = RegInit(false.B)
+    re_stall := risingEdge(stall)
+    fe_stall := fallingEdge(stall)
 
     // iotesters: id_pc, id_inst
     when(!stall && !inst_kill && valid_imem) {
@@ -198,13 +196,13 @@ class KyogenRVCpu extends Module {
     //withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || imem_wait || dmem_wait
-        io.sw.r_stall_sig := id_fifo //stall
+        io.sw.r_stall_sig := ex_inst
     //}
     // -------- END: ID stage --------
 
 
     // -------- START: EX Stage --------
-    when(!stall && !inst_kill) {
+    when(!stall && !inst_kill && !fe_stall) {
         ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
@@ -500,8 +498,8 @@ class KyogenRVCpu extends Module {
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
-        }.elsewhen(risingEdge(stall) && ex_pc =/= pc_ini) {
-            pc_cntr := (pc_cntr - 4.U)
+        }.elsewhen(re_stall && pc_cntr =/= pc_ini) {
+            pc_cntr := pc_cntr - 4.U
         }
     }.otherwise { // halt mode
         // enable imem Write Operation
