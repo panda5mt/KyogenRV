@@ -39,7 +39,7 @@ while line:
     li_hexaddr = conv_hexlist(split_n(format(hex_start_addr,'04x'),2))
     checksum = (0 - (int(hex_byte_count) + sum(li_hexaddr) + int(hex_record_type) + sum(li_hexdata))) & 0xff
 
-    wr_hex = hex_start_code+hex_byte_count+hex_record_type+format(hex_start_addr,'04x')+hexdata+format(checksum,'02x')+'\n'
+    wr_hex = hex_start_code+hex_byte_count+format(hex_start_addr,'04x')+hex_record_type+hexdata+format(checksum,'02x')+'\n'
     fw.write(wr_hex)
 
     hex_start_addr = hex_start_addr + 1 #increment address
