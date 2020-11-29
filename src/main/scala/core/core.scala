@@ -149,10 +149,10 @@ class KyogenRVCpu extends Module {
     //    }.elsewhen(fallingEdge(stall) && id_pc =/= pc_ini) {
     //        id_fifo := inst_nop
     //    }
+    val stall_check: Bool = RegInit(false.B)
 
     val re_stall: Bool = RegInit(false.B)
     val fe_stall: Bool = RegInit(false.B)
-
     re_stall := risingEdge(stall)
     fe_stall := fallingEdge(stall)
 
@@ -503,6 +503,7 @@ class KyogenRVCpu extends Module {
         w_req := false.B
         when(!stall/* && io.r_imem_dat.req*/) {
             //r_req := r_req
+            stall_check := true.B
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
                 (mem_ctrl.br_type === BR_RET) -> csr.io.epc,
@@ -510,9 +511,9 @@ class KyogenRVCpu extends Module {
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
-        }.elsewhen(valid_imem && pc_cntr =/= pc_ini) {
+        }.elsewhen(stall_check === true.B && pc_cntr =/= pc_ini) { // stall
             pc_cntr := pc_cntr - 4.U
-
+            stall_check := false.B
         }
     }.otherwise { // halt mode
         // enable imem Write Operation
