@@ -144,6 +144,7 @@ class KyogenRVCpu extends Module {
 
     val re_stall: Bool = RegInit(false.B)
     val fe_stall: Bool = RegInit(false.B)
+
     re_stall := risingEdge(stall)
     fe_stall := fallingEdge(stall)
 
@@ -500,6 +501,7 @@ class KyogenRVCpu extends Module {
             ))
         }.elsewhen(re_stall && pc_cntr =/= pc_ini) {
             pc_cntr := pc_cntr - 4.U
+
         }
     }.otherwise { // halt mode
         // enable imem Write Operation
