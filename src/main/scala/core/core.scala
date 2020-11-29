@@ -203,7 +203,7 @@ class KyogenRVCpu extends Module {
     //withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || imem_wait || dmem_wait
-        io.sw.r_stall_sig := ex_inst
+        io.sw.r_stall_sig := id_fifo//ex_inst
     //}
     // -------- END: ID stage --------
 
