@@ -119,6 +119,7 @@ class KyogenRVCpu extends Module {
     val valid_imem: Bool = RegInit(true.B)
     val imem_wait: Bool = io.sw.w_waitrequest_sig
     val dmem_wait: Bool = io.sw.w_datawaitreq_sig
+
     // -------- START: IF stage -------
     io.r_imem_dat.req := false.B
     when(!stall && !inst_kill) {
@@ -142,7 +143,7 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: ID stage -------
-    val id_fifo: UInt = RegInit(0.U)
+//    val id_fifo: UInt = RegInit(0.U)
     //    when(risingEdge(stall) && id_pc =/= pc_ini) {
     //        id_fifo := io.r_imem_dat.data
     //    }.elsewhen(fallingEdge(stall) && id_pc =/= pc_ini) {
@@ -164,8 +165,6 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.elsewhen(stall && valid_imem){
-        id_fifo := io.r_imem_dat.data
     }.elsewhen(!valid_imem) {
         id_pc := id_pc
         id_npc := id_npc
@@ -206,7 +205,7 @@ class KyogenRVCpu extends Module {
     //withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
           ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || imem_wait || dmem_wait
-        io.sw.r_stall_sig := id_fifo//ex_inst
+        io.sw.r_stall_sig := ex_inst
     //}
     // -------- END: ID stage --------
 
@@ -236,9 +235,9 @@ class KyogenRVCpu extends Module {
         ex_csr_cmd := 0.U
         ex_j_check := false.B
         ex_b_check := false.B
-        when(fe_stall) {
-            ex_inst := id_fifo
-        }
+//        when(fe_stall) {
+//            ex_inst := id_fifo
+//        }
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
@@ -511,7 +510,7 @@ class KyogenRVCpu extends Module {
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
-        }.elsewhen(re_stall && pc_cntr =/= pc_ini) {
+        }.elsewhen(valid_imem && pc_cntr =/= pc_ini) {
             pc_cntr := pc_cntr - 4.U
 
         }

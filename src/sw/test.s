@@ -19,7 +19,12 @@
 #        jal     x0, _label2         # <0x30>
 
 
-        lui     x1, 0x02        # x1=0x2000
+        nop
+        nop
+        nop
+        nop
+
+        lui     x1, 0x08        # x1=0x2000
         li      x2, 0xAA        # x2 = 0xAA
         sw      x2, 0(x1)       # dmem[0x2000] = 0xAA
         lw      x3, 0(x1)       # x3 = dmem[0x2000]
