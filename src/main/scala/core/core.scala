@@ -141,6 +141,12 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: ID stage -------
+    val id_fifo: UInt = RegInit(0.U)
+    when(risingEdge(stall) && id_pc =/= pc_ini) {
+        id_fifo := io.r_imem_dat.data
+    }.elsewhen(fallingEdge(stall) && id_pc =/= pc_ini) {
+        id_fifo := inst_nop
+    }
 
     val re_stall: Bool = RegInit(false.B)
     val fe_stall: Bool = RegInit(false.B)
@@ -227,6 +233,9 @@ class KyogenRVCpu extends Module {
         ex_csr_cmd := 0.U
         ex_j_check := false.B
         ex_b_check := false.B
+        when(fe_stall) {
+            ex_inst := id_fifo
+        }
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
