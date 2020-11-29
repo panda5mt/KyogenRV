@@ -20,6 +20,7 @@ class KyogenRVCpu extends Module {
     val invClock: Clock = Wire(new Clock)
     invClock := (~clock.asUInt()(0)).asBool.asClock() // Clock reversed
     def risingEdge(x: Bool): Bool = x && !RegNext(x)
+
     def fallingEdge(x: Bool): Bool = !x && RegNext(x)
 
     // ------- START: pipeline registers --------
@@ -142,11 +143,11 @@ class KyogenRVCpu extends Module {
 
     // -------- START: ID stage -------
     val id_fifo: UInt = RegInit(0.U)
-    when(risingEdge(stall) && id_pc =/= pc_ini) {
-        id_fifo := io.r_imem_dat.data
-    }.elsewhen(fallingEdge(stall) && id_pc =/= pc_ini) {
-        id_fifo := inst_nop
-    }
+    //    when(risingEdge(stall) && id_pc =/= pc_ini) {
+    //        id_fifo := io.r_imem_dat.data
+    //    }.elsewhen(fallingEdge(stall) && id_pc =/= pc_ini) {
+    //        id_fifo := inst_nop
+    //    }
 
     val re_stall: Bool = RegInit(false.B)
     val fe_stall: Bool = RegInit(false.B)
@@ -163,6 +164,8 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
+    }.elsewhen(stall && valid_imem){
+        id_fifo := io.r_imem_dat.data
     }.elsewhen(!valid_imem) {
         id_pc := id_pc
         id_npc := id_npc
