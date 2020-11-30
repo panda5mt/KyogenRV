@@ -20,7 +20,6 @@ class KyogenRVCpu extends Module {
     val invClock: Clock = Wire(new Clock)
     invClock := (~clock.asUInt()(0)).asBool.asClock() // Clock reversed
     def risingEdge(x: Bool): Bool = x && !RegNext(x)
-
     def fallingEdge(x: Bool): Bool = !x && RegNext(x)
 
     // ------- START: pipeline registers --------
@@ -143,12 +142,6 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: ID stage -------
-//    val id_fifo: UInt = RegInit(0.U)
-    //    when(risingEdge(stall) && id_pc =/= pc_ini) {
-    //        id_fifo := io.r_imem_dat.data
-    //    }.elsewhen(fallingEdge(stall) && id_pc =/= pc_ini) {
-    //        id_fifo := inst_nop
-    //    }
     val stall_check: Bool = RegInit(false.B)
 
     val re_stall: Bool = RegInit(false.B)
@@ -236,9 +229,6 @@ class KyogenRVCpu extends Module {
         ex_csr_cmd := 0.U
         ex_j_check := false.B
         ex_b_check := false.B
-//        when(fe_stall) {
-//            ex_inst := id_fifo
-//        }
     }
 
     val ex_imm: SInt = ImmGen(ex_ctrl.imm_type, ex_inst)
@@ -502,8 +492,7 @@ class KyogenRVCpu extends Module {
     // -------- START: PC update --------
     when(io.sw.halt === false.B) {
         w_req := false.B
-        when(!stall/* && io.r_imem_dat.req*/) {
-            //r_req := r_req
+        when(!stall) {
             stall_check := true.B
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
