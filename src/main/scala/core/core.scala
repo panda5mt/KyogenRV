@@ -106,9 +106,9 @@ class KyogenRVCpu extends Module {
 
     //delay_stall is "cheat" logic to ready memory mapped logic.
     // stall 3 or 4 clock after reset.
-    val delay_stall: UInt = RegInit(0.U(3.W))
+    val delay_stall: UInt = RegInit(0.U(4.W))
     when(imem_read_sig === true.B) {
-        when(delay_stall =/= 6.U) {
+        when(delay_stall =/= 7.U) {
             delay_stall := delay_stall + 1.U
         }
     }.otherwise {
@@ -193,6 +193,7 @@ class KyogenRVCpu extends Module {
     val reg_f: RegRAM = new RegRAM
     val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read)
 
+
     // program counter check
     val pc_invalid: Bool = inst_kill_branch || (ex_pc === pc_ini)
 
@@ -204,7 +205,7 @@ class KyogenRVCpu extends Module {
     // judge if stall needed
     //withClock(invClock) {
         stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 6.U) || imem_wait || dmem_wait
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 7.U) || imem_wait || dmem_wait
         io.sw.r_stall_sig := ex_inst
     //}
     // -------- END: ID stage --------
@@ -511,7 +512,7 @@ class KyogenRVCpu extends Module {
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
-        }.elsewhen(stall_check === true.B && pc_cntr =/= pc_ini) { // stall
+        }.elsewhen(stall_check === true.B && pc_cntr =/= pc_ini && !inst_kill) { // stall
             pc_cntr := pc_cntr - 4.U
             stall_check := false.B
         }
