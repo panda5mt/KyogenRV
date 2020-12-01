@@ -184,7 +184,7 @@ class KyogenRVCpu extends Module {
 
     // read register data
     val reg_f: RegRAM = new RegRAM
-    val id_rs: IndexedSeq[UInt] = id_raddr.map(reg_f.read)
+    val id_rs: IndexedSeq[UInt] = IndexedSeq(reg_f.read(id_raddr1), reg_f.read(id_raddr2)) //id_raddr.map(reg_f.read)
 
 
     // program counter check
