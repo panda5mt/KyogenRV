@@ -178,13 +178,14 @@ class KyogenRVCpu extends Module {
     // get rs1,rs2,rd address(x0 - x31)
     val id_raddr1: UInt = idm.io.inst.rs1
     val id_raddr2: UInt = idm.io.inst.rs2
-    val id_raddr: IndexedSeq[UInt] = IndexedSeq(id_raddr1, id_raddr2) // rs1,2 :treat as 64bit-Addressed SRAM
+    //val id_raddr: IndexedSeq[UInt] = IndexedSeq(id_raddr1, id_raddr2) // rs1,2 :treat as 64bit-Addressed SRAM
     val id_waddr: UInt = idm.io.inst.rd // rd
     val id_csr_addr: UInt = idm.io.inst.csr // csr address
 
     // read register data
-    val reg_f: RegRAM = new RegRAM
-    val id_rs: IndexedSeq[UInt] = IndexedSeq(reg_f.read(id_raddr1), reg_f.read(id_raddr2)) //id_raddr.map(reg_f.read)
+    val rv32i_reg: Vec[UInt] = RegInit(VecInit(Seq.fill(32)(0.U(32.W)))) // x0 - x31:All zero initialized
+    val id_rs1: UInt = Mux(id_raddr1 === 0.U, 0.U, rv32i_reg(id_raddr1))
+    val id_rs2: UInt = Mux(id_raddr2 === 0.U, 0.U, rv32i_reg(id_raddr2))
 
 
     // program counter check
@@ -197,22 +198,29 @@ class KyogenRVCpu extends Module {
     val csr: CSR = Module(new CSR)
     // judge if stall needed
     //withClock(invClock) {
-        stall := ((ex_reg_waddr === id_raddr(0) || ex_reg_waddr === id_raddr(1)) &&
-          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) || (delay_stall =/= 7.U) || imem_wait || dmem_wait
-        io.sw.r_stall_sig := ex_inst
+        stall := ((ex_reg_waddr === id_raddr1 || ex_reg_waddr === id_raddr2) &&
+          ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
+          (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
+          (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
+          (delay_stall =/= 7.U) ||
+          imem_wait ||
+          dmem_wait
+        io.sw.r_stall_sig := stall//ex_inst
     //}
     // -------- END: ID stage --------
 
 
     // -------- START: EX Stage --------
-    when(!stall && !inst_kill && !fe_stall) {
+    when(!stall && !inst_kill /*&& !fe_stall*/) {
         ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
         ex_inst := id_inst //idm.io.inst.bits
-        ex_reg_raddr := id_raddr
+        ex_reg_raddr(0) := id_raddr1
+        ex_reg_raddr(1) := id_raddr2
         ex_reg_waddr := id_waddr
-        ex_rs := id_rs
+        ex_rs(0) := id_rs1
+        ex_rs(1) := id_rs2
         ex_csr_addr := id_csr_addr
         ex_csr_cmd := id_ctrl.csr_cmd
         ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
@@ -246,8 +254,6 @@ class KyogenRVCpu extends Module {
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0 && wb_ctrl.csr_cmd === CSR.N) -> wb_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.csr_cmd =/= CSR.N) -> wb_csr_data
-
-
     ))
     ex_reg_rs2_bypass := MuxCase(ex_rs(1), Seq(
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.csr_cmd =/= CSR.N) -> mem_csr_data,
@@ -467,7 +473,7 @@ class KyogenRVCpu extends Module {
 
 
 
-    withClock(invClock) {
+
         val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
         val rf_waddr: UInt = wb_reg_waddr
         val rf_wdata: UInt = MuxCase(wb_alu_out, Seq(
@@ -476,9 +482,11 @@ class KyogenRVCpu extends Module {
             (wb_ctrl.wb_sel === WB_CSR) -> wb_csr_data,
             (wb_ctrl.wb_sel === WB_MEM) -> dmem_data //0.U(32.W),
         ))
-
+    withClock(invClock) {
         when(rf_wen === REN_1) {
-            reg_f.write(rf_waddr, rf_wdata)
+            when(rf_waddr > 0.U && rf_waddr < 32.U) {
+                rv32i_reg(rf_waddr) := rf_wdata
+            }
         }
 
         // iotesters
@@ -501,10 +509,10 @@ class KyogenRVCpu extends Module {
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
-        }.elsewhen(stall_check === true.B && pc_cntr =/= pc_ini && !inst_kill) { // stall
+        }/*.elsewhen(stall_check === true.B && pc_cntr =/= pc_ini && !inst_kill) { // stall
             pc_cntr := pc_cntr - 4.U
             stall_check := false.B
-        }
+        }*/
     }.otherwise { // halt mode
         // enable imem Write Operation
         w_addr := io.sw.w_add //w_addr + 4.U(32.W)
@@ -537,10 +545,11 @@ class KyogenRVCpu extends Module {
     //r_data := io.r_imem_dat.data
 
     // x0 - x31
-    val v_radd = IndexedSeq(io.sw.g_add,0.U) // treat as 64bit-Addressed SRAM
+    //val v_radd = IndexedSeq(io.sw.g_add,0.U) // treat as 64bit-Addressed SRAM
     when (io.sw.halt === true.B){
-        val v_rs: IndexedSeq[UInt] = v_radd.map(reg_f.read)
-        io.sw.g_dat := v_rs(0)
+        io.sw.g_dat := rv32i_reg(io.sw.g_add)
+        //val v_rs: IndexedSeq[UInt] = v_radd.map(reg_f.read)
+        //io.sw.g_dat := v_rs(0)
     }.otherwise{
         io.sw.g_dat := 0.U
     }
@@ -643,21 +652,6 @@ class CpuBus extends Module {
     cpu.io.w_dmem_dat.byteenable    <> dmem.io.w_dmem_dat.byteenable
 
 }
-//noinspection ScalaStyle
-// x0 - x31
-class RegRAM {
-    val ram: Mem[UInt] = Mem(32, UInt(32.W))
-    // read process
-    def read(addr: UInt): UInt = {
-        Mux(addr === 0.U, 0.U, ram(addr))
-    }
-    // write process
-    def write(addr:UInt, data:UInt): WhenContext = {
-        when((addr > 0.U) && (addr < 32.U)) {
-            ram(addr) := data
-        }
-    }
-}
 
 //noinspection ScalaStyle
 object kyogenrv extends App {
@@ -732,7 +726,7 @@ object Test extends App {
                 }
 
                 // if you need fire external interrupt signal uncomment below
-                if(lp == 96){
+                if(lp == 98){
                     poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
                 }
                 else{
