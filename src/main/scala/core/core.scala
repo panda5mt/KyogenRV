@@ -122,7 +122,7 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: IF stage -------
-    io.r_imem_dat.req := false.B
+    io.r_imem_dat.req := DontCare
     when(!stall && !inst_kill && !waitrequest) {
         if_pc := pc_cntr
         if_npc := npc
@@ -133,13 +133,13 @@ class KyogenRVCpu extends Module {
         if_npc := npc_ini
         io.r_imem_dat.req := imem_read_sig
         valid_imem := false.B
-    }/*.elsewhen(waitrequest) {
-        if_pc := pc_ini
-        if_npc := npc_ini
+    }.elsewhen(waitrequest){
+        if_pc := if_pc
+        if_npc := if_npc
+        valid_imem := valid_imem
+    }.otherwise {
         io.r_imem_dat.req := false.B
-        valid_imem := false.B
-    }*/
-
+    }
     // -------- END: IF stage --------
 
 
@@ -718,7 +718,7 @@ object Test extends App {
                 }
 
                 // if you need fire external interrupt signal uncomment below
-                if(lp == 98){
+                if(lp == 98 || lp == 99){
                     poke(signal = c.io.sw.w_interrupt_sig, value = true.B)
                 }
                 else{
