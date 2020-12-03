@@ -471,9 +471,6 @@ class KyogenRVCpu extends Module {
         dmem_data := io.r_dmem_dat.data
     }
 
-
-
-
         val rf_wen: Bool = wb_ctrl.rf_wen // register write enable flag
         val rf_waddr: UInt = wb_reg_waddr
         val rf_wdata: UInt = MuxCase(wb_alu_out, Seq(
