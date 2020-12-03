@@ -118,20 +118,22 @@ class KyogenRVCpu extends Module {
     val valid_imem: Bool = RegInit(true.B)
     val imem_wait: Bool = io.sw.w_waitrequest_sig
     val dmem_wait: Bool = io.sw.w_datawaitreq_sig
+    val waitrequest: Bool = imem_wait || dmem_wait
+
 
     // -------- START: IF stage -------
     io.r_imem_dat.req := false.B
-    when(!stall && !inst_kill) {
+    when(!stall && !inst_kill && !waitrequest) {
         if_pc := pc_cntr
         if_npc := npc
         io.r_imem_dat.req := imem_read_sig
         valid_imem := true.B
-    }.elsewhen(inst_kill) {
+    }.elsewhen(inst_kill && !waitrequest) {
         if_pc := pc_ini
         if_npc := npc_ini
         io.r_imem_dat.req := imem_read_sig
         valid_imem := false.B
-    }.elsewhen(imem_wait) {
+    }.elsewhen(waitrequest) {
         if_pc := pc_ini
         if_npc := npc_ini
         io.r_imem_dat.req := false.B
@@ -144,21 +146,16 @@ class KyogenRVCpu extends Module {
     // -------- START: ID stage -------
     val stall_check: Bool = RegInit(false.B)
 
-    val re_stall: Bool = RegInit(false.B)
-    val fe_stall: Bool = RegInit(false.B)
-    re_stall := risingEdge(stall)
-    fe_stall := fallingEdge(stall)
-
     // iotesters: id_pc, id_inst
-    when(!stall && !inst_kill && valid_imem) {
+    when(!stall && !inst_kill && valid_imem && !waitrequest) {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
-    }.elsewhen(inst_kill) {
+    }.elsewhen(inst_kill && !waitrequest) {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.elsewhen(!valid_imem) {
+    }.elsewhen(!valid_imem && !waitrequest) {
         id_pc := id_pc
         id_npc := id_npc
         id_inst := inst_nop//id_inst
@@ -202,16 +199,14 @@ class KyogenRVCpu extends Module {
           ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
           (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
           (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
-          (delay_stall =/= 7.U) ||
-          imem_wait ||
-          dmem_wait
-        io.sw.r_stall_sig := stall//ex_inst
+          (delay_stall =/= 7.U) /*|| imem_wait || dmem_wait*/
+        io.sw.r_stall_sig := ex_inst
     //}
     // -------- END: ID stage --------
 
 
     // -------- START: EX Stage --------
-    when(!stall && !inst_kill /*&& !fe_stall*/) {
+    when(!stall && !inst_kill && !waitrequest) {
         ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
@@ -225,7 +220,7 @@ class KyogenRVCpu extends Module {
         ex_csr_cmd := id_ctrl.csr_cmd
         ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
         ex_b_check := (id_ctrl.br_type > 3.U)
-    }.otherwise {
+    }.elsewhen((stall || inst_kill) && !waitrequest){
         ex_pc := pc_ini
         ex_npc := npc_ini
         ex_ctrl := nop_ctrl
@@ -320,7 +315,7 @@ class KyogenRVCpu extends Module {
     // -------- END: EX Stage --------
 
     // -------- START: MEM Stage --------
-    when (!inst_kill && !dmem_wait) {
+    when (!inst_kill && !waitrequest) {
         mem_pc          := ex_pc
         mem_npc         := ex_npc
         mem_ctrl        := ex_ctrl
@@ -333,7 +328,7 @@ class KyogenRVCpu extends Module {
         mem_csr_addr    := ex_csr_addr
         mem_csr_data    := csr.io.out
 
-    } .elsewhen(inst_kill) {
+    } .elsewhen(inst_kill && !waitrequest) {
         mem_pc          := pc_ini
         mem_npc         := npc_ini
         mem_ctrl        := nop_ctrl
@@ -421,7 +416,7 @@ class KyogenRVCpu extends Module {
     // -------- END: MEM Stage --------
 
     // -------- START: WB Stage --------
-    when (!dmem_wait) {
+    when (!waitrequest) {
         wb_npc := mem_npc
         wb_ctrl := mem_ctrl
         wb_reg_waddr := mem_reg_waddr
@@ -497,7 +492,7 @@ class KyogenRVCpu extends Module {
     // -------- START: PC update --------
     when(io.sw.halt === false.B) {
         w_req := false.B
-        when(!stall) {
+        when(!stall && !waitrequest) {
             stall_check := true.B
             pc_cntr := MuxCase(npc, Seq(
                 csr.io.expt -> csr.io.evec,
