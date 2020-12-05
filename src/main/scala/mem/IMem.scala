@@ -43,7 +43,7 @@ class IMem extends Module {
 
 
     io.w_imem_dat.ack   := w_ack
-    io.r_imem_dat.data  := 0xFFFFFFFFL.U//DontCare
+    io.r_imem_dat.data  := DontCare//0xFFFFFFFFL.U//DontCare
     io.r_imem_dat.ack   := r_ack
 
     // read operation
@@ -70,6 +70,12 @@ class IMem extends Module {
         w_ack := true.B
         r_ack := false.B
     }.otherwise{
+        io.r_imem_dat.data  := Cat(
+            mem_3.read(addr_align),
+            mem_2.read(addr_align),
+            mem_1.read(addr_align),
+            mem_0.read(addr_align)
+        )
         w_ack := false.B
         r_ack := false.B
     }
