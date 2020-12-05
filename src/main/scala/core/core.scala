@@ -120,25 +120,25 @@ class KyogenRVCpu extends Module {
     val dmem_wait: Bool = io.sw.w_datawaitreq_sig
     val waitrequest: Bool = imem_wait || dmem_wait
 
-
     // -------- START: IF stage -------
     io.r_imem_dat.req := DontCare
     when(!stall && !inst_kill && !waitrequest) {
         if_pc := pc_cntr
         if_npc := npc
-        io.r_imem_dat.req := imem_read_sig
-        valid_imem := true.B
+        io.r_imem_dat.req := RegNext(imem_read_sig)
+        valid_imem :=  RegNext(true.B)
     }.elsewhen(inst_kill && !waitrequest) {
         if_pc := pc_ini
         if_npc := npc_ini
-        io.r_imem_dat.req := imem_read_sig
-        valid_imem := false.B
+        io.r_imem_dat.req := RegNext(imem_read_sig)
+        valid_imem :=  RegNext(false.B)
     }.elsewhen(waitrequest){
         if_pc := if_pc
         if_npc := if_npc
-        valid_imem := valid_imem
+        valid_imem := RegNext(false.B)//valid_imem
     }.otherwise {
-        io.r_imem_dat.req := false.B
+        //valid_imem := RegNext(false.B)//valid_imem
+        io.r_imem_dat.req := RegNext(false.B)
     }
     // -------- END: IF stage --------
 
@@ -203,7 +203,7 @@ class KyogenRVCpu extends Module {
           (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
           (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
           (delay_stall =/= 7.U) /*|| imem_wait || dmem_wait*/
-        io.sw.r_stall_sig := id_fifo //ex_inst
+        io.sw.r_stall_sig := id_fifo// ex_inst
     //}
     // -------- END: ID stage --------
 
@@ -498,16 +498,16 @@ class KyogenRVCpu extends Module {
         when(!stall && !waitrequest) {
             stall_check := true.B
             pc_cntr := MuxCase(npc, Seq(
+                //(stall_check === false.B && pc_cntr =/= pc_ini && !inst_kill) -> (pc_cntr - 4.U),
                 csr.io.expt -> csr.io.evec,
                 (mem_ctrl.br_type === BR_RET) -> csr.io.epc,
                 ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
-        }/*.elsewhen(stall_check === true.B && pc_cntr =/= pc_ini && !inst_kill) { // stall
-            pc_cntr := pc_cntr - 4.U
+        }.otherwise {
             stall_check := false.B
-        }*/
+        }
     }.otherwise { // halt mode
         // enable imem Write Operation
         w_addr := io.sw.w_add //w_addr + 4.U(32.W)
