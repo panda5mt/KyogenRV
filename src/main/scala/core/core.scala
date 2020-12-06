@@ -135,7 +135,7 @@ class KyogenRVCpu extends Module {
     }.elsewhen(waitrequest){
         if_pc := if_pc
         if_npc := if_npc
-        valid_imem := RegNext(false.B)//valid_imem
+        //valid_imem := RegNext(false.B)//valid_imem
     }.otherwise {
         //valid_imem := RegNext(false.B)//valid_imem
         io.r_imem_dat.req := RegNext(false.B)
