@@ -135,7 +135,7 @@ class KyogenRVCpu extends Module {
     }.elsewhen(waitrequest){
         if_pc := if_pc
         if_npc := if_npc
-        //valid_imem := RegNext(false.B)//valid_imem
+        valid_imem := RegNext(false.B)//valid_imem
     }.otherwise {
         //valid_imem := RegNext(false.B)//valid_imem
         io.r_imem_dat.req := RegNext(false.B)
@@ -159,8 +159,10 @@ class KyogenRVCpu extends Module {
         id_pc := id_pc
         id_npc := id_npc
         id_inst := inst_nop//id_inst
-    }.elsewhen(!inst_kill && valid_imem){ // stall or waitreruest but vaild_imem
+    }.elsewhen(!inst_kill && valid_imem) { // stall or waitreruest but vaild_imem
         id_fifo := if_pc //io.r_imem_dat.data
+        id_inst := io.r_imem_dat.data
+        id_pc   := if_pc
     }.otherwise {
         id_pc := id_pc
         id_npc := id_npc
@@ -203,7 +205,7 @@ class KyogenRVCpu extends Module {
           (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
           (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
           (delay_stall =/= 7.U) /*|| imem_wait || dmem_wait*/
-        io.sw.r_stall_sig := id_fifo// ex_inst
+        io.sw.r_stall_sig := ex_inst
     //}
     // -------- END: ID stage --------
 
@@ -498,14 +500,14 @@ class KyogenRVCpu extends Module {
         when(!stall && !waitrequest) {
             stall_check := true.B
             pc_cntr := MuxCase(npc, Seq(
-                //(stall_check === false.B && pc_cntr =/= pc_ini && !inst_kill) -> (pc_cntr - 4.U),
+               // (stall_check === false.B && pc_cntr =/= pc_ini && !inst_kill) -> (pc_cntr),
                 csr.io.expt -> csr.io.evec,
                 (mem_ctrl.br_type === BR_RET) -> csr.io.epc,
                 ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
                 (mem_ctrl.br_type === BR_J) -> mem_alu_out,
                 (mem_ctrl.br_type === BR_JR) -> mem_alu_out
             ))
-        }.otherwise {
+        }.elsewhen(stall) {
             stall_check := false.B
         }
     }.otherwise { // halt mode
