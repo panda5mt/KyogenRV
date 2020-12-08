@@ -20,6 +20,7 @@ class KyogenRVCpu extends Module {
     val invClock: Clock = Wire(new Clock)
     invClock := (~clock.asUInt()(0)).asBool.asClock() // Clock reversed
     def risingEdge(x: Bool): Bool = x && !RegNext(x)
+
     def fallingEdge(x: Bool): Bool = !x && RegNext(x)
 
     // ------- START: pipeline registers --------
@@ -126,18 +127,18 @@ class KyogenRVCpu extends Module {
         if_pc := pc_cntr
         if_npc := npc
         io.r_imem_dat.req := RegNext(imem_read_sig)
-        valid_imem :=  RegNext(true.B)
+        valid_imem := RegNext(true.B)
     }.elsewhen(inst_kill && !waitrequest) {
         if_pc := pc_ini
         if_npc := npc_ini
         io.r_imem_dat.req := RegNext(imem_read_sig)
-        valid_imem :=  RegNext(false.B)
-    }.elsewhen(waitrequest){
+        valid_imem := RegNext(false.B)
+    }.elsewhen(waitrequest) {
         if_pc := if_pc
         if_npc := if_npc
-        valid_imem := RegNext(false.B)//valid_imem
+        valid_imem := RegNext(false.B) //valid_imem
     }.otherwise {
-        //valid_imem := RegNext(false.B)//valid_imem
+        valid_imem := RegNext(false.B)//valid_imem
         io.r_imem_dat.req := RegNext(false.B)
     }
     // -------- END: IF stage --------
@@ -145,9 +146,16 @@ class KyogenRVCpu extends Module {
 
     // -------- START: ID stage -------
     val stall_check: Bool = RegInit(false.B)
-    val id_fifo: UInt = RegInit(inst_nop)
+    val id_inst_temp: UInt = RegInit(inst_nop)
+    val id_pc_temp: UInt = RegInit(pc_ini)
+    val id_npc_temp: UInt = RegInit(npc_ini)
+
     // iotesters: id_pc, id_inst
-    when(!stall && !inst_kill && valid_imem && !waitrequest) {
+    when((stall || waitrequest) && !inst_kill && valid_imem) {
+        id_pc_temp := if_pc //io.r_imem_dat.data
+        id_npc_temp := if_npc
+        id_inst_temp := io.r_imem_dat.data
+    }.elsewhen(!stall && !waitrequest && !inst_kill && valid_imem) {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
@@ -155,14 +163,14 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-    }.elsewhen(!valid_imem && !waitrequest) {
-        id_pc := id_pc
-        id_npc := id_npc
-        id_inst := inst_nop//id_inst
-    }.elsewhen(!inst_kill && valid_imem) { // stall or waitreruest but vaild_imem
-        id_fifo := if_pc //io.r_imem_dat.data
-        id_inst := io.r_imem_dat.data
-        id_pc   := if_pc
+    }.elsewhen(!stall && !valid_imem && !inst_kill && !waitrequest) {
+        id_pc := id_pc_temp
+        id_npc := id_npc_temp
+        id_inst := id_inst_temp
+        //reset  temp
+        id_pc_temp := pc_ini
+        id_npc_temp := npc_ini
+        id_inst_temp := inst_nop
     }.otherwise {
         id_pc := id_pc
         id_npc := id_npc
@@ -500,7 +508,6 @@ class KyogenRVCpu extends Module {
         when(!stall && !waitrequest) {
             stall_check := true.B
             pc_cntr := MuxCase(npc, Seq(
-               // (stall_check === false.B && pc_cntr =/= pc_ini && !inst_kill) -> (pc_cntr),
                 csr.io.expt -> csr.io.evec,
                 (mem_ctrl.br_type === BR_RET) -> csr.io.epc,
                 ((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out) -> (mem_pc + mem_imm.asUInt),
