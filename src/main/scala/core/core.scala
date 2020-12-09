@@ -20,7 +20,6 @@ class KyogenRVCpu extends Module {
     val invClock: Clock = Wire(new Clock)
     invClock := (~clock.asUInt()(0)).asBool.asClock() // Clock reversed
     def risingEdge(x: Bool): Bool = x && !RegNext(x)
-
     def fallingEdge(x: Bool): Bool = !x && RegNext(x)
 
     // ------- START: pipeline registers --------
