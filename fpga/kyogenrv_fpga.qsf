@@ -1,0 +1,743 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 2020  Intel Corporation. All rights reserved.
+# Your use of Intel Corporation's design tools, logic functions 
+# and other software and tools, and any partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Intel Program License 
+# Subscription Agreement, the Intel Quartus Prime License Agreement,
+# the Intel FPGA IP License Agreement, or other applicable license
+# agreement, including, without limitation, that your use is for
+# the sole purpose of programming logic devices manufactured by
+# Intel and sold by Intel or its authorized distributors.  Please
+# refer to the applicable agreement for further details, at
+# https://fpgasoftware.intel.com/eula.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus Prime
+# Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
+# Date created = 16:02:19  October 09, 2020
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		kyogenrv_fpga_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Altera recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus Prime software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "Cyclone 10 LP"
+set_global_assignment -name DEVICE 10CL025YU256C8G
+set_global_assignment -name TOP_LEVEL_ENTITY kyogenrv_fpga_top
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 20.1.0
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "16:02:19  OCTOBER 09, 2020"
+set_global_assignment -name LAST_QUARTUS_VERSION "20.1.1 Lite Edition"
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_global_assignment -name DEVICE_FILTER_PACKAGE UFBGA
+set_global_assignment -name DEVICE_FILTER_PIN_COUNT 256
+set_global_assignment -name DEVICE_FILTER_SPEED_GRADE 8
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name QIP_FILE pll.qip
+set_global_assignment -name QSYS_FILE kyogenrv_fpga.qsys
+set_global_assignment -name SYSTEMVERILOG_FILE kyogenrv_fpga_top.sv
+set_global_assignment -name ENABLE_OCT_DONE OFF
+set_global_assignment -name USE_CONFIGURATION_DEVICE OFF
+set_global_assignment -name CRC_ERROR_OPEN_DRAIN OFF
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -rise
+set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -fall
+set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -rise
+set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -fall
+set_location_assignment PIN_J16 -to reset
+set_location_assignment PIN_L16 -to pio[0]
+set_location_assignment PIN_L15 -to pio[1]
+set_location_assignment PIN_M16 -to CY10_CLK_24M
+set_global_assignment -name ENABLE_SIGNALTAP ON
+set_global_assignment -name USE_SIGNALTAP_FILE output_files/kyogenrv_stap.stp
+set_global_assignment -name HEX_FILE chisel_generated/test_intel.hex
+set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
+set_instance_assignment -name GLOBAL_SIGNAL GLOBAL_CLOCK -to "pll:pll0|c0"
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "pll:pll0|c0" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_waitrequest" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[66] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[67] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[68] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[69] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[70] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[71] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[72] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[73] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[74] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[75] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[76] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[77] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[78] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[79] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[80] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[81] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[82] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[83] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[84] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[85] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[86] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[87] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[88] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[89] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[90] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[91] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[92] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[93] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[94] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[95] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[96] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[97] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_waitrequest" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[98] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[99] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[100] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[101] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[102] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[103] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[104] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[105] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[106] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[107] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[108] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[109] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[110] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[111] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[112] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[113] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[114] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[115] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[116] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[117] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[118] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[119] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[120] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[121] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[122] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[123] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[124] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[125] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[126] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[127] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[128] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[129] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[130] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[131] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data_req" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[132] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[133] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[134] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[135] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[136] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[137] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[138] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[139] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[140] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[141] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[142] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[143] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[144] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[145] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[146] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[147] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[148] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[149] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[150] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[151] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[152] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[153] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[154] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[155] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[156] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[157] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[158] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[159] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[160] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[161] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[162] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[163] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[164] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[165] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data_req" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[166] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[167] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[168] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[169] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[170] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[171] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[172] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[173] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[174] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[175] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[176] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[177] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[178] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[179] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[180] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[181] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[182] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[183] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[184] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[185] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[186] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[187] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[188] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[189] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[190] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[191] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[192] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[193] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[194] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[195] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[196] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[197] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[198] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data_req" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[199] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|waitrequest" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[200] -to "kyogenrv_fpga:u0|reset_reset_n" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_waitrequest" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[66] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[67] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[68] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[69] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[70] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[71] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[72] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[73] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[74] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[75] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[76] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[77] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[78] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[79] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[80] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[81] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[82] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[83] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[84] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[85] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[86] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[87] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[88] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[89] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[90] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[91] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[92] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[93] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[94] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[95] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[96] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[97] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_waitrequest" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[98] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[99] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[100] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[101] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[102] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[103] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[104] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[105] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[106] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[107] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[108] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[109] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[110] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[111] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[112] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[113] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[114] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[115] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[116] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[117] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[118] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[119] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[120] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[121] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[122] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[123] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[124] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[125] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[126] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[127] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[128] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[129] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[130] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[131] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data_req" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[132] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[133] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[134] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[135] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[136] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[137] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[138] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[139] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[140] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[141] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[142] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[143] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[144] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[145] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[146] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[147] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[148] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[149] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[150] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[151] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[152] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[153] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[154] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[155] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[156] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[157] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[158] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[159] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[160] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[161] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[162] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[163] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[164] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[165] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data_req" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[166] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[167] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[168] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[169] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[170] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[171] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[172] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[173] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[174] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[175] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[176] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[177] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[178] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[179] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[180] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[181] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[182] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[183] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[184] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[185] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[186] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[187] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[188] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[189] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[190] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[191] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[192] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[193] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[194] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[195] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[196] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[197] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[198] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data_req" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[199] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|waitrequest" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[200] -to "kyogenrv_fpga:u0|reset_reset_n" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[0] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[1] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[2] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[3] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[4] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[5] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[6] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[7] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[8] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[9] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[10] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[11] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[12] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[13] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[14] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[15] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[16] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[17] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[18] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[19] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[20] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[21] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[22] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[23] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[24] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[25] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[26] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[27] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[28] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[29] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[30] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[31] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_addr[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[32] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|dmem_waitrequest" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[33] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[34] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[35] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[36] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[37] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[38] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[39] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[40] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[41] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[42] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[43] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[44] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[45] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[46] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[47] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[48] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[49] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[50] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[51] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[52] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[53] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[54] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[55] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[56] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[57] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[58] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[59] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[60] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[61] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[62] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[63] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[64] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|ex_inst[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[65] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[66] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[67] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[68] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[69] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[70] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[71] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[72] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[73] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[74] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[75] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[76] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[77] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[78] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[79] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[80] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[81] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[82] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[83] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[84] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[85] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[86] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[87] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[88] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[89] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[90] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[91] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[92] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[93] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[94] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[95] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[96] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_addr[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[97] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|imem_waitrequest" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[98] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[99] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[100] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[101] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[102] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[103] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[104] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[105] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[106] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[107] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[108] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[109] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[110] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[111] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[112] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[113] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[114] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[115] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[116] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[117] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[118] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[119] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[120] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[121] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[122] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[123] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[124] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[125] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[126] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[127] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[128] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[129] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[130] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[131] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_dmem_data_req" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[132] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[133] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[134] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[135] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[136] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[137] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[138] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[139] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[140] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[141] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[142] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[143] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[144] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[145] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[146] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[147] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[148] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[149] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[150] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[151] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[152] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[153] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[154] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[155] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[156] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[157] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[158] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[159] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[160] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[161] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[162] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[163] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[164] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data_ack" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[165] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|r_imem_data_req" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[166] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[0]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[167] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[10]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[168] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[11]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[169] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[12]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[170] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[13]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[171] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[14]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[172] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[15]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[173] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[16]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[174] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[17]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[175] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[18]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[176] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[19]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[177] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[1]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[178] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[20]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[179] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[21]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[180] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[22]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[181] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[23]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[182] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[24]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[183] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[25]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[184] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[26]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[185] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[27]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[186] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[28]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[187] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[29]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[188] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[2]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[189] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[30]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[190] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[31]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[191] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[3]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[192] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[4]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[193] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[5]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[194] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[6]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[195] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[7]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[196] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[8]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[197] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data[9]" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[198] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|w_dmem_data_req" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[199] -to "kyogenrv_fpga:u0|kyogenrv_fpga_avalonMM:kyogenrv_0|waitrequest" -section_id auto_signaltap_0
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_storage_qualifier_in[200] -to "kyogenrv_fpga:u0|reset_reset_n" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=201" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=201" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=201" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334528" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=829" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=202" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=1024" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_GAP_RECORD=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_MODE=TRANSITIONAL" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to auto_signaltap_0|vcc -section_id auto_signaltap_0
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to auto_signaltap_0|gnd -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=1024" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id auto_signaltap_0
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id auto_signaltap_0
+set_global_assignment -name SIGNALTAP_FILE output_files/kyogenrv_stap.stp
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name SLD_FILE db/kyogenrv_stap_auto_stripped.stp
