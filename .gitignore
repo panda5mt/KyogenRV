@@ -175,11 +175,12 @@ tramp
 # AUCTeX auto folder
 /auto/
 # Quartus folder
-/fpga/
+/fpga/*
+!chisel_generated
 /fpga/db
 /db/
 /fpga/incremental_db
-/fpga/kyogenrv_fpga/*
+
 /incremental_db/
 *.tdf
 *.cdb
