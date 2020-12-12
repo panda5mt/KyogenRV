@@ -20,7 +20,6 @@ class KyogenRVCpu extends Module {
     val invClock: Clock = Wire(new Clock)
     invClock := (~clock.asUInt()(0)).asBool.asClock() // Clock reversed
     def risingEdge(x: Bool): Bool = x && !RegNext(x)
-
     def fallingEdge(x: Bool): Bool = !x && RegNext(x)
 
     // ------- START: pipeline registers --------
@@ -154,11 +153,6 @@ class KyogenRVCpu extends Module {
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
-        // reset
-        //id_pc := id_pc
-        //id_npc := id_npc
-        //id_inst := id_inst
-
     }.elsewhen(!stall && !waitrequest && !inst_kill && valid_imem) {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
@@ -168,21 +162,20 @@ class KyogenRVCpu extends Module {
         id_npc := npc_ini
         id_inst := inst_nop
     }.elsewhen(!stall && !valid_imem && !inst_kill && !waitrequest) {
-        when (if_pc === id_pc_temp) {
-            id_pc := id_pc_temp
-            id_npc := id_npc_temp
-            id_inst := id_inst_temp
-        }
-        //reset  temp
-        id_pc_temp := pc_ini
-        id_npc_temp := npc_ini
-        id_inst_temp := inst_nop
+        id_pc := id_pc_temp
+        id_npc := id_npc_temp
+        id_inst := id_inst_temp
     }.otherwise {
         id_pc := id_pc
         id_npc := id_npc
         id_inst := id_inst
     }
 
+    when(inst_kill) {
+        id_pc_temp      := pc_ini
+        id_npc_temp     := npc_ini
+        id_inst_temp    := inst_nop
+    }
 
     val idm: IDModule = Module(new IDModule)
     idm.io.imem := id_inst
