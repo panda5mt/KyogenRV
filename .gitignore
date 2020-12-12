@@ -178,6 +178,13 @@ tramp
 /fpga/*
 !chisel_generated
 !avm_module
+!*.qsys
+!*.qsf
+!*.sdc
+!*.srf
+!*.sv
+!*.sopcinfo
+
 /fpga/db
 /db/
 /fpga/incremental_db
