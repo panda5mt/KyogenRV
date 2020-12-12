@@ -177,6 +177,7 @@ tramp
 # Quartus folder
 /fpga/*
 !chisel_generated
+!avm_module
 /fpga/db
 /db/
 /fpga/incremental_db
