@@ -180,6 +180,7 @@ tramp
 !avm_module
 !*.qsys
 !*.qsf
+!*.qpf
 !*.sdc
 !*.srf
 !*.sv
@@ -207,7 +208,6 @@ tramp
 *.un~
 Session.vim
 .netrwhist
-*~
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio
 
