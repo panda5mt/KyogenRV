@@ -183,7 +183,10 @@ tramp
 !*.sdc
 !*.srf
 !*.sv
+!*.v
+!*.qip
 !*.sopcinfo
+!*.pin
 
 /fpga/db
 /db/
