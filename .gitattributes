@@ -1,1 +1,1 @@
-fpga/*.v linguist-generated=true
+*.v linguist-generated=true
