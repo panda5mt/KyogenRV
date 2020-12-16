@@ -18,8 +18,8 @@
 #        addi    x6,  x0, 0xCC       # <0x2C>
 #        jal     x0, _label2         # <0x30>
 
-        nop
-        nop
+#        nop
+#        nop
         lui     x1, 0x08        # x1 = 0x8000
 _loop0:
         csrr    x2, time        # x2 = time (oldtime)
@@ -42,5 +42,14 @@ _loop3:
         jal     x0, _loop0
 
 
+
+#    lui     x1, 0x08
+#    li      x2, 0xAA
+#    sw      x2, 0(x1)
+#    lw      x3, 0(x1)
+#    addi    x3, x3, 1
+#    sw      x3, 0(x1)
+#_loop1:
+#    jal     x0, _loop1
 
 
