@@ -138,7 +138,7 @@ class KyogenRVCpu extends Module {
         valid_imem := RegNext(false.B) //valid_imem
     }.otherwise {
         valid_imem := RegNext(false.B) //valid_imem
-        io.r_imem_dat.req := RegNext(false.B)
+        //io.r_imem_dat.req := RegNext(false.B)
     }
     // -------- END: IF stage --------
 
@@ -534,24 +534,23 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: PC update --------
-    when(io.sw.halt === false.B) {
-        w_req := false.B
-        when(!stall && !waitrequest) {
-            pc_cntr := Mux(csr.io.expt, csr.io.evec,
-                Mux(mem_ctrl.br_type === BR_RET, csr.io.epc,
-                    Mux((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out, mem_pc + mem_imm.asUInt,
-                        Mux(mem_ctrl.br_type === BR_J, mem_alu_out,
-                            Mux(mem_ctrl.br_type === BR_JR, mem_alu_out, npc)
-                        ))))
+        when(io.sw.halt === false.B) {
+            w_req := false.B
+            when(!stall && !waitrequest) {
+                pc_cntr := Mux(csr.io.expt, csr.io.evec,
+                    Mux(mem_ctrl.br_type === BR_RET, csr.io.epc,
+                        Mux((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out, mem_pc + mem_imm.asUInt,
+                            Mux(mem_ctrl.br_type === BR_J, mem_alu_out,
+                                Mux(mem_ctrl.br_type === BR_JR, mem_alu_out, npc)
+                            ))))
+            }
+        }.otherwise { // halt mode
+            // enable imem Write Operation
+            w_addr := io.sw.w_add //w_addr + 4.U(32.W)
+            w_data := io.sw.w_dat
+            w_req := true.B
+            pc_cntr := io.sw.w_pc
         }
-    }.otherwise { // halt mode
-        // enable imem Write Operation
-        w_addr := io.sw.w_add //w_addr + 4.U(32.W)
-        w_data := io.sw.w_dat
-        w_req := true.B
-        pc_cntr := io.sw.w_pc
-    }
-
 
     // for imem test
     io.sw.r_dat  := id_inst//io.r_imem_dat.data
@@ -563,7 +562,7 @@ class KyogenRVCpu extends Module {
     when(w_req){    // write request
         io.imem_add.addr    := w_addr
     }.otherwise{
-        io.imem_add.addr    := pc_cntr
+        io.imem_add.addr := pc_cntr
     }
 
     // write process
@@ -576,11 +575,8 @@ class KyogenRVCpu extends Module {
     //r_data := io.r_imem_dat.data
 
     // x0 - x31
-    //val v_radd = IndexedSeq(io.sw.g_add,0.U) // treat as 64bit-Addressed SRAM
     when (io.sw.halt === true.B){
         io.sw.g_dat := rv32i_reg(io.sw.g_add)
-        //val v_rs: IndexedSeq[UInt] = v_radd.map(reg_f.read)
-        //io.sw.g_dat := v_rs(0)
     }.otherwise{
         io.sw.g_dat := 0.U
     }
