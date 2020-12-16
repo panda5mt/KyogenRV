@@ -9,10 +9,10 @@ module kyogenrv_fpga_avalonMM (
 	input				r_imem_data_ack,
 	input	[31:0]		r_imem_data,
 	
-	output				w_imem_data_req,
+	//output				w_imem_data_req,
 	//output	[31:0]	w_imem_addr,
 	//input	      		w_imem_data_ack,
-	output	[31:0]		w_imem_data,
+	//output	[31:0]		w_imem_data,
 	output	[3:0]		w_imem_data_byteenable,
 	input				imem_waitrequest,
 
@@ -61,9 +61,9 @@ KyogenRVCpu krv(
   /*input        */ .io_r_imem_dat_ack			(r_imem_data_ack),
   /*input  [31:0]*/ .io_r_imem_dat_data			(r_imem_data),
   
-  /*output       */ .io_w_imem_dat_req			(/*w_imem_data_req*/),
-  /*input        */ .io_w_imem_dat_ack			(1'b0),
-  /*output [31:0]*/ .io_w_imem_dat_data			(/*w_imem_data*/),
+  ///*output       */ .io_w_imem_dat_req			(/*w_imem_data_req*/),
+  ////*input        */ .io_w_imem_dat_ack			(1'b0),
+  ///*output [31:0]*/ .io_w_imem_dat_data			(/*w_imem_data*/),
   /*output [3:0] */ .io_w_imem_dat_byteenable	(w_imem_data_byteenable),
   
   /*output       */ .io_r_dmem_dat_req			(r_dmem_data_req),
