@@ -122,7 +122,7 @@ then build test module in chisel project as follows
 ```
 make test
 ```
-when you modified <code>[src/sw/test.hex](src/sw/test.hex)</code>, just type as follows
+when you modified <code>[src/sw/test.s](src/sw/test.s)</code>, just type as follows
 ```
 make test
 ```
