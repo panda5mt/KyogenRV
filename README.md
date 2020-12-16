@@ -1,4 +1,4 @@
-The Simple RISC-V KyogenRV(響玄RV)
+KyogenRV(響玄RV):The Simple RISC-V for intel FPGA
 =======================
 ## 5-Stage Pipelined RV32I written in Chisel.
 ##### 日本語のREADMEは[こちら](README_J.md)
@@ -7,6 +7,7 @@ The Simple RISC-V KyogenRV(響玄RV)
     - User-Level ISA Version 2.2
     - Privileged ISA Version 1.11
 - Interrupt:External
+- CPU Bus: Intel Avalon-MM Interface
 - Pipelines: 5-stage(IF/ID/EX/MEM/WB)
 - Written: in Chisel-lang v.3.4 + Makefile
 

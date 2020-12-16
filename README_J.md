@@ -1,4 +1,4 @@
-The Simple RISC-V KyogenRV(響玄RV)
+KyogenRV(響玄RV):The Simple RISC-V for intel FPGA
 =======================
 ##### English README is [here](README.md)
 - アーキテクチャ:RV32I
@@ -6,6 +6,7 @@ The Simple RISC-V KyogenRV(響玄RV)
     - User-Level ISA Version 2.2
     - Privileged ISA Version 1.11
 - 割り込み:外部割り込み
+- CPUバス:インテル Avalon-MM インターフェース
 - パイプライン: 5ステージ(IF/ID/EX/MEM/WB stage)
 - 言語:Chisel v.3.4
 
