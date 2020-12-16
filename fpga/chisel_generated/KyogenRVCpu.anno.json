@@ -8,16 +8,17 @@
   },
   {
     "class":"firrtl.transforms.CombinationalPath",
-    "sink":"~KyogenRVCpu|KyogenRVCpu>io_sw_r_stall_sig",
+    "sink":"~KyogenRVCpu|KyogenRVCpu>io_r_dmem_dat_req",
     "sources":[
-      "~KyogenRVCpu|KyogenRVCpu>io_r_dmem_dat_data"
+      "~KyogenRVCpu|KyogenRVCpu>io_sw_halt"
     ]
   },
   {
     "class":"firrtl.transforms.CombinationalPath",
-    "sink":"~KyogenRVCpu|KyogenRVCpu>io_r_dmem_dat_req",
+    "sink":"~KyogenRVCpu|KyogenRVCpu>io_sw_r_stall_sig",
     "sources":[
-      "~KyogenRVCpu|KyogenRVCpu>io_sw_halt"
+      "~KyogenRVCpu|KyogenRVCpu>io_sw_w_waitrequest_sig",
+      "~KyogenRVCpu|KyogenRVCpu>io_sw_w_datawaitreq_sig"
     ]
   },
   {
