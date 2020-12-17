@@ -21,6 +21,7 @@ _label2:
 
 
 
+
 #    lui     x1, 0x08
 #    li      x2, 0xAA
 #    sw      x2, 0(x1)
