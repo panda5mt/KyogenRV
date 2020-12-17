@@ -20,7 +20,7 @@ make clean
 make test
 ```
 to generate your *.hex files from your *.s,
-put your *.s file to <code>[src/sw/](src/sw)</code> and then
+put your *.s file to <code>[src/sw/](src/sw)</code> and then execute below
 ```
 ./build_asm.py        # generate *.hex file from *.s
 ./mk_intel_hex.py     # generate intel hex files
