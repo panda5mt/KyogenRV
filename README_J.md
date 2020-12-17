@@ -22,6 +22,12 @@ make test
 アセンブラファイルを書き換える場合は、<code>[src/sw/test.s](src/sw/test.s)</code>にアセンブラファイルを記述し、
 make testでアセンブル、実行が可能となります。
 コンソール上で各命令処理時の各ステージの挙動、終了後の汎用レジスタ(x0 ~ x31)の値を確認することができます。
+
+任意のファイル名のriscvのアセンブラファイル*.sを src/swに置き、以下を実行することでhexファイルを生成することができます。(複数ファイル可)
+```
+./build_asm.py
+./mk_intel_hex.py
+```
 #### 2.riscv-testsのシミュレーション (python 3.7以降が必要)
 ```
 git clone http://github.com/panda5mt/KyogenRV  

@@ -19,6 +19,13 @@ cd KyogenRV/
 make clean
 make test
 ```
+to generate your *.hex files from your *.s
+put your *.s file to src/sw/ and then
+```
+./build_asm.py
+./mk_intel_hex.py
+```
+
 #### 2.Simulating with riscv-tests (need python 3.7 or later)
 ```
 git clone http://github.com/panda5mt/KyogenRV  
