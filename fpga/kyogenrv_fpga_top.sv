@@ -2,7 +2,9 @@ module kyogenrv_fpga_top (
 
 	input       		CY10_CLK_24M ,
 	input					reset,
-	output	[7:0] 	pio
+	output	[7:0] 	pio,
+	output				uart_tx,
+	input					uart_rx
 
 );
 
@@ -18,6 +20,7 @@ logic		[2:1] 	rst_in_d;
 logic					rst_n;
 logic					pwrup_rst_n;
 logic		[31:0]	ex_inst;
+
 
 
 assign pwrup_rst_n 	= pll_locked;
@@ -49,8 +52,8 @@ pll pll0(
 	  .kyogenrv_0_conduit_end_readdata  (ex_inst), 
 	  .reset_reset_n                    (rst_n),                     //                     reset.reset_n
 	  .kyogenrv_0_expc_readdata         (),
-	  .uart_0_external_connection_rxd   (),   // uart_0_external_connection.rxd
-     .uart_0_external_connection_txd   (),   //                           .txd
+	  .uart_0_external_connection_rxd   (uart_rx),   // uart_0_external_connection.rxd
+     .uart_0_external_connection_txd   (uart_tx),   //                           .txd
      .uart_0_irq_irq                   ()    
  );
 
