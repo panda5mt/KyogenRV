@@ -19,11 +19,11 @@ cd KyogenRV/
 make clean
 make test
 ```
-to generate your *.hex files from your *.s
-put your *.s file to src/sw/ and then
+to generate your *.hex files from your *.s,
+put your *.s file to <code>[src/sw/](src/sw)</code> and then
 ```
-./build_asm.py
-./mk_intel_hex.py
+./build_asm.py        # generate *.hex file from *.s
+./mk_intel_hex.py     # generate intel hex files
 ```
 
 #### 2.Simulating with riscv-tests (need python 3.7 or later)
