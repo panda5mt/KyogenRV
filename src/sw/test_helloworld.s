@@ -1,5 +1,6 @@
+# Send 'hello world!' via UART(UART on address 0x8020)
     lui     x1, 0x08
-    addi    x1, x1, 0x20
+    addi    x1, x1, 0x20    # x1 = 0x8020
 
     li      x2, 'h'
     jal     x20, _send
@@ -22,6 +23,8 @@
     li      x2, 'l'
     jal     x20, _send
     li      x2, 'd'
+    jal     x20, _send
+    li      x2, '!'
     jal     x20, _send
     li      x2, '\r'
     jal     x20, _send
