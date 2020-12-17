@@ -17,7 +17,7 @@ dir_path = os.getcwd() +'/src/sw/'
 hex_in_path = os.getcwd() + '/src/sw/'
 hex_out_path = os.getcwd() + '/fpga/chisel_generated/'
 
-proc = subprocess.run('rm -rf *.bin *.hex', shell=True, universal_newlines=True, cwd=hex_out_path)
+#proc = subprocess.run('rm -rf *.bin *.hex', shell=True, universal_newlines=True, cwd=hex_out_path)
 files = [path for path in os.listdir(dir_path)]
 
 files_in = [s for s in files if '.hex' in s]  # select *.hex file
@@ -37,6 +37,7 @@ print('Convert intel hex ...\r\n')
 #open scala file for write test code
 
 for item in files_in:
+    hex_start_addr  = 0x0000
     splitname = item.split('.')[0]
     fr = open(hex_in_path+item,'r')
     fw = open(hex_out_path+splitname+'_intel.hex','w')
