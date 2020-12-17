@@ -38,7 +38,7 @@ _send:
 
     nop
 _check_status:
-    lw      x3, 8(x1) # x3 = status register
+    lw      x3, 8(x1) # x3 = uart's status register
     andi    x3,x3,0x20
     beq     zero, x3, _check_status # tx ready?
     sw      x2, 4(x1)
