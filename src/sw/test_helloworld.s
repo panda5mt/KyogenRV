@@ -40,7 +40,7 @@ _send:
 _check_status:
     lw      x3, 8(x1) # x3 = status register
     andi    x3,x3,0x20
-    beq     zero, x3, _check_status
+    beq     zero, x3, _check_status # tx ready?
     sw      x2, 4(x1)
     jalr    x0,  0(x20)
 
