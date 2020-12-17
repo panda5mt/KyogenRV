@@ -156,13 +156,18 @@ class KyogenRVCpu extends Module {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-        id_pc_temp      := pc_ini
-        id_npc_temp     := npc_ini
-        id_inst_temp    := inst_nop
+        // reset temp
+        id_pc_temp := pc_ini
+        id_npc_temp := npc_ini
+        id_inst_temp := inst_nop
     }.elsewhen(!stall && !valid_imem && !inst_kill && !waitrequest) {
         id_pc := id_pc_temp
         id_npc := id_npc_temp
         id_inst := id_inst_temp
+        // reset temp
+        id_pc_temp := pc_ini
+        id_npc_temp := npc_ini
+        id_inst_temp := inst_nop
     }.otherwise {
         id_pc := id_pc
         id_npc := id_npc
