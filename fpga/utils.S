@@ -1,6 +1,6 @@
     .global start
 start:
-    lui sp, 0x00004
+    lui sp, 0x5
     jal main
     j .
 
