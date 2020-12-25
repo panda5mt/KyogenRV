@@ -188,6 +188,12 @@ tramp
 !*.qip
 !*.sopcinfo
 !*.pin
+!*.hex
+!*.ld
+!*.c
+!*.h
+!*.s
+!Makefile
 
 /fpga/db
 /db/
