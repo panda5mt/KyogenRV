@@ -31,7 +31,7 @@ f = open(test_gen_path,'w')
 f.write(header_text)
 
 for item in files_in:
-    str1='riscv64-unknown-elf-objcopy --gap-fill 0 -O binary '+item+' '+item+".bin"
+    str1='riscv32-unknown-elf-objcopy --gap-fill 0 -O binary '+item+' '+item+".bin"
     if platform.system() == 'Darwin': # macOS?
         str2 = 'god -An -v -tx4 -w4 '+item+'.bin > '+item+'.hex'
     else:   # Linux or WSL?

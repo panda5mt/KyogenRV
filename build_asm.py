@@ -27,9 +27,9 @@ print('assemble all *.s files ...\r\n')
 
 for item in files_in:
     splitname = item.split('.')[0]
-    str = 'riscv64-unknown-elf-as -o ' + hex_out_path + splitname + '.elf  -c ' + asm_in_path + item
+    str = 'riscv32-unknown-elf-as -o ' + hex_out_path + splitname + '.elf  -c ' + asm_in_path + item
     proc = subprocess.run(str, shell=True, universal_newlines=True, cwd=asm_in_path)
-    str = 'riscv64-unknown-elf-objcopy --gap-fill 0 -O binary ' + hex_out_path + splitname + '.elf ' + hex_out_path + splitname +'.bin'
+    str = 'riscv32-unknown-elf-objcopy --gap-fill 0 -O binary ' + hex_out_path + splitname + '.elf ' + hex_out_path + splitname +'.bin'
     proc = subprocess.run(str, shell=True, universal_newlines=True, cwd=asm_in_path)
     if platform.system() == 'Darwin': # macOS?
         str = 'god -An -v -tx4 -w4 '+ hex_out_path + splitname + '.bin > ' + hex_out_path + splitname + '.hex'

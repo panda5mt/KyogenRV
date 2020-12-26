@@ -1,5 +1,5 @@
-AS = riscv64-unknown-elf-as
-OBJCOPY = riscv64-unknown-elf-objcopy
+AS = riscv32-unknown-elf-as
+OBJCOPY = riscv32-unknown-elf-objcopy
 
 
 asm: $(ASM_DIR)/$(ASM_TARGET).hex
