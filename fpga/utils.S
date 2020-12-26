@@ -1,12 +1,13 @@
     .section .text.init;
-    .globl start
-start:
-    lui    sp, 0x05
+    .globl _start
+_start:
+    lui    sp, 0x08
     call main
     j .
 
     .global dummy
 dummy:
+    nop
     ret
 
     .global put32
