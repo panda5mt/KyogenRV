@@ -1,7 +1,8 @@
-    .global start
+    .section .text.init;
+    .globl start
 start:
-    lui sp, 0x5
-    jal main
+    lui    sp, 0x05
+    call main
     j .
 
     .global dummy
@@ -12,4 +13,5 @@ dummy:
 put32:
     sw x11,(x10)
     ret
-    
+
+

@@ -1,14 +1,13 @@
-MEMORY
-{
-    rom : ORIGIN = 0x00000000, LENGTH = 0x2000
-    ram : ORIGIN = 0x00004000, LENGTH = 0x1000
-}
-
+OUTPUT_ARCH( "riscv" )
 ENTRY(start)
 
 SECTIONS
 {
-    .text : {*(.text*)} > rom
-    .rodata : {*(.rodata*)} > rom
-    .bss : {*(.bss*)} > ram
+  . = 0x00000000;
+  .text.init : { *(.text.init) }
+  .tohost : { *(.tohost) }
+  .text : { *(.text) }
+  .data : { *(.data) }
+  .bss : { *(.bss) }
+  _end = .;
 }
