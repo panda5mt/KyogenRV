@@ -44,4 +44,4 @@ _main:
         lw      a4,-20(s0)
         li      a5,1999
         bgeu    a5,a4,0x7c #<main+0x60>
-        j       34 #<main+0x18>
+        j       0x34 #<main+0x18>
