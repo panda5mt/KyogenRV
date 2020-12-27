@@ -70,6 +70,14 @@
          type = "String";
       }
    }
+   element onchip_memory2_0.s2
+   {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
+   }
    element pio_0
    {
       datum _sortIndex
@@ -101,6 +109,11 @@
    }
    element uart_0.s1
    {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
       datum baseAddress
       {
          value = "32800";
@@ -171,7 +184,7 @@
   <parameter name="enPRInitMode" value="false" />
   <parameter name="enableDiffWidth" value="false" />
   <parameter name="initMemContent" value="true" />
-  <parameter name="initializationFileName">C:/RISCV/kyogenrv/fpga/chisel_generated/test_blinkleds_intel.hex</parameter>
+  <parameter name="initializationFileName">C:/RISCV/kyogenrv/fpga/chisel_generated/blinker_intel.hex</parameter>
   <parameter name="instanceID" value="NONE" />
   <parameter name="memorySize" value="32768" />
   <parameter name="readDuringWriteMode" value="DONT_CARE" />
