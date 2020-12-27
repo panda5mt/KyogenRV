@@ -1,0 +1,55 @@
+
+blinker.elf:     ファイル形式 elf32-littleriscv
+
+
+セクション .text.init の逆アセンブル:
+
+00000000 <_start>:
+   0:	00008137          	lui	sp,0x8
+   4:	018000ef          	jal	ra,1c <main>
+   8:	0000006f          	j	8 <_start+0x8>
+
+0000000c <dummy>:
+   c:	00000013          	nop
+  10:	00008067          	ret
+
+00000014 <put32>:
+  14:	00b52023          	sw	a1,0(a0)
+  18:	00008067          	ret
+
+セクション .text の逆アセンブル:
+
+0000001c <main>:
+  1c:	fd010113          	addi	sp,sp,-48 # 7fd0 <_end+0x7f30>
+  20:	02112623          	sw	ra,44(sp)
+  24:	02812423          	sw	s0,40(sp)
+  28:	03010413          	addi	s0,sp,48
+  2c:	fca42e23          	sw	a0,-36(s0)
+  30:	fcb42c23          	sw	a1,-40(s0)
+  34:	05500593          	li	a1,85
+  38:	00008537          	lui	a0,0x8
+  3c:	fd9ff0ef          	jal	ra,14 <put32>
+  40:	fe042623          	sw	zero,-20(s0)
+  44:	0180006f          	j	5c <main+0x40>
+  48:	fec42503          	lw	a0,-20(s0)
+  4c:	fc1ff0ef          	jal	ra,c <dummy>
+  50:	fec42783          	lw	a5,-20(s0)
+  54:	00178793          	addi	a5,a5,1
+  58:	fef42623          	sw	a5,-20(s0)
+  5c:	fec42703          	lw	a4,-20(s0)
+  60:	7cf00793          	li	a5,1999
+  64:	fee7f2e3          	bgeu	a5,a4,48 <main+0x2c>
+  68:	0aa00593          	li	a1,170
+  6c:	00008537          	lui	a0,0x8
+  70:	fa5ff0ef          	jal	ra,14 <put32>
+  74:	fe042623          	sw	zero,-20(s0)
+  78:	0180006f          	j	90 <main+0x74>
+  7c:	fec42503          	lw	a0,-20(s0)
+  80:	f8dff0ef          	jal	ra,c <dummy>
+  84:	fec42783          	lw	a5,-20(s0)
+  88:	00178793          	addi	a5,a5,1
+  8c:	fef42623          	sw	a5,-20(s0)
+  90:	fec42703          	lw	a4,-20(s0)
+  94:	7cf00793          	li	a5,1999
+  98:	fee7f2e3          	bgeu	a5,a4,7c <main+0x60>
+  9c:	f99ff06f          	j	34 <main+0x18>
