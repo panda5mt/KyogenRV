@@ -8,13 +8,6 @@
   },
   {
     "class":"firrtl.transforms.CombinationalPath",
-    "sink":"~KyogenRVCpu|KyogenRVCpu>io_sw_r_stall_sig",
-    "sources":[
-      "~KyogenRVCpu|KyogenRVCpu>io_r_dmem_dat_data"
-    ]
-  },
-  {
-    "class":"firrtl.transforms.CombinationalPath",
     "sink":"~KyogenRVCpu|KyogenRVCpu>io_r_dmem_dat_req",
     "sources":[
       "~KyogenRVCpu|KyogenRVCpu>io_sw_halt"
@@ -25,15 +18,6 @@
     "sink":"~KyogenRVCpu|KyogenRVCpu>io_w_dmem_dat_req",
     "sources":[
       "~KyogenRVCpu|KyogenRVCpu>io_sw_halt"
-    ]
-  },
-  {
-    "class":"firrtl.transforms.CombinationalPath",
-    "sink":"~KyogenRVCpu|KyogenRVCpu>io_r_imem_dat_req",
-    "sources":[
-      "~KyogenRVCpu|KyogenRVCpu>io_sw_w_waitrequest_sig",
-      "~KyogenRVCpu|KyogenRVCpu>io_sw_w_datawaitreq_sig",
-      "~KyogenRVCpu|KyogenRVCpu>io_r_dmem_dat_data"
     ]
   },
   {

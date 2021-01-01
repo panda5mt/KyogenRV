@@ -121,20 +121,24 @@ class KyogenRVCpu extends Module {
     val waitrequest: Bool = imem_wait || dmem_wait
 
     // -------- START: IF stage -------
-    io.r_imem_dat.req := DontCare
+    val imem_req = RegInit(false.B)
     when(!stall && !inst_kill && !waitrequest) {
         if_pc := pc_cntr
         if_npc := npc
-        io.r_imem_dat.req := RegNext(imem_read_sig)
+        imem_req := RegNext(imem_read_sig)
         valid_imem := RegNext(true.B)
     }.elsewhen(inst_kill && !waitrequest) {
         if_pc := pc_ini
         if_npc := npc_ini
-        io.r_imem_dat.req := RegNext(imem_read_sig)
+        imem_req := RegNext(imem_read_sig)
         valid_imem := RegNext(false.B)
     }.otherwise {
-        valid_imem := RegNext(false.B) //valid_imem
+      valid_imem := RegNext(false.B) //valid_imem
+      when((mem_ctrl.mem_wr === M_XRD) || (mem_ctrl.mem_wr === M_XWR)) {
+        imem_req := RegNext(false.B)
+      }
     }
+    io.r_imem_dat.req := imem_req
     // -------- END: IF stage --------
 
 
@@ -144,11 +148,11 @@ class KyogenRVCpu extends Module {
     val id_npc_temp: UInt = RegInit(npc_ini)
 
     // iotesters: id_pc, id_inst
-    when((stall || waitrequest) && !inst_kill && valid_imem) {
+    when((stall || waitrequest) && !inst_kill && valid_imem && io.r_imem_dat.ack) {
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
-    }.elsewhen(!stall && !waitrequest && !inst_kill && valid_imem) {
+    }.elsewhen(!stall && !waitrequest && !inst_kill && valid_imem && io.r_imem_dat.ack) {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
@@ -160,7 +164,7 @@ class KyogenRVCpu extends Module {
         id_pc_temp := pc_ini
         id_npc_temp := npc_ini
         id_inst_temp := inst_nop
-    }.elsewhen(!stall && !valid_imem && !inst_kill && !waitrequest) {
+    }.elsewhen(!stall && !(valid_imem && io.r_imem_dat.ack) && !inst_kill && !waitrequest) {
         id_pc := id_pc_temp
         id_npc := id_npc_temp
         id_inst := id_inst_temp
@@ -209,7 +213,7 @@ class KyogenRVCpu extends Module {
       (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
       (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
       (delay_stall =/= 7.U)  /*|| imem_wait || dmem_wait*/
-    io.sw.r_stall_sig := stall
+    io.sw.r_stall_sig := ex_inst //stall
     //}
     // -------- END: ID stage --------
 
@@ -533,7 +537,7 @@ class KyogenRVCpu extends Module {
     // -------- START: PC update --------
         when(io.sw.halt === false.B) {
             w_req := false.B
-            when(!stall && !waitrequest) {
+            when(!stall && !waitrequest && imem_req) {
                 pc_cntr := Mux(csr.io.expt, csr.io.evec,
                     Mux(mem_ctrl.br_type === BR_RET, csr.io.epc,
                         Mux((mem_ctrl.br_type > 3.U) && mem_alu_cmp_out, mem_pc + mem_imm.asUInt,
