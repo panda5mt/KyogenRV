@@ -99,7 +99,7 @@ git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.3 --depth 1
 cd KyogenRV/
 ```
 
-write asm file and save to <code>[src/sw/test.s](src/sw/test_interrupt.s)</code>
+write asm file and save to <code>[src/sw/test.s](src/sw/test.s)</code>
 then build as follows 
 
 ```
@@ -117,7 +117,7 @@ git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.10 --depth 1
 cd KyogenRV/
 ```
 
-write asm file and save to <code>[src/sw/test.s](src/sw/test_interrupt.s)</code>
+write asm file and save to <code>[src/sw/test.s](src/sw/test.s)</code>
 then build as follows 
 
 ```
@@ -129,7 +129,7 @@ then build test module in chisel project as follows
 ```
 make test
 ```
-when you modified <code>[src/sw/test.s](src/sw/test_interrupt.s)</code>, just type as follows
+when you modified <code>[src/sw/test.s](src/sw/test.s)</code>, just type as follows
 ```
 make test
 ```
@@ -141,7 +141,7 @@ git clone http://github.com/panda5mt/KyogenRV -b 0.0.10.15 --depth 1
 cd KyogenRV/
 ```
 
-write asm file and save to <code>[src/sw/test.s](src/sw/test_interrupt.s)</code>
+write asm file and save to <code>[src/sw/test.s](src/sw/test.s)</code>
 then build as follows 
 
 ```
