@@ -14,7 +14,7 @@ _label0:
         lui	t2,0x58213                          #<0x28>
         addi	t2,t2,152                       #<0x2C> 58213098 <_end+0x58211068>
         li	gp,11                               #<0x30>
-        nop
+        sw      t0,4(tp)
         bne     t0,t2,_fail                     #<0x38>
 
         lui     x31, 0xA                        #<0x3C> A000
