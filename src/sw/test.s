@@ -4,17 +4,16 @@
         addi    ra,ra,0x20                      #<0x08>
 
 _label0:
-        lui	sp,0x58213                          #<0x0C>
+        lui	    sp,0x58213                      #<0x0C>
         addi	sp,sp,152                       #<0x10> 58213098 <_end+0x58211068>
         addi	ra,ra,-3                        #<0x14>
-        sw	sp,7(ra)                            #<0x18>
+        sw	    sp,7(ra)                        #<0x18>
         lui	    tp,0x2                          #<0x1C>
         addi	tp,tp,0x24                      #<0x20> 2024 <tdat10>
-        lw	t0,0(tp)                            #<0x24>
-        lui	t2,0x58213                          #<0x28>
+        lw	    t0,0(tp)                        #<0x24>
+        lui	    t2,0x58213                      #<0x28>
         addi	t2,t2,152                       #<0x2C> 58213098 <_end+0x58211068>
-        li	gp,11                               #<0x30>
-        sw      t0,4(tp)
+        li	    gp,11                           #<0x30>
         bne     t0,t2,_fail                     #<0x38>
 
         lui     x31, 0xA                        #<0x3C> A000

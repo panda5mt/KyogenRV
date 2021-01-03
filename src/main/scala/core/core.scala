@@ -134,7 +134,7 @@ class KyogenRVCpu extends Module {
         valid_imem := RegNext(false.B)
     }.otherwise {
       valid_imem := RegNext(false.B) //valid_imem
-      when((mem_ctrl.mem_wr === M_XRD) || (mem_ctrl.mem_wr === M_XWR)) {
+      when((mem_ctrl.mem_wr === M_XRD) || (mem_ctrl.mem_wr === M_XWR) || (wb_ctrl.mem_wr === M_XRD) || (wb_ctrl.mem_wr === M_XWR)) {
         imem_req := RegNext(false.B)
       }
     }
@@ -212,7 +212,7 @@ class KyogenRVCpu extends Module {
       ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
       (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
       (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
-      (wb_ctrl.mem_wr === M_XRD) && (!io.r_dmem_dat.ack) && (!inst_kill) ||
+      //(wb_ctrl.mem_wr === M_XRD) && (!io.r_dmem_dat.ack) && (!inst_kill) ||
       (delay_stall =/= 7.U)  /*|| imem_wait || dmem_wait*/
     io.sw.r_stall_sig := ex_inst //stall
     //}
@@ -520,6 +520,7 @@ class KyogenRVCpu extends Module {
         (wb_ctrl.wb_sel === WB_CSR) -> wb_csr_data,
         (wb_ctrl.wb_sel === WB_MEM) -> dmem_data //0.U(32.W),
     ))
+
     withClock(invClock) {
         when(rf_wen === REN_1) {
             when(rf_waddr > 0.U && rf_waddr < 32.U) {
