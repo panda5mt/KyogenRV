@@ -9,9 +9,9 @@ int main(int argc, char *argv[])
 
     while (1) {
         put32(GPIO_BASE, 0x55);
-        for (rx = 0; rx < 2000000; rx++) dummy();
+        for (rx = 0; rx < 20; rx++) dummy();
         put32(GPIO_BASE, 0xAA);
-        for (rx = 0; rx < 2000000; rx++) dummy();
+        for (rx = 0; rx < 20; rx++) dummy();
     }
     return 0;
 }
