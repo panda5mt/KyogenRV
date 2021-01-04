@@ -8,10 +8,10 @@ int main(int argc, char *argv[])
     unsigned int rx;
 
     while (1) {
-        put32(GPIO_BASE, 0x55);
-        for (rx = 0; rx < 20; rx++) dummy();
         put32(GPIO_BASE, 0xAA);
-        for (rx = 0; rx < 20; rx++) dummy();
+        for (rx = 0; rx < 200000; rx++);
+        put32(GPIO_BASE, 0x55);
+        for (rx = 0; rx < 200000; rx++);
     }
     return 0;
 }
