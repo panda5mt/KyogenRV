@@ -147,13 +147,14 @@ class KyogenRVCpu extends Module {
     val id_inst_temp: UInt = RegInit(inst_nop)
     val id_pc_temp: UInt = RegInit(pc_ini)
     val id_npc_temp: UInt = RegInit(npc_ini)
+    val valid_id_inst: Bool = valid_imem && io.r_imem_dat.ack
 
     // iotesters: id_pc, id_inst
-    when((stall || waitrequest) && !inst_kill && valid_imem && io.r_imem_dat.ack) {
+    when((stall || waitrequest) && !inst_kill && valid_id_inst) {
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
-    }.elsewhen(!stall && !waitrequest && !inst_kill && valid_imem && io.r_imem_dat.ack) {
+    }.elsewhen(valid_id_inst && !stall && !waitrequest && !inst_kill) {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
@@ -165,7 +166,7 @@ class KyogenRVCpu extends Module {
         id_pc_temp := pc_ini
         id_npc_temp := npc_ini
         id_inst_temp := inst_nop
-    }.elsewhen(!stall && !(valid_imem && io.r_imem_dat.ack) && !inst_kill && !waitrequest) {
+    }.elsewhen(!waitrequest && !inst_kill && !stall && !valid_id_inst) {
         id_pc := id_pc_temp
         id_npc := id_npc_temp
         id_inst := id_inst_temp
@@ -262,7 +263,7 @@ class KyogenRVCpu extends Module {
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 && wb_ctrl.csr_cmd === CSR.N) -> io.r_dmem_dat.data,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0 && wb_ctrl.csr_cmd === CSR.N) -> wb_alu_out,
-        (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
+        //(ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
         (ex_reg_raddr(0) =/= 0.U && ex_reg_raddr(0) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.csr_cmd =/= CSR.N) -> wb_csr_data
     ))
     ex_reg_rs2_bypass := MuxCase(ex_rs(1), Seq(
@@ -270,7 +271,7 @@ class KyogenRVCpu extends Module {
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === mem_reg_waddr && mem_ctrl.rf_wen === REN_1) -> mem_alu_out,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_1 && wb_ctrl.csr_cmd === CSR.N) -> io.r_dmem_dat.data,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.mem_en === MEN_0 && wb_ctrl.csr_cmd === CSR.N) -> wb_alu_out,
-        (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
+        //(ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && ex_ctrl.rf_wen === REN_0 && ex_ctrl.mem_en === MEN_1) -> wb_alu_out,
         (ex_reg_raddr(1) =/= 0.U && ex_reg_raddr(1) === wb_reg_waddr && wb_ctrl.rf_wen === REN_1 && wb_ctrl.csr_cmd =/= CSR.N) -> wb_csr_data
     ))
 
