@@ -122,7 +122,7 @@ class KyogenRVCpu extends Module {
 
     // -------- START: IF stage -------
     val imem_req: Bool = RegInit(false.B)
-    val load_store_sig: Bool = (mem_ctrl.mem_wr =/= M_X) || (wb_ctrl.mem_wr =/= M_X)
+    val load_store_sig: Bool = (ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X) || (wb_ctrl.mem_wr =/= M_X)
     when(!stall && !inst_kill && !waitrequest && !(load_store_sig && !imem_req)) {
         if_pc := pc_cntr
         if_npc := npc
