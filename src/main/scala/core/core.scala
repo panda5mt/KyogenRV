@@ -122,8 +122,10 @@ class KyogenRVCpu extends Module {
 
     // -------- START: IF stage -------
     val imem_req: Bool = RegInit(false.B)
-    val load_store_sig: Bool = (ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X) || (wb_ctrl.mem_wr =/= M_X)
-    when(!stall && !inst_kill && !waitrequest && !(load_store_sig && !imem_req)) {
+    val loadstore_in_pipe: Bool = (ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X) || (wb_ctrl.mem_wr =/= M_X)
+    val loadstore_proc: Bool = (mem_ctrl.mem_wr =/= M_X) || (wb_ctrl.mem_wr =/= M_X)
+
+    when(!stall && !inst_kill && !waitrequest && !loadstore_in_pipe) {
         if_pc := pc_cntr
         if_npc := npc
         imem_req := RegNext(imem_read_sig)
@@ -135,7 +137,7 @@ class KyogenRVCpu extends Module {
         valid_imem := RegNext(false.B)
     }.otherwise {
       valid_imem := RegNext(false.B) //valid_imem
-      when(load_store_sig) {
+      when(loadstore_in_pipe) {
         imem_req := RegNext(false.B)
       }
     }
@@ -150,15 +152,25 @@ class KyogenRVCpu extends Module {
     val valid_id_inst: Bool = valid_imem && io.r_imem_dat.ack
 
     // iotesters: id_pc, id_inst
-    when((stall || waitrequest) && !inst_kill && valid_id_inst) {
+    when(!imem_req && io.r_imem_dat.ack){
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
-    }.elsewhen(valid_id_inst && !stall && !waitrequest && !inst_kill) {
+
+        id_pc := pc_ini
+        id_npc := npc_ini
+        id_inst := inst_nop
+    }
+    when((stall || waitrequest) && !inst_kill && valid_id_inst && imem_req) {
+        id_pc_temp := if_pc //io.r_imem_dat.data
+        id_npc_temp := if_npc
+        id_inst_temp := io.r_imem_dat.data
+
+    }.elsewhen(valid_id_inst && !stall && !waitrequest && !inst_kill && imem_req) {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
-    }.elsewhen(inst_kill && !waitrequest) {
+    }.elsewhen(inst_kill && !waitrequest && imem_req) {
         id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
@@ -166,7 +178,7 @@ class KyogenRVCpu extends Module {
         id_pc_temp := pc_ini
         id_npc_temp := npc_ini
         id_inst_temp := inst_nop
-    }.elsewhen(!waitrequest && !inst_kill && !stall && !valid_id_inst) {
+    }.elsewhen(!waitrequest && !inst_kill && !stall && !valid_id_inst && imem_req) {
         id_pc := id_pc_temp
         id_npc := id_npc_temp
         id_inst := id_inst_temp
@@ -174,7 +186,11 @@ class KyogenRVCpu extends Module {
         id_pc_temp := pc_ini
         id_npc_temp := npc_ini
         id_inst_temp := inst_nop
-    }.otherwise {
+    }/*.elsewhen(!imem_req){
+        id_pc := pc_ini
+        id_npc := npc_ini
+        id_inst := inst_nop
+    }*/.otherwise {
         id_pc := id_pc
         id_npc := id_npc
         id_inst := id_inst
@@ -214,15 +230,15 @@ class KyogenRVCpu extends Module {
       ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
       (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
       (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
-      //(wb_ctrl.mem_wr === M_XRD) && (!io.r_dmem_dat.ack) && (!inst_kill) ||
+      (ex_ctrl.mem_wr =/= M_X) && (id_ctrl.br_type =/= BR_N) && (!inst_kill) ||
       (delay_stall =/= 7.U)  /*|| imem_wait || dmem_wait*/
-    io.sw.r_stall_sig := id_inst_temp//ex_inst //stall
+    io.sw.r_stall_sig := ex_inst //stall
     //}
     // -------- END: ID stage --------
 
 
     // -------- START: EX Stage --------
-    when(!stall && !inst_kill && !waitrequest) {
+    when(!stall && !inst_kill && !waitrequest && !loadstore_proc) {
         ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
@@ -236,7 +252,7 @@ class KyogenRVCpu extends Module {
         ex_csr_cmd := id_ctrl.csr_cmd
         ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
         ex_b_check := (id_ctrl.br_type > 3.U)
-    }.elsewhen((stall || inst_kill) && !waitrequest) {
+    }.elsewhen((stall || inst_kill || loadstore_proc) && !waitrequest) {
         ex_pc := pc_ini
         ex_npc := npc_ini
         ex_ctrl := nop_ctrl
