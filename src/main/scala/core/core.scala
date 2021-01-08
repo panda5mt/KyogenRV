@@ -161,6 +161,7 @@ class KyogenRVCpu extends Module {
         id_npc := npc_ini
         id_inst := inst_nop
     }
+
     when((stall || waitrequest) && !inst_kill && valid_id_inst && imem_req) {
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
@@ -170,6 +171,7 @@ class KyogenRVCpu extends Module {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
         id_inst := io.r_imem_dat.data
+
     }.elsewhen(inst_kill && !waitrequest && imem_req) {
         id_pc := pc_ini
         id_npc := npc_ini
@@ -230,7 +232,7 @@ class KyogenRVCpu extends Module {
       ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
       (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
       (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
-      (ex_ctrl.mem_wr =/= M_X) && (id_ctrl.br_type =/= BR_N) && (!inst_kill) ||
+      ((ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X)) && (id_ctrl.br_type =/= BR_N) && (!inst_kill) ||
       (delay_stall =/= 7.U)  /*|| imem_wait || dmem_wait*/
     io.sw.r_stall_sig := ex_inst //stall
     //}
@@ -238,6 +240,12 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: EX Stage --------
+    val restart_after_loadstore = RegInit(false.B)
+    when (loadstore_in_pipe) {
+        restart_after_loadstore := true.B
+    }.elsewhen(!loadstore_in_pipe && io.r_imem_dat.ack) {
+        restart_after_loadstore := false.B
+    }
     when(!stall && !inst_kill && !waitrequest && !loadstore_proc) {
         ex_pc := id_pc
         ex_npc := id_npc
