@@ -49,6 +49,14 @@
          type = "String";
       }
    }
+   element kyogenrv_fpga
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone 10 LP";
+         type = "String";
+      }
+   }
    element onchip_memory2_0
    {
       datum _sortIndex

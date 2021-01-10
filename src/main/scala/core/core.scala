@@ -122,8 +122,8 @@ class KyogenRVCpu extends Module {
 
     // -------- START: IF stage -------
     val imem_req: Bool = RegInit(false.B)
-    val loadstore_in_pipe: Bool = (ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X) || (wb_ctrl.mem_wr =/= M_X)
-    val loadstore_proc: Bool = (mem_ctrl.mem_wr =/= M_X) || (wb_ctrl.mem_wr =/= M_X)
+    val loadstore_in_pipe: Bool = (ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr === M_XRD) //|| (wb_ctrl.mem_wr === M_XRD)
+    val loadstore_proc: Bool = (ex_ctrl.mem_wr =/= M_X)  || (mem_ctrl.mem_wr === M_XRD) //|| (wb_ctrl.mem_wr === M_XRD)
 
     when(!stall && !inst_kill && !waitrequest && !loadstore_in_pipe) {
         if_pc := pc_cntr
@@ -325,9 +325,8 @@ class KyogenRVCpu extends Module {
                 ex_reg_rs1_bypass.asUInt())
         )
     )
+
     //val csr_in: UInt = Mux(ex_ctrl.imm_type === IMM_Z, ex_imm.asUInt(),ex_reg_rs1_bypass)
-
-
     csr.io.pc := ex_pc
     csr.io.addr := ex_csr_addr
     csr.io.cmd := ex_csr_cmd
