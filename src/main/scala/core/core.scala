@@ -123,7 +123,7 @@ class KyogenRVCpu extends Module {
     // -------- START: IF stage -------
     val imem_req: Bool = RegInit(false.B)
     val loadstore_in_pipe: Bool = (ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X) //|| (wb_ctrl.mem_wr === M_XRD)
-    val loadstore_proc: Bool = (ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X)  || (wb_ctrl.mem_wr === M_XRD)
+    val loadstore_proc: Bool = /*(ex_ctrl.mem_wr =/= M_X)  ||*/ (mem_ctrl.mem_wr =/= M_X)  || (wb_ctrl.mem_wr === M_XRD)
 
     when(!stall && !inst_kill && !waitrequest && !loadstore_in_pipe) {
         if_pc := pc_cntr
@@ -240,13 +240,10 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: EX Stage --------
-    val restart_after_loadstore = RegInit(false.B)
-    when (loadstore_in_pipe) {
-        restart_after_loadstore := true.B
-    }.elsewhen(!loadstore_in_pipe && io.r_imem_dat.ack) {
-        restart_after_loadstore := false.B
-    }
-    when(!stall && !inst_kill && !waitrequest && !loadstore_proc) {
+    val reject_twice_execute = (ex_pc =/= pc_ini && id_pc === ex_pc && !io.r_imem_dat.ack)
+    val old_ex_pc = RegInit(pc_ini)
+
+    when(!stall && !inst_kill && !waitrequest && !loadstore_proc && !reject_twice_execute) {
         ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
@@ -260,7 +257,8 @@ class KyogenRVCpu extends Module {
         ex_csr_cmd := id_ctrl.csr_cmd
         ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
         ex_b_check := (id_ctrl.br_type > 3.U)
-    }.elsewhen((stall || inst_kill || loadstore_proc) && !waitrequest) {
+    }.elsewhen((stall || inst_kill || loadstore_proc) && !waitrequest && !reject_twice_execute) {
+        old_ex_pc := pc_ini
         ex_pc := pc_ini
         ex_npc := npc_ini
         ex_ctrl := nop_ctrl
