@@ -149,9 +149,14 @@ class KyogenRVCpu extends Module {
     val id_inst_temp: UInt = RegInit(inst_nop)
     val id_pc_temp: UInt = RegInit(pc_ini)
     val id_npc_temp: UInt = RegInit(npc_ini)
+    val id_inst2_temp: UInt = RegInit(inst_nop)
+    val id_pc2_temp: UInt = RegInit(pc_ini)
+    val id_npc2_temp: UInt = RegInit(npc_ini)
+
     val valid_id_inst: Bool = valid_imem && io.r_imem_dat.ack
 
-    // iotesters: id_pc, id_inst
+    // when dmem start
+
     when(!imem_req && io.r_imem_dat.ack){
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
@@ -240,10 +245,8 @@ class KyogenRVCpu extends Module {
 
 
     // -------- START: EX Stage --------
-    val reject_twice_execute = (ex_pc =/= pc_ini && id_pc === ex_pc && !io.r_imem_dat.ack)
-    val old_ex_pc = RegInit(pc_ini)
 
-    when(!stall && !inst_kill && !waitrequest && !loadstore_proc && !reject_twice_execute) {
+    when(!stall && !inst_kill && !waitrequest && !loadstore_proc) {
         ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
@@ -257,8 +260,7 @@ class KyogenRVCpu extends Module {
         ex_csr_cmd := id_ctrl.csr_cmd
         ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
         ex_b_check := (id_ctrl.br_type > 3.U)
-    }.elsewhen((stall || inst_kill || loadstore_proc) && !waitrequest && !reject_twice_execute) {
-        old_ex_pc := pc_ini
+    }.elsewhen((stall || inst_kill || loadstore_proc) && !waitrequest) {
         ex_pc := pc_ini
         ex_npc := npc_ini
         ex_ctrl := nop_ctrl
