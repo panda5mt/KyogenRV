@@ -86,17 +86,13 @@ class KyogenRVCpu extends Module {
     val pc_cntr: UInt = RegInit(0.U(32.W)) // pc
     val npc: UInt = pc_cntr + 4.U(32.W) // next pc counter
 
-    //val r_data: UInt = RegInit(0.U(32.W))
     val r_req: Bool = RegInit(true.B) // fetch signal
-    //val r_rw: Bool = RegInit(false.B)
-    //val r_ack: Bool = RegInit(false.B)
 
     val w_req: Bool = RegInit(true.B)
     val w_ack: Bool = RegInit(false.B)
     val w_addr: UInt = RegInit(0.U(32.W))
     val w_data: UInt = RegInit(0.U(32.W))
 
-    //io.r_dmem_dat.req := RegInit(false.B)
     io.dmem_add.addr := RegInit(0.U(32.W))
 
     // ----- START:initialize logic for avalon-MM -----
@@ -123,7 +119,7 @@ class KyogenRVCpu extends Module {
     // -------- START: IF stage -------
     val imem_req: Bool = RegInit(false.B)
     val loadstore_in_pipe: Bool = (ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X) //|| (wb_ctrl.mem_wr === M_XRD)
-    val loadstore_proc: Bool = /*(ex_ctrl.mem_wr =/= M_X)  ||*/ (mem_ctrl.mem_wr =/= M_X)  || (wb_ctrl.mem_wr === M_XRD)
+    val loadstore_proc: Bool = /*(ex_ctrl.mem_wr =/= M_X)  ||*/ (mem_ctrl.mem_wr =/= M_X)  || (wb_ctrl.mem_wr =/= M_X)
 
     when(!stall && !inst_kill && !waitrequest && !loadstore_in_pipe) {
         if_pc := pc_cntr
@@ -154,17 +150,28 @@ class KyogenRVCpu extends Module {
     val id_npc2_temp: UInt = RegInit(npc_ini)
 
     val valid_id_inst: Bool = valid_imem && io.r_imem_dat.ack
+    val in_loadstore = RegInit(false.B)
+
+    when(mem_ctrl.mem_wr =/= M_X) {
+        in_loadstore := true.B
+    }.elsewhen(imem_req){
+        in_loadstore :=false.B
+    }
 
     // when dmem start
-
-    when(!imem_req && io.r_imem_dat.ack){
+    when(!stall && !inst_kill && !imem_req && io.r_imem_dat.ack){
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
 
-        id_pc := pc_ini
+        id_pc2_temp := id_pc //io.r_imem_dat.data
+        id_npc2_temp := id_npc
+        id_inst2_temp := id_inst
+
+/*        id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
+*/
     }
 
     when((stall || waitrequest) && !inst_kill && valid_id_inst && imem_req) {
@@ -186,13 +193,14 @@ class KyogenRVCpu extends Module {
         id_npc_temp := npc_ini
         id_inst_temp := inst_nop
     }.elsewhen(!waitrequest && !inst_kill && !stall && !valid_id_inst && imem_req) {
-        id_pc := id_pc_temp
-        id_npc := id_npc_temp
-        id_inst := id_inst_temp
-        // reset temp
-        id_pc_temp := pc_ini
-        id_npc_temp := npc_ini
-        id_inst_temp := inst_nop
+            id_pc := id_pc_temp
+            id_npc := id_npc_temp
+            id_inst := id_inst_temp
+            // reset temp
+            id_pc_temp := pc_ini
+            id_npc_temp := npc_ini
+            id_inst_temp := inst_nop
+
     }/*.elsewhen(!imem_req){
         id_pc := pc_ini
         id_npc := npc_ini
@@ -237,16 +245,17 @@ class KyogenRVCpu extends Module {
       ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
       (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
       (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
-      ((ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X)) && (id_ctrl.br_type =/= BR_N) && (!inst_kill) ||
+      //(ex_ctrl.mem_wr === M_XRD && id_ctrl.mem_wr === M_XWR) && (!inst_kill) ||
+      ((ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X)) && (id_ctrl.br_type === BR_J || id_ctrl.br_type === BR_JR) && (!inst_kill) ||
       (delay_stall =/= 7.U)  /*|| imem_wait || dmem_wait*/
     io.sw.r_stall_sig := ex_inst //stall
     //}
+
     // -------- END: ID stage --------
 
 
     // -------- START: EX Stage --------
-
-    when(!stall && !inst_kill && !waitrequest && !loadstore_proc) {
+    when(!stall && !inst_kill && !waitrequest && !loadstore_proc && !in_loadstore) {
         ex_pc := id_pc
         ex_npc := id_npc
         ex_ctrl := id_ctrl
@@ -260,7 +269,7 @@ class KyogenRVCpu extends Module {
         ex_csr_cmd := id_ctrl.csr_cmd
         ex_j_check := (id_ctrl.br_type === BR_J) || (id_ctrl.br_type === BR_JR)
         ex_b_check := (id_ctrl.br_type > 3.U)
-    }.elsewhen((stall || inst_kill || loadstore_proc) && !waitrequest) {
+    }.elsewhen((stall || inst_kill || loadstore_proc || in_loadstore) && !waitrequest) {
         ex_pc := pc_ini
         ex_npc := npc_ini
         ex_ctrl := nop_ctrl
