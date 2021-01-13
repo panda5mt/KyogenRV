@@ -179,6 +179,10 @@ class KyogenRVCpu extends Module {
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
 
+        id_pc2_temp := id_pc //io.r_imem_dat.data
+        id_npc2_temp := id_npc
+        id_inst2_temp := id_inst
+
     }.elsewhen(valid_id_inst && !stall && !waitrequest && !inst_kill && imem_req) {
         id_pc := if_pc //pc_cntr
         id_npc := if_npc
@@ -211,6 +215,10 @@ class KyogenRVCpu extends Module {
             id_pc_temp := pc_ini
             id_npc_temp := npc_ini
             id_inst_temp := inst_nop
+
+            id_pc2_temp := pc_ini
+            id_npc2_temp := npc_ini
+            id_inst2_temp := inst_nop
         }
 
     }/*.elsewhen(!imem_req){
