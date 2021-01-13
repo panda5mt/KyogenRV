@@ -158,8 +158,10 @@ class KyogenRVCpu extends Module {
         in_loadstore :=false.B
     }
 
+    var temp_lock = RegInit(false.B)
     // when dmem start
-    when(!stall && !inst_kill && !imem_req && io.r_imem_dat.ack){
+    when((stall || waitrequest) && !inst_kill && !imem_req && io.r_imem_dat.ack && !temp_lock){
+        temp_lock := true.B
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
@@ -168,13 +170,16 @@ class KyogenRVCpu extends Module {
         id_npc2_temp := id_npc
         id_inst2_temp := id_inst
 
-/*      id_pc := pc_ini
+        id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
-*/
+
     }
 
-    when((stall || waitrequest) && !inst_kill && valid_id_inst && imem_req) {
+
+
+    when((stall || waitrequest) && !inst_kill && valid_id_inst && imem_req /*&& !temp_lock*/) {
+        //temp_lock := true.B
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
@@ -196,6 +201,10 @@ class KyogenRVCpu extends Module {
         id_pc_temp := pc_ini
         id_npc_temp := npc_ini
         id_inst_temp := inst_nop
+        id_pc2_temp := pc_ini
+        id_npc2_temp := npc_ini
+        id_inst2_temp := inst_nop
+        //temp_lock := false.B
     }.elsewhen(!waitrequest && !inst_kill && !stall && !valid_id_inst && imem_req) {
         when(in_loadstore) {
             id_pc := id_pc2_temp
@@ -205,7 +214,7 @@ class KyogenRVCpu extends Module {
             //id_pc_temp := pc_ini
             //id_npc_temp := npc_ini
             //id_inst_temp := inst_nop
-
+            temp_lock := false.B
 
         }.elsewhen(!in_loadstore) {
             id_pc := id_pc_temp
@@ -264,7 +273,7 @@ class KyogenRVCpu extends Module {
       (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
       (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
       //(ex_ctrl.mem_wr === M_XRD && id_ctrl.mem_wr === M_XWR) && (!inst_kill) ||
-      ((ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X)) && (id_ctrl.br_type === BR_J || id_ctrl.br_type === BR_JR) && (!inst_kill) ||
+      ((ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X)) && (id_ctrl.br_type =/= BR_N) && (!inst_kill) ||
       (delay_stall =/= 7.U)  /*|| imem_wait || dmem_wait*/
     io.sw.r_stall_sig := ex_inst //stall
     //}
