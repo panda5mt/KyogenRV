@@ -168,7 +168,7 @@ class KyogenRVCpu extends Module {
         id_npc2_temp := id_npc
         id_inst2_temp := id_inst
 
-/*        id_pc := pc_ini
+/*      id_pc := pc_ini
         id_npc := npc_ini
         id_inst := inst_nop
 */
@@ -193,6 +193,17 @@ class KyogenRVCpu extends Module {
         id_npc_temp := npc_ini
         id_inst_temp := inst_nop
     }.elsewhen(!waitrequest && !inst_kill && !stall && !valid_id_inst && imem_req) {
+        when(in_loadstore) {
+            id_pc := id_pc2_temp
+            id_npc := id_npc2_temp
+            id_inst := id_inst2_temp
+            // reset temp
+            //id_pc_temp := pc_ini
+            //id_npc_temp := npc_ini
+            //id_inst_temp := inst_nop
+
+
+        }.elsewhen(!in_loadstore) {
             id_pc := id_pc_temp
             id_npc := id_npc_temp
             id_inst := id_inst_temp
@@ -200,6 +211,7 @@ class KyogenRVCpu extends Module {
             id_pc_temp := pc_ini
             id_npc_temp := npc_ini
             id_inst_temp := inst_nop
+        }
 
     }/*.elsewhen(!imem_req){
         id_pc := pc_ini
@@ -213,7 +225,6 @@ class KyogenRVCpu extends Module {
 
     val idm: IDModule = Module(new IDModule)
     idm.io.imem := id_inst
-
 
     // instruction decode
     val id_ctrl: IntCtrlSigs = Wire(new IntCtrlSigs).decode(idm.io.inst.bits, (new IDecode).table)
@@ -229,7 +240,6 @@ class KyogenRVCpu extends Module {
     val rv32i_reg: Vec[UInt] = RegInit(VecInit(Seq.fill(32)(0.U(32.W)))) // x0 - x31:All zero initialized
     val id_rs1: UInt = Mux(id_raddr1 === 0.U, 0.U, rv32i_reg(id_raddr1))
     val id_rs2: UInt = Mux(id_raddr2 === 0.U, 0.U, rv32i_reg(id_raddr2))
-
 
     // program counter check
     val pc_invalid: Bool = inst_kill_branch || (ex_pc === pc_ini)
