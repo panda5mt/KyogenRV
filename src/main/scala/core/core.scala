@@ -159,6 +159,10 @@ class KyogenRVCpu extends Module {
     }
 
     var temp_lock = RegInit(false.B)
+    when(imem_req && io.r_imem_dat.ack){
+        temp_lock := false.B
+    }
+
     // when dmem start
     when((stall || waitrequest) && !inst_kill && !imem_req && io.r_imem_dat.ack && !temp_lock){
         temp_lock := true.B
@@ -178,8 +182,8 @@ class KyogenRVCpu extends Module {
 
 
 
-    when((stall || waitrequest) && !inst_kill && valid_id_inst && imem_req /*&& !temp_lock*/) {
-        //temp_lock := true.B
+    when((stall || waitrequest) && !inst_kill && valid_id_inst && imem_req && !temp_lock) {
+        temp_lock := true.B
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
@@ -205,7 +209,7 @@ class KyogenRVCpu extends Module {
         id_npc2_temp := npc_ini
         id_inst2_temp := inst_nop
         //temp_lock := false.B
-    }.elsewhen(!waitrequest && !inst_kill && !stall && !valid_id_inst && imem_req) {
+    }.elsewhen(/*!waitrequest &&*/ !inst_kill && !stall && !valid_id_inst && imem_req) {
         when(in_loadstore) {
             id_pc := id_pc2_temp
             id_npc := id_npc2_temp
@@ -216,7 +220,7 @@ class KyogenRVCpu extends Module {
             //id_inst_temp := inst_nop
             temp_lock := false.B
 
-        }.elsewhen(!in_loadstore) {
+        }.elsewhen(!in_loadstore && !waitrequest) {
             id_pc := id_pc_temp
             id_npc := id_npc_temp
             id_inst := id_inst_temp
