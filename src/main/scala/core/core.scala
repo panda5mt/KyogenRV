@@ -164,7 +164,7 @@ class KyogenRVCpu extends Module {
     }
 
     // when dmem start
-    when((stall || waitrequest) && !inst_kill && !imem_req && io.r_imem_dat.ack && !temp_lock){
+    when(/*(stall || waitrequest) &&*/ !inst_kill && !imem_req && io.r_imem_dat.ack && !temp_lock){
         temp_lock := true.B
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
