@@ -276,8 +276,8 @@ class KyogenRVCpu extends Module {
       ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
       (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
       (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
-      //(ex_ctrl.mem_wr === M_XRD && id_ctrl.mem_wr === M_XWR) && (!inst_kill) ||
-      ((ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X)) && (id_ctrl.br_type === BR_J||id_ctrl.br_type === BR_JR) && (!inst_kill) ||
+      (mem_ctrl.mem_wr === M_XRD && ex_ctrl.mem_wr === M_XWR) && (!inst_kill) || // comment me
+      ((ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X)) && (id_ctrl.br_type =/= BR_N) && (!inst_kill) ||
       (delay_stall =/= 7.U)  /*|| imem_wait || dmem_wait*/
     io.sw.r_stall_sig := ex_inst //stall
     //}
