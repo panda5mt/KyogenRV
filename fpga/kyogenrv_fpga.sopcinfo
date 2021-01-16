@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EnsembleReport name="kyogenrv_fpga" kind="kyogenrv_fpga" version="1.0" fabric="QSYS">
  <!-- Format version 20.1 720 (Future versions may contain additional information.) -->
- <!-- 2021.01.15.16:48:01 -->
+ <!-- 2021.01.16.17:37:23 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
-  <value>1610696881</value>
+  <value>1610786243</value>
   <derived>false</derived>
   <enabled>true</enabled>
   <visible>false</visible>
@@ -1243,7 +1243,7 @@ the requested settings for a module instance. -->
   </assignment>
   <assignment>
    <name>embeddedsw.CMacro.INIT_CONTENTS_FILE</name>
-   <value>rv32ui-p-lb_intel</value>
+   <value>blinker_intel</value>
   </assignment>
   <assignment>
    <name>embeddedsw.CMacro.INIT_MEM_CONTENT</name>
@@ -1307,7 +1307,7 @@ the requested settings for a module instance. -->
   </assignment>
   <assignment>
    <name>embeddedsw.memoryInfo.MEM_INIT_FILENAME</name>
-   <value>rv32ui-p-lb_intel</value>
+   <value>blinker_intel</value>
   </assignment>
   <assignment>
    <name>postgeneration.simulation.init_file.param_name</name>
@@ -1383,7 +1383,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="initializationFileName">
    <type>java.lang.String</type>
-   <value>C:/RISCV/kyogenrv/fpga/chisel_generated/rv32ui-p-lb_intel.hex</value>
+   <value>C:/RISCV/kyogenrv/fpga/chisel_generated/blinker_intel.hex</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -1594,7 +1594,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="derived_init_file_name">
    <type>java.lang.String</type>
-   <value>C:/RISCV/kyogenrv/fpga/chisel_generated/rv32ui-p-lb_intel.hex</value>
+   <value>C:/RISCV/kyogenrv/fpga/chisel_generated/blinker_intel.hex</value>
    <derived>true</derived>
    <enabled>true</enabled>
    <visible>false</visible>

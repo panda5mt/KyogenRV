@@ -221,7 +221,7 @@ class KyogenRVCpu extends Module {
             temp_lock := false.B
 
         }.elsewhen(!in_loadstore && !waitrequest) {
-            id_pc := id_pc_temp
+            id_pc := id_pc_temp + 4.U
             id_npc := id_npc_temp
             id_inst := id_inst_temp
             // reset temp
@@ -276,10 +276,11 @@ class KyogenRVCpu extends Module {
       ((mem_ctrl.mem_wr === M_XRD) || (ex_ctrl.mem_wr === M_XRD)) && (!inst_kill)) ||
       (id_raddr1 =/= 0.U && id_raddr1 === wb_reg_waddr) && (!inst_kill) ||
       (id_raddr2 =/= 0.U && id_raddr2 === wb_reg_waddr) && (!inst_kill) ||
-      (mem_ctrl.mem_wr === M_XRD && ex_ctrl.mem_wr === M_XWR) && (!inst_kill) || // comment me
-      ((ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X)) && (id_ctrl.br_type =/= BR_N) && (!inst_kill) ||
+     // (id_ctrl.mem_wr === M_XWR && ex_ctrl.mem_wr === M_XWR) && (!inst_kill) || // comment me
+      (id_ctrl.br_type =/= BR_N && ex_ctrl.br_type =/= BR_N) && (!inst_kill) ||
+    ((ex_ctrl.mem_wr =/= M_X) || (mem_ctrl.mem_wr =/= M_X)) && (id_ctrl.br_type =/= BR_N) && (!inst_kill) ||
       (delay_stall =/= 7.U)  /*|| imem_wait || dmem_wait*/
-    io.sw.r_stall_sig := ex_inst //stall
+    io.sw.r_stall_sig := ex_pc//ex_inst //stall
     //}
 
     // -------- END: ID stage --------
