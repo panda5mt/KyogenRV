@@ -1,7 +1,7 @@
     .section .text.init;
-    .globl _start
+    .global _start
 _start:
-    lui    sp, 0x07
+    lui    sp, 0x08
     call main
     j .
 
