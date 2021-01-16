@@ -209,9 +209,9 @@ GND                          : J9        : gnd    :                   :         
 GND                          : J10       : gnd    :                   :         :           :                
 GND                          : J11       : gnd    :                   :         :           :                
 VCCINT                       : J12       : power  :                   : 1.2V    :           :                
-pio[3]                       : J13       : output : 3.3-V LVTTL       :         : 5         : N              
-pio[4]                       : J14       : output : 3.3-V LVTTL       :         : 5         : N              
-pio[6]                       : J15       : output : 3.3-V LVTTL       :         : 5         : N              
+pio[6]                       : J13       : output : 3.3-V LVTTL       :         : 5         : N              
+pio[5]                       : J14       : output : 3.3-V LVTTL       :         : 5         : N              
+pio[3]                       : J15       : output : 3.3-V LVTTL       :         : 5         : N              
 reset                        : J16       : input  : 3.3-V LVTTL       :         : 5         : Y              
 RESERVED_INPUT_WITH_WEAK_PULLUP : K1        :        :                   :         : 2         :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : K2        :        :                   :         : 2         :                
@@ -227,7 +227,7 @@ VCCINT                       : K11       : power  :                   : 1.2V    
 GND                          : K12       : gnd    :                   :         :           :                
 GND                          : K13       : gnd    :                   :         :           :                
 VCCIO5                       : K14       : power  :                   : 3.3V    : 5         :                
-pio[5]                       : K15       : output : 3.3-V LVTTL       :         : 5         : N              
+pio[2]                       : K15       : output : 3.3-V LVTTL       :         : 5         : N              
 pio[7]                       : K16       : output : 3.3-V LVTTL       :         : 5         : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : L1        :        :                   :         : 2         :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : L2        :        :                   :         : 2         :                
@@ -241,7 +241,7 @@ GND                          : L9        : gnd    :                   :         
 GND                          : L10       : gnd    :                   :         :           :                
 GND                          : L11       : gnd    :                   :         :           :                
 VCCA4                        : L12       : power  :                   : 2.5V    :           :                
-pio[2]                       : L13       : output : 3.3-V LVTTL       :         : 5         : N              
+pio[4]                       : L13       : output : 3.3-V LVTTL       :         : 5         : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : L14       :        :                   :         : 5         :                
 pio[1]                       : L15       : output : 3.3-V LVTTL       :         : 5         : Y              
 pio[0]                       : L16       : output : 3.3-V LVTTL       :         : 5         : Y              
