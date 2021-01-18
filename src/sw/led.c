@@ -7,17 +7,18 @@ void dummy (void);
 
 #define GPIO_BASE         0x8000
 
-int main(int argc, char *argv[]) {
-    volatile int oldtime;
-    while (1) {
-        oldtime = get_timel();
-        while((get_timel()-oldtime) < 0x2160000);   // about 500msec
+void wait_ms(unsigned int msec){
+    volatile unsigned int oldtime;
+    oldtime = get_timel();
+    while((get_timel()-oldtime) < 60000 * msec); //1msec
 
+}
+int main(int argc, char *argv[]) {
+    while (1) {
+        wait_ms(500);
         put32(GPIO_BASE, 0x55);
 
-        oldtime = get_timel();
-        while((get_timel()-oldtime) < 0x2160000);   // about 500msec
-
+        wait_ms(500);
         put32(GPIO_BASE, 0xAA);
     }
     return 0;

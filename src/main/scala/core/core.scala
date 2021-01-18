@@ -169,8 +169,11 @@ class KyogenRVCpu extends Module {
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
-
-        id_pc2_temp := id_pc //io.r_imem_dat.data
+        when(waitrequest) {
+            id_pc2_temp := id_pc //io.r_imem_dat.data
+        }.otherwise{
+            id_pc2_temp := id_pc - 4.U
+        }
         id_npc2_temp := id_npc
         id_inst2_temp := id_inst
 
@@ -188,7 +191,7 @@ class KyogenRVCpu extends Module {
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
 
-        id_pc2_temp := id_pc //io.r_imem_dat.data
+        id_pc2_temp := id_pc//io.r_imem_dat.data
         id_npc2_temp := id_npc
         id_inst2_temp := id_inst
 
@@ -221,7 +224,7 @@ class KyogenRVCpu extends Module {
             temp_lock := false.B
 
         }.elsewhen(!in_loadstore && !waitrequest) {
-            id_pc := id_pc_temp + 4.U
+            id_pc := id_pc_temp// + 4.U
             id_npc := id_npc_temp
             id_inst := id_inst_temp
             // reset temp
