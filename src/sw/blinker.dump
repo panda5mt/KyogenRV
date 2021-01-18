@@ -1,12 +1,12 @@
 
-src/sw/blinker.elf:     ファイル形式 elf32-littleriscv
+src/sw/blinker.elf:     file format elf32-littleriscv
 
 
-セクション .text.init の逆アセンブル:
+Disassembly of section .text.init:
 
 00000000 <_start>:
    0:	00008137          	lui	sp,0x8
-   4:	02c000ef          	jal	ra,30 <main>
+   4:	0a8000ef          	jal	ra,ac <main>
    8:	0000006f          	j	8 <_start+0x8>
 
 0000000c <dummy>:
@@ -28,36 +28,56 @@ src/sw/blinker.elf:     ファイル形式 elf32-littleriscv
   28:	c8102573          	rdtimeh	a0
   2c:	00008067          	ret
 
-セクション .text の逆アセンブル:
+Disassembly of section .text:
 
-00000030 <main>:
-  30:	fd010113          	addi	sp,sp,-48 # 7fd0 <_end+0x7f28>
+00000030 <wait_ms>:
+  30:	fd010113          	addi	sp,sp,-48 # 7fd0 <_end+0x7ee0>
   34:	02112623          	sw	ra,44(sp)
   38:	02812423          	sw	s0,40(sp)
   3c:	03010413          	addi	s0,sp,48
   40:	fca42e23          	sw	a0,-36(s0)
-  44:	fcb42c23          	sw	a1,-40(s0)
-  48:	fd9ff0ef          	jal	ra,20 <get_timel>
-  4c:	00050793          	mv	a5,a0
-  50:	fef42623          	sw	a5,-20(s0)
-  54:	00000013          	nop
-  58:	fc9ff0ef          	jal	ra,20 <get_timel>
-  5c:	00050793          	mv	a5,a0
-  60:	fec42703          	lw	a4,-20(s0)
-  64:	40e78733          	sub	a4,a5,a4
-  68:	021607b7          	lui	a5,0x2160
-  6c:	fef776e3          	bgeu	a4,a5,58 <main+0x28>
-  70:	05500593          	li	a1,85
-  74:	00008537          	lui	a0,0x8
-  78:	f99ff0ef          	jal	ra,10 <put32>
-  7c:	00000013          	nop
-  80:	fa1ff0ef          	jal	ra,20 <get_timel>
-  84:	00050793          	mv	a5,a0
-  88:	fec42703          	lw	a4,-20(s0)
-  8c:	40e78733          	sub	a4,a5,a4
-  90:	021607b7          	lui	a5,0x2160
-  94:	fef776e3          	bgeu	a4,a5,80 <main+0x50>
-  98:	0aa00593          	li	a1,170
-  9c:	00008537          	lui	a0,0x8
-  a0:	f71ff0ef          	jal	ra,10 <put32>
-  a4:	fa5ff06f          	j	48 <main+0x18>
+  44:	fddff0ef          	jal	ra,20 <get_timel>
+  48:	00050793          	mv	a5,a0
+  4c:	fef42623          	sw	a5,-20(s0)
+  50:	00000013          	nop
+  54:	fcdff0ef          	jal	ra,20 <get_timel>
+  58:	00050713          	mv	a4,a0
+  5c:	fec42783          	lw	a5,-20(s0)
+  60:	40f706b3          	sub	a3,a4,a5
+  64:	fdc42703          	lw	a4,-36(s0)
+  68:	00070793          	mv	a5,a4
+  6c:	00579793          	slli	a5,a5,0x5
+  70:	40e787b3          	sub	a5,a5,a4
+  74:	00279793          	slli	a5,a5,0x2
+  78:	00e787b3          	add	a5,a5,a4
+  7c:	00479713          	slli	a4,a5,0x4
+  80:	40f70733          	sub	a4,a4,a5
+  84:	00571793          	slli	a5,a4,0x5
+  88:	00078713          	mv	a4,a5
+  8c:	00070793          	mv	a5,a4
+  90:	fcf6e2e3          	bltu	a3,a5,54 <wait_ms+0x24>
+  94:	00000013          	nop
+  98:	00000013          	nop
+  9c:	02c12083          	lw	ra,44(sp)
+  a0:	02812403          	lw	s0,40(sp)
+  a4:	03010113          	addi	sp,sp,48
+  a8:	00008067          	ret
+
+000000ac <main>:
+  ac:	fe010113          	addi	sp,sp,-32
+  b0:	00112e23          	sw	ra,28(sp)
+  b4:	00812c23          	sw	s0,24(sp)
+  b8:	02010413          	addi	s0,sp,32
+  bc:	fea42623          	sw	a0,-20(s0)
+  c0:	feb42423          	sw	a1,-24(s0)
+  c4:	1f400513          	li	a0,500
+  c8:	f69ff0ef          	jal	ra,30 <wait_ms>
+  cc:	05500593          	li	a1,85
+  d0:	00008537          	lui	a0,0x8
+  d4:	f3dff0ef          	jal	ra,10 <put32>
+  d8:	1f400513          	li	a0,500
+  dc:	f55ff0ef          	jal	ra,30 <wait_ms>
+  e0:	0aa00593          	li	a1,170
+  e4:	00008537          	lui	a0,0x8
+  e8:	f29ff0ef          	jal	ra,10 <put32>
+  ec:	fd9ff06f          	j	c4 <main+0x18>

@@ -5,13 +5,14 @@ unsigned int get_timeh(void);
 
 void dummy (void);
 
-#define GPIO_BASE         0x8000
+#define GPIO_BASE       0x8000
+#define XTAL_FREQ_KHZ   60000
 
 // wait msec counter
 void wait_ms(unsigned int msec){
     volatile unsigned int oldtime;
     oldtime = get_timel();
-    while((get_timel()-oldtime) < 60000 * msec); //1msec
+    while((get_timel()-oldtime) < XTAL_FREQ_KHZ * msec); //1msec
 }
 
 

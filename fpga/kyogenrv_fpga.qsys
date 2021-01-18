@@ -161,7 +161,7 @@
  <interface name="uart_0_irq" internal="uart_0.irq" type="interrupt" dir="end" />
  <module name="KyogenRV_0" kind="KyogenRV" version="20.1" enabled="1" />
  <module name="clk_0" kind="clock_source" version="20.1" enabled="1">
-  <parameter name="clockFrequency" value="50000000" />
+  <parameter name="clockFrequency" value="60000000" />
   <parameter name="clockFrequencyKnown" value="true" />
   <parameter name="inputClockFrequency" value="0" />
   <parameter name="resetSynchronousEdges" value="NONE" />
@@ -202,7 +202,7 @@
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="false" />
-  <parameter name="clockRate" value="50000000" />
+  <parameter name="clockRate" value="60000000" />
   <parameter name="direction" value="Output" />
   <parameter name="edgeType" value="RISING" />
   <parameter name="generateIRQ" value="false" />
@@ -214,7 +214,7 @@
  </module>
  <module name="uart_0" kind="altera_avalon_uart" version="20.1" enabled="1">
   <parameter name="baud" value="9600" />
-  <parameter name="clockRate" value="50000000" />
+  <parameter name="clockRate" value="60000000" />
   <parameter name="dataBits" value="8" />
   <parameter name="fixedBaud" value="true" />
   <parameter name="parity" value="NONE" />
