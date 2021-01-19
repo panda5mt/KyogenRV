@@ -1,7 +1,7 @@
 RISCVGNU = riscv32-unknown-elf
 
 AOPS = -march=rv32i -mabi=ilp32
-COPS = -march=rv32i -mabi=ilp32 -Wall -O0 -g -std=gnu99 -lgcc -nostdlib -nostartfiles -ffreestanding
+COPS = -march=rv32i -mabi=ilp32 -Wall -O0 -g -nostdlib -nostartfiles -ffreestanding
 #COPS = -march=rv32imac -Wall -O2  -nostdlib -nostartfiles -ffreestanding
 c_all : $(ASM_DIR)/blinker.hex
 

@@ -150,7 +150,7 @@ class KyogenRVCpu extends Module {
     val id_npc2_temp: UInt = RegInit(npc_ini)
 
     val valid_id_inst: Bool = valid_imem && io.r_imem_dat.ack
-    val in_loadstore = RegInit(false.B)
+    val in_loadstore: Bool = RegInit(false.B)
 
     when(mem_ctrl.mem_wr =/= M_X) {
         in_loadstore := true.B
@@ -158,7 +158,7 @@ class KyogenRVCpu extends Module {
         in_loadstore :=false.B
     }
 
-    var temp_lock = RegInit(false.B)
+    var temp_lock: Bool = RegInit(false.B)
     when(imem_req && io.r_imem_dat.ack){
         temp_lock := false.B
     }
@@ -169,11 +169,8 @@ class KyogenRVCpu extends Module {
         id_pc_temp := if_pc //io.r_imem_dat.data
         id_npc_temp := if_npc
         id_inst_temp := io.r_imem_dat.data
-        when(waitrequest) {
-            id_pc2_temp := id_pc //io.r_imem_dat.data
-        }.otherwise{
-            id_pc2_temp := id_pc - 4.U
-        }
+
+        id_pc2_temp := id_pc //io.r_imem_dat.data
         id_npc2_temp := id_npc
         id_inst2_temp := id_inst
 
@@ -217,6 +214,7 @@ class KyogenRVCpu extends Module {
             id_pc := id_pc2_temp
             id_npc := id_npc2_temp
             id_inst := id_inst2_temp
+
             // reset temp
             //id_pc_temp := pc_ini
             //id_npc_temp := npc_ini
@@ -224,9 +222,16 @@ class KyogenRVCpu extends Module {
             temp_lock := false.B
 
         }.elsewhen(!in_loadstore && !waitrequest) {
-            id_pc := id_pc_temp// + 4.U
-            id_npc := id_npc_temp
-            id_inst := id_inst_temp
+            when(id_pc2_temp === id_pc_temp && id_pc_temp =/= pc_ini) {
+                id_pc := id_pc_temp + 4.U
+                id_npc := id_npc_temp + 4.U
+                id_inst := id_inst_temp
+            }.otherwise{
+                id_pc := id_pc_temp
+                id_npc := id_npc_temp
+                id_inst := id_inst_temp
+            }
+
             // reset temp
             id_pc_temp := pc_ini
             id_npc_temp := npc_ini
