@@ -180,8 +180,6 @@ class KyogenRVCpu extends Module {
 
     }
 
-
-
     when((stall || waitrequest) && !inst_kill && valid_id_inst && imem_req && !temp_lock) {
         temp_lock := true.B
         id_pc_temp := if_pc //io.r_imem_dat.data
