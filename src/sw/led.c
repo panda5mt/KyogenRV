@@ -9,9 +9,10 @@ void dummy (void);
 
 // wait msec counter
 void wait_ms(unsigned int msec) {
-    volatile unsigned int oldtime;
+    volatile unsigned int oldtime, comp;
+    comp = XTAL_FREQ_KHZ * msec;
     oldtime = get_timel();
-    while((get_timel()-oldtime) < (XTAL_FREQ_KHZ * msec));
+    while((get_timel()-oldtime) < comp);
  }
 
 // main function
