@@ -1,15 +1,18 @@
-void put32(unsigned int, unsigned int);
-unsigned int get32(unsigned int);
-unsigned int get_timel(void);
-unsigned int get_timeh(void);
+#include <stdint.h>
+
+void put32(uint32_t, uint32_t);
+uint32_t get32(uint32_t);
+uint32_t get_timel(void);
+uint32_t get_timeh(void);
 void dummy (void);
 
 #define GPIO_BASE       0x8000
 #define XTAL_FREQ_KHZ   70000 // 70000kHz = 70MHz
 
 // wait msec counter
-void wait_ms(unsigned int msec) {
-    volatile unsigned int oldtime, comp;
+void wait_ms(uint64_t msec) {
+    volatile uint64_t oldtime;
+    volatile uint64_t comp;
     comp = XTAL_FREQ_KHZ * msec;
     oldtime = get_timel();
     while((get_timel()-oldtime) < comp);

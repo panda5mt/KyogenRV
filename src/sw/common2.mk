@@ -2,8 +2,8 @@ RISCVGNU = riscv32-unknown-elf
 
 MEMMAP = $(ASM_DIR)/linker.ld
 AOPS = --warn -march=rv32i -mabi=ilp32
-COPS = -Wall -march=rv32i -mabi=ilp32 -O0 -nostdlib -nostartfiles -ffreestanding
-COPS2 = -Wall -march=rv32i -mabi=ilp32 -O2 -nostdlib -nostartfiles -ffreestanding -Xlinker -T -Xlinker $(MEMMAP)
+COPS = -Wall -march=rv32i -mabi=ilp32 -O2 -nostartfiles -ffreestanding
+COPS2 = -Wall -march=rv32i -mabi=ilp32 -O2 -nostartfiles -ffreestanding -Xlinker -T -Xlinker $(MEMMAP)
 
 c_all : $(ASM_DIR)/blinker.hex
 
