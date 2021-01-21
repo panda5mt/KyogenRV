@@ -24,7 +24,7 @@ cd ${RISCV_PROJ_DIR}
 
 cd ${RISCV_PROJ_DIR}
 #	${QUARTUS_ROOTDIR}/quartus_sh.exe --flow clean de10lite
-${QUARTUS_ROOTDIR}/quartus_sh.exe --flow compile kyogenrv_fpga_top -c kyogenrv_fpga
+${QUARTUS_ROOTDIR}/quartus_sh.exe --flow compile kyogenrv_fpga_top
 cd ${SVFDIR}
 ${QUARTUS_ROOTDIR}/quartus_cpf.exe -c -n p -q 2MHz -g 3.3 ${SVFDIRW}/${DESIGN_NAME}.sof ${SVFDIRW}/${DESIGN_NAME}.svf
 cd ${QSYSDIR}

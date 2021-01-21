@@ -65,7 +65,7 @@
  ---------------------------------------------------------------------------------
 
 Quartus Prime Version 20.1.1 Build 720 11/11/2020 SJ Lite Edition
-CHIP  "kyogenrv_fpga"  ASSIGNED TO AN: 10CL025YU256C8G
+CHIP  "kyogenrv_fpga_top"  ASSIGNED TO AN: 10CL025YU256C8G
 
 Pin Name/Usage               : Location  : Dir.   : I/O Standard      : Voltage : I/O Bank  : User Assignment
 -------------------------------------------------------------------------------------------------------------

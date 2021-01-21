@@ -53,9 +53,6 @@ set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_RO
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
-set_global_assignment -name QIP_FILE pll.qip
-set_global_assignment -name QSYS_FILE kyogenrv_fpga.qsys
-set_global_assignment -name SYSTEMVERILOG_FILE kyogenrv_fpga_top.sv
 set_global_assignment -name ENABLE_OCT_DONE OFF
 set_global_assignment -name USE_CONFIGURATION_DEVICE OFF
 set_global_assignment -name CRC_ERROR_OPEN_DRAIN OFF
@@ -70,10 +67,8 @@ set_location_assignment PIN_L15 -to pio[1]
 set_location_assignment PIN_M16 -to CY10_CLK_24M
 set_global_assignment -name ENABLE_SIGNALTAP ON
 set_global_assignment -name USE_SIGNALTAP_FILE output_files/kyogenrv_stap.stp
-set_global_assignment -name HEX_FILE chisel_generated/test_intel.hex
 set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
 set_instance_assignment -name GLOBAL_SIGNAL GLOBAL_CLOCK -to "pll:pll0|c0"
-set_global_assignment -name SIGNALTAP_FILE output_files/kyogenrv_stap.stp
 set_location_assignment PIN_T6 -to uart_rx
 set_location_assignment PIN_R6 -to uart_tx
 set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON
@@ -741,5 +736,10 @@ set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id auto_signaltap_0
+set_global_assignment -name QSYS_FILE kyogenrv_fpga.qsys
+set_global_assignment -name QIP_FILE pll.qip
+set_global_assignment -name SYSTEMVERILOG_FILE kyogenrv_fpga_top.sv
+set_global_assignment -name HEX_FILE chisel_generated/test_intel.hex
+set_global_assignment -name SIGNALTAP_FILE output_files/kyogenrv_stap.stp
 set_global_assignment -name SLD_FILE db/kyogenrv_stap_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
