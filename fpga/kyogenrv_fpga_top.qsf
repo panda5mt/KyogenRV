@@ -37,7 +37,6 @@
 # -------------------------------------------------------------------------- #
 
 
-set_global_assignment -name FAMILY Cyclone
 set_global_assignment -name FAMILY "Cyclone 10 LP"
 set_global_assignment -name DEVICE 10CL025YU256C8G
 set_global_assignment -name TOP_LEVEL_ENTITY kyogenrv_fpga_top

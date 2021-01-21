@@ -16,15 +16,15 @@ void wait_ms(uint64_t msec) {
     comp = XTAL_FREQ_KHZ * msec;
     oldtime = get_timel();
     while((get_timel()-oldtime) < comp);
- }
+}
 
 // main function
 int main(int argc, char *argv[]) {
 
     while (1) {
-        wait_ms(500);
+        wait_ms(100);
         put32(PIO_0_BASE, 0x55);
-        wait_ms(500);
+        wait_ms(100);
         put32(PIO_0_BASE, 0xAA);
     }
     return 0;

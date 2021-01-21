@@ -33,4 +33,4 @@ cd ${QSYSDIR}
 ${SOPC_ROOTDIR}/sopcinfo2swinfo.exe --input=${QSYSDIRW}/${DESIGN_NAME}.sopcinfo
 ${SOPC_ROOTDIR}/swinfo2header.exe --swinfo ${QSYSDIRW}/${DESIGN_NAME}.swinfo --module KyogenRV_0 --master avalon_data_master --single ${SWDIRW}/qsys_mem_map.h
 
-#scp -r ${SVFDIR}/${DESIGN_NAME}.svf lynx@raspberrypi.local:/home/pi
+#scp -r ${SVFDIR}/${DESIGN_NAME}.svf pi@raspberrypi.local:/home/pi
