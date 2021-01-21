@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "qsys_mem_map.h"
 
 void put32(uint32_t, uint32_t);
 uint32_t get32(uint32_t);
@@ -6,7 +7,6 @@ uint32_t get_timel(void);
 uint32_t get_timeh(void);
 void dummy (void);
 
-#define GPIO_BASE       0x8000
 #define XTAL_FREQ_KHZ   70000 // 70000kHz = 70MHz
 
 // wait msec counter
@@ -23,9 +23,9 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         wait_ms(500);
-        put32(GPIO_BASE, 0x55);
+        put32(PIO_0_BASE, 0x55);
         wait_ms(500);
-        put32(GPIO_BASE, 0xAA);
+        put32(PIO_0_BASE, 0xAA);
     }
     return 0;
 }

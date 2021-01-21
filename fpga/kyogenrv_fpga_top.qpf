@@ -19,14 +19,13 @@
 #
 # Quartus Prime
 # Version 20.1.1 Build 720 11/11/2020 SJ Lite Edition
-# Date created = 16:34:41  January 21, 2021
+# Date created = 19:00:33  January 21, 2021
 #
 # -------------------------------------------------------------------------- #
 
 QUARTUS_VERSION = "20.1"
-DATE = "16:34:41  January 21, 2021"
+DATE = "19:00:33  January 21, 2021"
 
 # Revisions
 
 PROJECT_REVISION = "kyogenrv_fpga_top"
-PROJECT_REVISION = "kyogenrv_fpga"

@@ -13,7 +13,7 @@ module kyogenrv_fpga_top (
 // reset and clocking logic
 logic					pll_locked;
 logic					clk_riscv;
-//logic					clk_sdram;
+logic					clk_sdram;
 logic					clk_qsys;
 logic					rst_in;
 logic		[2:1] 	rst_in_d;
