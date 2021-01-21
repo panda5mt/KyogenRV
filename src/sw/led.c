@@ -22,9 +22,9 @@ void wait_ms(uint64_t msec) {
 int main(int argc, char *argv[]) {
 
     while (1) {
-        wait_ms(100);
+        wait_ms(500);
         put32(PIO_0_BASE, 0x55);
-        wait_ms(100);
+        wait_ms(500);
         put32(PIO_0_BASE, 0xAA);
     }
     return 0;
