@@ -24,7 +24,7 @@ make clean
 make sdk
 
 cd ${RISCV_PROJ_DIR}/fpga
-#	${QUARTUS_ROOTDIR}/quartus_sh.exe --flow clean de10lite
+#	${QUARTUS_ROOTDIR}/quartus_sh.exe --flow clean kyogenrv_fpga_top
 ${QUARTUS_ROOTDIR}/quartus_sh.exe --flow compile kyogenrv_fpga_top
 cd ${SVFDIR}
 ${QUARTUS_ROOTDIR}/quartus_cpf.exe -c -n p -q 2MHz -g 3.3 ${SVFDIRW}/${DESIGN_TOP_NAME}.sof ${SVFDIRW}/${DESIGN_TOP_NAME}.svf
@@ -33,4 +33,4 @@ cd ${QSYSDIR}
 ${SOPC_ROOTDIR}/sopcinfo2swinfo.exe --input=${QSYSDIRW}/${DESIGN_NAME}.sopcinfo
 ${SOPC_ROOTDIR}/swinfo2header.exe --swinfo ${QSYSDIRW}/${DESIGN_NAME}.swinfo --module KyogenRV_0 --master avalon_data_master --single ${SWDIRW}/qsys_mem_map.h
 
-#scp -r ${SVFDIR}/${DESIGN_NAME}.svf pi@raspberrypi.local:/home/pi
+#scp -r ${SVFDIR}/${DESIGN_TOP_NAME}.svf pi@raspberrypi.local:/home/pi
