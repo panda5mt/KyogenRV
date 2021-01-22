@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
             wait_ms(100);
             put32(PIO_0_BASE, 0xAA);
         }
-    uart_puts("UART test...\r\n");
+    uart_puts("UART and Blink LED test...\r\n");
     }
     return 0;
 }
