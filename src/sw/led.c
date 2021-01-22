@@ -18,14 +18,37 @@ void wait_ms(uint64_t msec) {
     while((get_timel()-oldtime) < comp);
 }
 
+void uart_putc(char ch) {
+    volatile uint32_t status;
+    while(1){
+        status = get32(UART_0_BASE + 8) & 0x20;
+        if (status > 0) break;
+    }
+    put32(UART_0_BASE + 4, ch);
+    return;
+}
+
+void uart_puts(char *ch) {
+    char a;
+    while(1){
+        a = *ch++;
+        if(a == '\0') return;
+        uart_putc(a);
+    }
+    return;
+}
+
 // main function
 int main(int argc, char *argv[]) {
 
-    while (1) {
-        wait_ms(500);
-        put32(PIO_0_BASE, 0x55);
-        wait_ms(500);
-        put32(PIO_0_BASE, 0xAA);
+    while(1){
+        for(int i=0;i<4;i++) {
+            wait_ms(100);
+            put32(PIO_0_BASE, 0x55);
+            wait_ms(100);
+            put32(PIO_0_BASE, 0xAA);
+        }
+    uart_puts("うんこ\r\n");
     }
     return 0;
 }
