@@ -45,7 +45,7 @@ Quartus Primeを起動し，[fpga/kyogenrv_fpga_top.qpf](fpga/kyogenrv_fpga_top.
 ```
 ./build_sdk.sh
 ```
-
+上記いずれの方法を採用した場合においても，先ずビルドエラーがないことを確認したのちに，Pin PlannerやPlatform Designerを用い各自のボード環境に適合するプロジェクトに修正するようにしてください．
 #### 1.シミュレーション
 riscv-toolchainが必要となります．以下の手順は導入が済んでいる前提で進めていきます．
 ```
