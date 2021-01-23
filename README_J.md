@@ -35,10 +35,10 @@ cd KyogenRV/
 make sdk
 ```
 ##### Quartus Primeの起動
-- GUIでコンパイル
+###### GUIでコンパイル
 Quartus Primeを起動し、[fpga/kyogenrv_fpga_top.qpf](fpga/kyogenrv_fpga_top.qpf)プロジェクトを開きます
 メニュー -> Processing -> Start Compilation でコンパイルを開始します。
-- CUIでコンパイル
+###### CUIでコンパイル
 ビルド用スクリプト[build_sdk.sh](build_sdk.sh)をエディタで開き、設定します。
 ```
 ./build_sdk.sh
