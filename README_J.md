@@ -46,10 +46,10 @@ Quartus Primeを起動し，<code>[fpga/kyogenrv_fpga_top.qpf](fpga/kyogenrv_fpg
 ./build_sdk.sh
 ```
 上記いずれの方法を採用した場合においても，先ずビルドエラーがないことを確認したのちに，Pin PlannerやPlatform Designerを用い各自のボード環境に適合するプロジェクトに修正するようにしてください．
-<code>[fpga](fpga)</code>フォルダに下記のファイルが生成されます。
+<code>[fpga](fpga)</code>フォルダに下記のファイルが生成されます．
 - kyogenrv_fpga_top.sof
 
-CUIを使用した場合は下記のファイルも生成されます。  
+CUIを使用した場合は下記のファイルも生成されます．  
 - kyogenrv_fpga_top.svf
 
 ## 
