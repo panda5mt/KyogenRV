@@ -14,7 +14,7 @@ KyogenRV(響玄RV):The Simple RISC-V for intel FPGA
 #### 0.intel FPGAで使用する
 標準ではCyclone10LP(10CL025YU256C8G)を使用する前提となっています．
 ##### 推奨開発環境
-- クロス開発環境
+- クロス開発環境:下記条件全てを満たす環境
   - Windows 10/WSL2が動作する環境
   - Quartus Prime Lite v.20.1.1以上
   - scala/sbt環境が用意されていること
