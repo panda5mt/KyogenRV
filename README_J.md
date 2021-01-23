@@ -11,6 +11,39 @@ KyogenRV(響玄RV):The Simple RISC-V for intel FPGA
 - 言語:Chisel v.3.4
 
 ## I.使い方
+#### 0.intel FPGAで使用する
+標準ではCyclone10LP(10CL025YU256C8G)を使用する前提となっています。
+##### 推奨開発環境
+- クロス開発環境
+  - Windows 10/WSL2が動作する環境
+  - Quartus Prime Lite v.20.1.1以上
+  - scala/sbt環境が用意されていること
+  - Pyhton 3.7以上が動作すること
+- FPGA要件:以下のいずれかの要件を満たすデバイス
+  - Cyclone 10LP(10CL010またはそれ以上のロジックエレメントを有するデバイス)
+  - PLLが1つ以上搭載、7000LE以上のロジック・エレメント、1KByte以上のOn-Chip RAMを確保できるintel FPGA
+##### riscv-toolchainの準備
+```
+git clone https://github.com/riscv/riscv-gnu-toolchain
+./configure --prefix=/opt/riscv --with-arch=rv32i 
+sudo make
+```
+##### KyogenRVの導入とFPGAロジック関連のリビルド
+```
+git clone http://github.com/panda5mt/KyogenRV  
+cd KyogenRV/
+make sdk
+```
+##### Quartus Primeの起動
+- GUIでコンパイル
+Quartus Primeを起動し、[fpga/kyogenrv_fpga_top.qpf](fpga/kyogenrv_fpga_top.qpf)プロジェクトを開きます
+メニュー -> Processing -> Start Compilation でコンパイルを開始します。
+- CUIでコンパイル
+ビルド用スクリプト[build_sdk.sh](build_sdk.sh)をエディタで開き、設定します。
+```
+./build_sdk.sh
+```
+
 #### 1.シミュレーション
 riscv-toolchainが必要となります。以下の手順は導入が済んでいる前提で進めていきます。
 ```
