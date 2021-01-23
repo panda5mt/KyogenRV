@@ -37,15 +37,22 @@ make sdk
 ##### Quartus Primeの起動
 GUI/CUIいずれかを選択することができます．CUIを使う手法はクラウド上またはオンプレのPCを使用する際に有用です．
 ###### GUIでコンパイル
-Quartus Primeを起動し，[fpga/kyogenrv_fpga_top.qpf](fpga/kyogenrv_fpga_top.qpf)プロジェクトを開きます
+Quartus Primeを起動し，<code>[fpga/kyogenrv_fpga_top.qpf](fpga/kyogenrv_fpga_top.qpf)</code>プロジェクトを開きます
 メニュー -> Processing -> Start Compilation でコンパイルを開始します．
 ###### CUIでコンパイル
-ビルド用スクリプト[build_sdk.sh](build_sdk.sh)をエディタで開き，Quartus Primeのインストールフォルダ，KyogenRVのディレクトリなどを設定します．
+ビルド用スクリプト<code>[build_sdk.sh](build_sdk.sh)</code>をエディタで開き，Quartus Primeのインストールフォルダ，KyogenRVのディレクトリなどを設定します．
 間違いがないことを確認したら，プロジェクトのルートで以下を実行します．
 ```
 ./build_sdk.sh
 ```
 上記いずれの方法を採用した場合においても，先ずビルドエラーがないことを確認したのちに，Pin PlannerやPlatform Designerを用い各自のボード環境に適合するプロジェクトに修正するようにしてください．
+<code>[fpga/](fpga)</code>フォルダに下記のファイルが生成されます。
+- kyogenrv_fpga_top.sof
+
+CUIを使用した場合は下記のファイルも生成されます。  
+- kyogenrv_fpga_top.svf
+
+
 #### 1.シミュレーション
 riscv-toolchainが必要となります．以下の手順は導入が済んでいる前提で進めていきます．
 ```
