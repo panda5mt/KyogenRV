@@ -13,12 +13,17 @@ void dummy (void);
 
 // wait msec counter
 void wait_ms(uint64_t msec) {
-    volatile uint64_t oldtime;
+    volatile uint64_t oldtime, nowtime;
     volatile uint64_t comp;
 
     comp = XTAL_FREQ_KHZ * msec;
-    oldtime = get_timel();
-    while((get_timel()-oldtime) < comp);
+    oldtime = (((uint64_t)get_timeh() * 4294967296UL) + (uint64_t)get_timel());
+
+    while(1) {
+        nowtime = (((uint64_t)get_timeh() * 4294967296UL) + (uint64_t)get_timel());
+        if((nowtime-oldtime) > comp) break;
+    }
+
 }
 
 void uart_putc(char ch) {
