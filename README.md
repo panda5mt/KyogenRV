@@ -45,7 +45,7 @@ You can choose between GUI or CUI, the CUI method is useful when using a cloud o
 ###### Compiling with GUI
 Run Quartus Prime and open the <code>[fpga/kyogenrv_fpga_top.qpf](fpga/kyogenrv_fpga_top.qpf)</code> project.
 Menu -> Processing -> Start Compilation to start compilation.
-###### Compilation with CUI
+###### Compiling with CUI
 Open the build script <code>[build_sdk.sh](build_sdk.sh)</code> with an editor and set the Quartus Prime installation folder, KyogenRV directory, etc.
 After confirming that everything PATH is correct, just run the following at the root of the project.
 ```
