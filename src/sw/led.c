@@ -45,9 +45,10 @@ void uart_puts(char *ch) {
 
 // main function
 int main(int argc, char *argv[]) {
-    int i;
+    uint64_t i;
     xdev_out(&uart_putc);
 
+    xprintf("KyogenRV (RV32I) Start...\r\n");
     while(1){
         for(int i=0;i<4;i++) {
             wait_ms(100);
@@ -55,8 +56,8 @@ int main(int argc, char *argv[]) {
             wait_ms(100);
             put32(PIO_0_BASE, 0xAA);
         }
-        i = get_timel();
-        xprintf("machine time = %d\r\n",i);
+        i = ((uint64_t)get_timeh() << 32) + (uint64_t)get_timel();
+        xprintf("machine time = %llu\r\n",i);
     }
     return 0;
 }
