@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
             wait_ms(100);
             put32(PIO_0_BASE, 0xAA);
         }
-        i = ((uint64_t)get_timeh() << 32) + (uint64_t)get_timel();
+        i = (uint64_t)get_timel();
         xprintf("machine time = %llu\r\n",i);
     }
     return 0;
