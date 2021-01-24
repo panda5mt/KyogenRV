@@ -25,11 +25,13 @@ KyogenRV(響玄RV):The Simple RISC-V for intel FPGA
 ##### riscv-toolchainの準備
 ```
 git clone https://github.com/riscv/riscv-gnu-toolchain
+cd riscv-gnu-toolchain
 ./configure --prefix=/opt/riscv --with-arch=rv32i 
 sudo make
 ```
 ##### KyogenRVの導入とFPGAロジック関連のリビルド
 ```
+cd -
 git clone http://github.com/panda5mt/KyogenRV  
 cd KyogenRV/
 make sdk
