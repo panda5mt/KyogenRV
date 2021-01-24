@@ -54,6 +54,24 @@ Quartus Primeを起動し，<code>[fpga/kyogenrv_fpga_top.qpf](fpga/kyogenrv_fpg
 CUIを使用した場合は下記のファイルも生成されます．  
 - kyogenrv_fpga_top.svf
 
+##### サンプルコードの確認・変更
+<code>[src/sw/led.c](src/sw/led.c)</code>を変更，改変すると参考になると思われます．
+コードが複数のファイルから構成される場合，またはファイル名が異なる場合は<code>[src/sw/common2.mk](src/sw/common2.mk)</code>を書き換えてください．
+保存を終えたら，
+```
+make c_all
+./mk_intel_hex.py
+```
+によりintel hexを生成できます．
+もしFPGAプロジェクトをふくめて全てをビルドし直す場合は
+```
+make sdk
+```
+です．CUIで行う場合は，
+```
+./build_sdk.sh
+```
+でも全てを再ビルドします．
 ## 
 #### 1.シミュレーション
 riscv-toolchainが必要となります．以下の手順は導入が済んでいる前提で進めていきます．
