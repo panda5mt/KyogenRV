@@ -66,18 +66,19 @@ make c_all
 ./mk_intel_hex.py
 ```
 によりintel hexを生成できます．
-もしFPGAプロジェクトをふくめて全てをビルドし直す場合は
+FPGAプロジェクトをふくめて全てをビルドし直す場合は
 ```
 make sdk
 ```
 です．再度Quartus Primeを起動し，<code>[fpga/kyogenrv_fpga_top.qpf](fpga/kyogenrv_fpga_top.qpf)</code>プロジェクトを開きます．
 メニュー -> Processing -> Start Compilation でコンパイルを開始します．
+生成されたsofファイルをQuartus Programmer経由でFPGAのコンフィグを行います．
 ###### CUIでのリビルド
-下記を実行します．
+GUIと比較し手順はシンプルです．
+下記を実行しリビルドします．
 ```
 ./build_sdk.sh
 ```
-全てを再ビルドします．
 ## 
 #### 1.シミュレーション
 riscv-toolchainが必要となります．以下の手順は導入が済んでいる前提で進めていきます．
