@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "qsys_mem_map.h"
+#include "xprintf.h"
 
 void put32(uint32_t, uint32_t);
 uint32_t get32(uint32_t);
@@ -43,6 +44,8 @@ void uart_puts(char *ch) {
 
 // main function
 int main(int argc, char *argv[]) {
+    int i = 10;
+    xdev_out(uart_putc);
 
     while(1){
         for(int i=0;i<4;i++) {
@@ -51,7 +54,8 @@ int main(int argc, char *argv[]) {
             wait_ms(100);
             put32(PIO_0_BASE, 0xAA);
         }
-        uart_puts("UART and Blink LED test...\r\n");
+        xprintf("time = %d\r\n",i);
+        //uart_puts("UART and Blink LED test...\r\n");
     }
     return 0;
 }

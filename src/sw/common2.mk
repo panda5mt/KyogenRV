@@ -22,9 +22,10 @@ $(ASM_DIR)/utils.o : $(ASM_DIR)/utils.S
 
 $(ASM_DIR)/led.o : $(ASM_DIR)/led.c
 	$(RISCVGNU)-gcc $(COPS) -c $(ASM_DIR)/led.c -o $(ASM_DIR)/led.o
+	$(RISCVGNU)-gcc $(COPS) -c $(ASM_DIR)/xprintf.c -o $(ASM_DIR)/xprintf.o
 
 $(ASM_DIR)/blinker.elf : $(ASM_DIR)/linker.ld $(ASM_DIR)/utils.o $(ASM_DIR)/led.o
-	$(RISCVGNU)-gcc $(COPS2) $(ASM_DIR)/utils.o $(ASM_DIR)/led.o -lgcc -o $(ASM_DIR)/blinker.elf
+	$(RISCVGNU)-gcc $(COPS2) $(ASM_DIR)/xprintf.o $(ASM_DIR)/utils.o $(ASM_DIR)/led.o -lgcc -o $(ASM_DIR)/blinker.elf
 #	$(RISCVGNU)-ld $(ASM_DIR)/utils.o $(ASM_DIR)/led.o -T $(ASM_DIR)/linker.ld -o $(ASM_DIR)/blinker.elf
 
 $(ASM_DIR)/blinker.bin: $(ASM_DIR)/blinker.elf
