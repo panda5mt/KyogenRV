@@ -50,14 +50,14 @@ int main(int argc, char *argv[]) {
 
     xprintf("KyogenRV (RV32I) Start...\r\n");
     while(1){
-        for(int i=0;i<4;i++) {
-            wait_ms(100);
-            put32(PIO_0_BASE, 0x55);
-            wait_ms(100);
-            put32(PIO_0_BASE, 0xAA);
-        }
-        i = (uint64_t)get_timel();
-        xprintf("machine time = %llu\r\n",i);
+        wait_ms(500);
+        put32(PIO_0_BASE, 0x55);
+        wait_ms(500);
+        put32(PIO_0_BASE, 0xAA);
+
+        i = (((uint64_t)get_timeh() * 4294967296) + (uint64_t)get_timel());
+        i = i / (XTAL_FREQ_KHZ * 1000);
+        xprintf("machine time = %llu second\r\n",i);
     }
     return 0;
 }
