@@ -66,7 +66,7 @@ make c_all
 ./mk_intel_hex.py
 ```
 によりintel hexを生成できます．
-FPGAプロジェクトをふくめて全てをビルドし直す場合は
+FPGAプロジェクトをふくめてリビルドする場合は
 ```
 make sdk
 ```
