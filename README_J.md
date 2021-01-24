@@ -56,8 +56,11 @@ CUIを使用した場合は下記のファイルも生成されます．
 
 ##### サンプルコードの確認・変更
 <code>[src/sw/led.c](src/sw/led.c)</code>を変更，改変すると参考になると思われます．
-コードが複数のファイルから構成される場合，またはファイル名が異なる場合は<code>[src/sw/common2.mk](src/sw/common2.mk)</code>を書き換えてください．
-保存を終えたら，
+コードが複数のファイルから構成される場合，またはファイル名が異なる場合は，変更または追加されたファイルに応じ<code>[src/sw/common2.mk](src/sw/common2.mk)</code>を書き換えてください．
+
+##### プロジェクトのリビルド
+###### GUIでのリビルド
+保存後，
 ```
 make c_all
 ./mk_intel_hex.py
@@ -67,11 +70,14 @@ make c_all
 ```
 make sdk
 ```
-です．CUIで行う場合は，
+です．再度Quartus Primeを起動し，<code>[fpga/kyogenrv_fpga_top.qpf](fpga/kyogenrv_fpga_top.qpf)</code>プロジェクトを開きます．
+メニュー -> Processing -> Start Compilation でコンパイルを開始します．
+###### CUIでのリビルド
+下記を実行します．
 ```
 ./build_sdk.sh
 ```
-でも全てを再ビルドします．
+全てを再ビルドします．
 ## 
 #### 1.シミュレーション
 riscv-toolchainが必要となります．以下の手順は導入が済んでいる前提で進めていきます．
