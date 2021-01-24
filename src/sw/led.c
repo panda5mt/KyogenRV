@@ -13,6 +13,7 @@ void dummy (void);
 void wait_ms(uint64_t msec) {
     volatile uint64_t oldtime;
     volatile uint64_t comp;
+
     comp = XTAL_FREQ_KHZ * msec;
     oldtime = get_timel();
     while((get_timel()-oldtime) < comp);
@@ -20,6 +21,7 @@ void wait_ms(uint64_t msec) {
 
 void uart_putc(char ch) {
     volatile uint32_t status;
+
     while(1){
         status = get32(UART_0_BASE + 8) & 0x20;
         if (status > 0) break;
@@ -30,6 +32,7 @@ void uart_putc(char ch) {
 
 void uart_puts(char *ch) {
     char a;
+
     while(1){
         a = *ch++;
         if(a == '\0') return;
@@ -48,7 +51,7 @@ int main(int argc, char *argv[]) {
             wait_ms(100);
             put32(PIO_0_BASE, 0xAA);
         }
-    uart_puts("UART and Blink LED test...\r\n");
+        uart_puts("UART and Blink LED test...\r\n");
     }
     return 0;
 }

@@ -16,7 +16,7 @@ KyogenRV(響玄RV):The Simple RISC-V for intel FPGA
 ##### 推奨開発環境
 - クロス開発環境:下記条件全てを満たす環境
   - Windows 10/WSL2が動作する環境
-  - Quartus Prime Lite v.20.1.1以上
+  - Quartus Prime Lite v.20.1.1以上が動作すること
   - scala/sbt環境が用意されていること
   - Pyhton 3.7以上が動作すること
 - FPGA要件:以下のいずれかの要件を満たすデバイス
