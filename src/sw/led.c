@@ -37,17 +37,6 @@ void uart_putc(char ch) {
     return;
 }
 
-void uart_puts(char *ch) {
-    char a;
-
-    while(1){
-        a = *ch++;
-        if(a == '\0') return;
-        uart_putc(a);
-    }
-    return;
-}
-
 // main function
 int main(int argc, char *argv[]) {
     uint64_t i;
