@@ -87,7 +87,7 @@
 #define UART_0_BASE 0x8020
 #define UART_0_SPAN 32
 #define UART_0_END 0x803f
-#define UART_0_BAUD 9600
+#define UART_0_BAUD 115200
 #define UART_0_DATA_BITS 8
 #define UART_0_FIXED_BAUD 1
 #define UART_0_FREQ 70000000

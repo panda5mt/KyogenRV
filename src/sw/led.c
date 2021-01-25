@@ -49,12 +49,12 @@ int main(int argc, char *argv[]) {
     // if you desire to test, uncomment us.
     /*
     for (int k=0;k<65535;k=k+4){
-        put32(SDRAM_0_BASE + k, 65536-k);
-        dummy();
+        put32(SDRAM_0_BASE + k, k);
+        //dummy();
     }
 
     for (int k=0;k<65535;k=k+4){
-        dummy();
+        //dummy();
         data = get32(SDRAM_0_BASE + k);
         xprintf("data = %d\r\n",data);
     }

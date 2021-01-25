@@ -25,12 +25,12 @@
          type = "int";
       }
    }
-   element clk_1
+   element kyogenrv_fpga
    {
-      datum _sortIndex
+      datum _originalDeviceFamily
       {
-         value = "5";
-         type = "int";
+         value = "Cyclone 10 LP";
+         type = "String";
       }
    }
    element kyogenrv_fpga
@@ -111,7 +111,7 @@
    {
       datum _sortIndex
       {
-         value = "6";
+         value = "5";
          type = "int";
       }
    }
@@ -171,7 +171,6 @@
  <parameter name="useTestBenchNamingPattern" value="false" />
  <instanceScript></instanceScript>
  <interface name="clk" internal="clk_0.clk_in" type="clock" dir="end" />
- <interface name="clk_0" internal="clk_1.clk_in" type="clock" dir="end" />
  <interface
    name="kyogenrv_0_conduit_end"
    internal="KyogenRV_0.conduit_end"
@@ -188,7 +187,6 @@
    type="conduit"
    dir="end" />
  <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
- <interface name="reset_0" internal="clk_1.clk_in_reset" type="reset" dir="end" />
  <interface
    name="uart_0_external_connection"
    internal="uart_0.external_connection"
@@ -198,12 +196,6 @@
  <module name="KyogenRV_0" kind="KyogenRV" version="20.1" enabled="1" />
  <module name="clk_0" kind="clock_source" version="20.1" enabled="1">
   <parameter name="clockFrequency" value="70000000" />
-  <parameter name="clockFrequencyKnown" value="true" />
-  <parameter name="inputClockFrequency" value="0" />
-  <parameter name="resetSynchronousEdges" value="NONE" />
- </module>
- <module name="clk_1" kind="clock_source" version="20.1" enabled="1">
-  <parameter name="clockFrequency" value="140000000" />
   <parameter name="clockFrequencyKnown" value="true" />
   <parameter name="inputClockFrequency" value="0" />
   <parameter name="resetSynchronousEdges" value="NONE" />
@@ -266,7 +258,7 @@
   <parameter name="TRP" value="20.0" />
   <parameter name="TWR" value="14.0" />
   <parameter name="casLatency" value="3" />
-  <parameter name="clockRate" value="140000000" />
+  <parameter name="clockRate" value="70000000" />
   <parameter name="columnWidth" value="8" />
   <parameter name="componentName">$${FILENAME}_sdram_0</parameter>
   <parameter name="dataWidth" value="16" />
@@ -284,7 +276,7 @@
   <parameter name="rowWidth" value="12" />
  </module>
  <module name="uart_0" kind="altera_avalon_uart" version="20.1" enabled="1">
-  <parameter name="baud" value="9600" />
+  <parameter name="baud" value="115200" />
   <parameter name="clockRate" value="70000000" />
   <parameter name="dataBits" value="8" />
   <parameter name="fixedBaud" value="true" />
@@ -346,7 +338,7 @@
  </connection>
  <connection kind="clock" version="20.1" start="clk_0.clk" end="pio_0.clk" />
  <connection kind="clock" version="20.1" start="clk_0.clk" end="uart_0.clk" />
- <connection kind="clock" version="20.1" start="clk_1.clk" end="sdram_0.clk" />
+ <connection kind="clock" version="20.1" start="clk_0.clk" end="sdram_0.clk" />
  <connection
    kind="clock"
    version="20.1"
