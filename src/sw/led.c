@@ -43,12 +43,13 @@ int main(int argc, char *argv[]) {
     uint32_t   data;
     xdev_out(&uart_putc);
 
-    /*
+
     // SDRAM test
     // these tests are waste in time.
     // if you desire to test, uncomment us.
+    /*
     for (int k=0;k<65535;k=k+4){
-        put32(SDRAM_0_BASE + k, k);
+        put32(SDRAM_0_BASE + k, 65536-k);
         dummy();
     }
 
