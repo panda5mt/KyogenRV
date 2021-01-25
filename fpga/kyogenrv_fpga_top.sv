@@ -4,11 +4,21 @@ module kyogenrv_fpga_top (
 	input					reset,
 	output	[7:0] 	pio,
 	output				uart_tx,
-	input					uart_rx
+	input					uart_rx,
+	
+	output               [11:0]     DRAM_ADDR,
+	output                [1:0]     DRAM_BA,
+	output                          DRAM_CAS_N,
+	output                          DRAM_CKE,
+	output                          DRAM_CLK,
+	output                          DRAM_CS_N,
+	inout                [15:0]     DRAM_DQ,
+	output                          DRAM_LDQM,
+	output                          DRAM_RAS_N,
+	output                          DRAM_UDQM,
+	output                          DRAM_WE_N
 
 );
-
-
 
 // reset and clocking logic
 logic					pll_locked;
@@ -54,7 +64,20 @@ pll pll0(
 	  .kyogenrv_0_expc_readdata         (),
 	  .uart_0_external_connection_rxd   (uart_rx),   // uart_0_external_connection.rxd
      .uart_0_external_connection_txd   (uart_tx),   //                           .txd
-     .uart_0_irq_irq                   ()    
+     .uart_0_irq_irq                   (),
+
+	  .new_sdram_controller_0_wire_addr                 (DRAM_ADDR              ),
+	  .new_sdram_controller_0_wire_ba                   (DRAM_BA                ),
+	  .new_sdram_controller_0_wire_cas_n                (DRAM_CAS_N             ),
+	  .new_sdram_controller_0_wire_cke                  (DRAM_CKE               ),
+	  
+	  .new_sdram_controller_0_wire_cs_n                 (DRAM_CS_N              ),
+	  .new_sdram_controller_0_wire_dq                   (DRAM_DQ                ),
+	  .new_sdram_controller_0_wire_dqm                  ({DRAM_UDQM,DRAM_LDQM}  ),
+	  .new_sdram_controller_0_wire_ras_n                (DRAM_RAS_N             ),
+	  .new_sdram_controller_0_wire_we_n                 (DRAM_WE_N              )
+	  
+	 
  );
 
  

@@ -99,5 +99,44 @@
 #define UART_0_USE_CTS_RTS 0
 #define UART_0_USE_EOP_REGISTER 0
 
+/*
+ * Macros for device 'sdram_0', class 'altera_avalon_new_sdram_controller'
+ * The macros are prefixed with 'SDRAM_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define SDRAM_0_COMPONENT_TYPE altera_avalon_new_sdram_controller
+#define SDRAM_0_COMPONENT_NAME sdram_0
+#define SDRAM_0_BASE 0x1000000
+#define SDRAM_0_SPAN 8388608
+#define SDRAM_0_END 0x17fffff
+#define SDRAM_0_CAS_LATENCY 2
+#define SDRAM_0_CONTENTS_INFO 
+#define SDRAM_0_INIT_NOP_DELAY 0.0
+#define SDRAM_0_INIT_REFRESH_COMMANDS 2
+#define SDRAM_0_IS_INITIALIZED 1
+#define SDRAM_0_POWERUP_DELAY 100.0
+#define SDRAM_0_REFRESH_PERIOD 7.8125
+#define SDRAM_0_REGISTER_DATA_IN 1
+#define SDRAM_0_SDRAM_ADDR_WIDTH 22
+#define SDRAM_0_SDRAM_BANK_WIDTH 2
+#define SDRAM_0_SDRAM_COL_WIDTH 8
+#define SDRAM_0_SDRAM_DATA_WIDTH 16
+#define SDRAM_0_SDRAM_NUM_BANKS 4
+#define SDRAM_0_SDRAM_NUM_CHIPSELECTS 1
+#define SDRAM_0_SDRAM_ROW_WIDTH 12
+#define SDRAM_0_SHARED_DATA 0
+#define SDRAM_0_SIM_MODEL_BASE 0
+#define SDRAM_0_STARVATION_INDICATOR 0
+#define SDRAM_0_TRISTATE_BRIDGE_SLAVE ""
+#define SDRAM_0_T_AC 5.5
+#define SDRAM_0_T_MRD 3
+#define SDRAM_0_T_RCD 20.0
+#define SDRAM_0_T_RFC 70.0
+#define SDRAM_0_T_RP 20.0
+#define SDRAM_0_T_WR 14.0
+#define SDRAM_0_MEMORY_INFO_DAT_SYM_INSTALL_DIR SIM_DIR
+#define SDRAM_0_MEMORY_INFO_GENERATE_DAT_SYM 1
+#define SDRAM_0_MEMORY_INFO_MEM_INIT_DATA_WIDTH 16
+
 
 #endif /* _ALTERA_QSYS_MEM_MAP_H_ */

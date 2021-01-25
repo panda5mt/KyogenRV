@@ -99,6 +99,22 @@
          type = "String";
       }
    }
+   element sdram_0
+   {
+      datum _sortIndex
+      {
+         value = "5";
+         type = "int";
+      }
+   }
+   element sdram_0.s1
+   {
+      datum baseAddress
+      {
+         value = "16777216";
+         type = "String";
+      }
+   }
    element uart_0
    {
       datum _sortIndex
@@ -145,6 +161,11 @@
  <interface
    name="kyogenrv_0_conduit_end"
    internal="KyogenRV_0.conduit_end"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="new_sdram_controller_0_wire"
+   internal="sdram_0.wire"
    type="conduit"
    dir="end" />
  <interface
@@ -212,6 +233,35 @@
   <parameter name="simDrivenValue" value="0" />
   <parameter name="width" value="8" />
  </module>
+ <module
+   name="sdram_0"
+   kind="altera_avalon_new_sdram_controller"
+   version="20.1"
+   enabled="1">
+  <parameter name="TAC" value="5.5" />
+  <parameter name="TMRD" value="3" />
+  <parameter name="TRCD" value="20.0" />
+  <parameter name="TRFC" value="70.0" />
+  <parameter name="TRP" value="20.0" />
+  <parameter name="TWR" value="14.0" />
+  <parameter name="casLatency" value="2" />
+  <parameter name="clockRate" value="70000000" />
+  <parameter name="columnWidth" value="8" />
+  <parameter name="componentName">$${FILENAME}_sdram_0</parameter>
+  <parameter name="dataWidth" value="16" />
+  <parameter name="generateSimulationModel" value="false" />
+  <parameter name="initNOPDelay" value="0.0" />
+  <parameter name="initRefreshCommands" value="2" />
+  <parameter name="masteredTristateBridgeSlave" value="0" />
+  <parameter name="model">single_Micron_MT48LC4M32B2_7_chip</parameter>
+  <parameter name="numberOfBanks" value="4" />
+  <parameter name="numberOfChipSelects" value="1" />
+  <parameter name="pinsSharedViaTriState" value="false" />
+  <parameter name="powerUpDelay" value="100.0" />
+  <parameter name="refreshPeriod" value="7.8125" />
+  <parameter name="registerDataIn" value="true" />
+  <parameter name="rowWidth" value="12" />
+ </module>
  <module name="uart_0" kind="altera_avalon_uart" version="20.1" enabled="1">
   <parameter name="baud" value="9600" />
   <parameter name="clockRate" value="70000000" />
@@ -258,6 +308,15 @@
  <connection
    kind="avalon"
    version="20.1"
+   start="KyogenRV_0.avalon_data_master"
+   end="sdram_0.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x01000000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="20.1"
    start="KyogenRV_0.avalon_inst_master"
    end="onchip_memory2_0.s1">
   <parameter name="arbitrationPriority" value="3" />
@@ -266,6 +325,7 @@
  </connection>
  <connection kind="clock" version="20.1" start="clk_0.clk" end="pio_0.clk" />
  <connection kind="clock" version="20.1" start="clk_0.clk" end="uart_0.clk" />
+ <connection kind="clock" version="20.1" start="clk_0.clk" end="sdram_0.clk" />
  <connection
    kind="clock"
    version="20.1"
@@ -283,6 +343,11 @@
    version="20.1"
    start="clk_0.clk_reset"
    end="KyogenRV_0.reset" />
+ <connection
+   kind="reset"
+   version="20.1"
+   start="clk_0.clk_reset"
+   end="sdram_0.reset" />
  <connection
    kind="reset"
    version="20.1"
