@@ -114,7 +114,8 @@ class KyogenRVCpu extends Module {
     val valid_imem: Bool = RegInit(true.B)
     val imem_wait: Bool = io.sw.w_waitrequest_sig
     val dmem_wait: Bool = io.sw.w_datawaitreq_sig
-    val waitrequest: Bool = imem_wait || dmem_wait
+    val dmem_rd_wait: Bool = wb_ctrl.mem_wr === M_XRD && !io.r_dmem_dat.ack
+    val waitrequest: Bool = imem_wait || dmem_wait || dmem_rd_wait
 
     // -------- START: IF stage -------
     val imem_req: Bool = RegInit(false.B)

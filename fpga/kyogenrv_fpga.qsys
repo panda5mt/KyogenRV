@@ -25,6 +25,14 @@
          type = "int";
       }
    }
+   element clk_1
+   {
+      datum _sortIndex
+      {
+         value = "5";
+         type = "int";
+      }
+   }
    element kyogenrv_fpga
    {
       datum _originalDeviceFamily
@@ -103,12 +111,17 @@
    {
       datum _sortIndex
       {
-         value = "5";
+         value = "6";
          type = "int";
       }
    }
    element sdram_0.s1
    {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
       datum baseAddress
       {
          value = "16777216";
@@ -158,6 +171,7 @@
  <parameter name="useTestBenchNamingPattern" value="false" />
  <instanceScript></instanceScript>
  <interface name="clk" internal="clk_0.clk_in" type="clock" dir="end" />
+ <interface name="clk_0" internal="clk_1.clk_in" type="clock" dir="end" />
  <interface
    name="kyogenrv_0_conduit_end"
    internal="KyogenRV_0.conduit_end"
@@ -174,6 +188,7 @@
    type="conduit"
    dir="end" />
  <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
+ <interface name="reset_0" internal="clk_1.clk_in_reset" type="reset" dir="end" />
  <interface
    name="uart_0_external_connection"
    internal="uart_0.external_connection"
@@ -183,6 +198,12 @@
  <module name="KyogenRV_0" kind="KyogenRV" version="20.1" enabled="1" />
  <module name="clk_0" kind="clock_source" version="20.1" enabled="1">
   <parameter name="clockFrequency" value="70000000" />
+  <parameter name="clockFrequencyKnown" value="true" />
+  <parameter name="inputClockFrequency" value="0" />
+  <parameter name="resetSynchronousEdges" value="NONE" />
+ </module>
+ <module name="clk_1" kind="clock_source" version="20.1" enabled="1">
+  <parameter name="clockFrequency" value="140000000" />
   <parameter name="clockFrequencyKnown" value="true" />
   <parameter name="inputClockFrequency" value="0" />
   <parameter name="resetSynchronousEdges" value="NONE" />
@@ -244,8 +265,8 @@
   <parameter name="TRFC" value="70.0" />
   <parameter name="TRP" value="20.0" />
   <parameter name="TWR" value="14.0" />
-  <parameter name="casLatency" value="2" />
-  <parameter name="clockRate" value="70000000" />
+  <parameter name="casLatency" value="3" />
+  <parameter name="clockRate" value="140000000" />
   <parameter name="columnWidth" value="8" />
   <parameter name="componentName">$${FILENAME}_sdram_0</parameter>
   <parameter name="dataWidth" value="16" />
@@ -325,7 +346,7 @@
  </connection>
  <connection kind="clock" version="20.1" start="clk_0.clk" end="pio_0.clk" />
  <connection kind="clock" version="20.1" start="clk_0.clk" end="uart_0.clk" />
- <connection kind="clock" version="20.1" start="clk_0.clk" end="sdram_0.clk" />
+ <connection kind="clock" version="20.1" start="clk_1.clk" end="sdram_0.clk" />
  <connection
    kind="clock"
    version="20.1"

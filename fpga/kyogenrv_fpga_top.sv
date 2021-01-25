@@ -23,8 +23,8 @@ module kyogenrv_fpga_top (
 // reset and clocking logic
 logic					pll_locked;
 logic					clk_riscv;
-logic					clk_sdram;
-logic					clk_qsys;
+logic					clk_qsys_sdram;
+//logic					clk_qsys;
 logic					rst_in;
 logic		[2:1] 	rst_in_d;
 logic					rst_n;
@@ -49,6 +49,8 @@ assign rst_n = rst_in_d[2];
 pll pll0(
 	.inclk0			(CY10_CLK_24M),
 	.c0				(clk_riscv),
+	.c1				(DRAM_CLK),
+	.c2				(clk_qsys_sdram),
 	.locked        (pll_locked)
 );
 	
@@ -57,28 +59,32 @@ pll pll0(
 	
 // avalon-MM module	
  kyogenrv_fpga u0 (
-	  .clk_clk                          (clk_riscv),                          // 
-	  .pio_0_external_connection_export (pio), // pio_0_external_connection.export
-	  .kyogenrv_0_conduit_end_readdata  (ex_inst), 
-	  .reset_reset_n                    (rst_n),                     //                     reset.reset_n
-	  .kyogenrv_0_expc_readdata         (),
-	  .uart_0_external_connection_rxd   (uart_rx),   // uart_0_external_connection.rxd
-     .uart_0_external_connection_txd   (uart_tx),   //                           .txd
-     .uart_0_irq_irq                   (),
+		.clk_clk                          (clk_riscv),                          // 
+		.pio_0_external_connection_export (pio), // pio_0_external_connection.export
+		.kyogenrv_0_conduit_end_readdata  (ex_inst), 
+		.reset_reset_n                    (rst_n),                     //                     reset.reset_n
+		.kyogenrv_0_expc_readdata         (),
+		.uart_0_external_connection_rxd   (uart_rx),   // uart_0_external_connection.rxd
+		.uart_0_external_connection_txd   (uart_tx),   //                           .txd
+		.uart_0_irq_irq                   (),
 
-	  .new_sdram_controller_0_wire_addr                 (DRAM_ADDR              ),
-	  .new_sdram_controller_0_wire_ba                   (DRAM_BA                ),
-	  .new_sdram_controller_0_wire_cas_n                (DRAM_CAS_N             ),
-	  .new_sdram_controller_0_wire_cke                  (DRAM_CKE               ),
-	  
-	  .new_sdram_controller_0_wire_cs_n                 (DRAM_CS_N              ),
-	  .new_sdram_controller_0_wire_dq                   (DRAM_DQ                ),
-	  .new_sdram_controller_0_wire_dqm                  ({DRAM_UDQM,DRAM_LDQM}  ),
-	  .new_sdram_controller_0_wire_ras_n                (DRAM_RAS_N             ),
-	  .new_sdram_controller_0_wire_we_n                 (DRAM_WE_N              )
-	  
-	 
+		.new_sdram_controller_0_wire_addr                 (DRAM_ADDR              ),
+		.new_sdram_controller_0_wire_ba                   (DRAM_BA                ),
+		.new_sdram_controller_0_wire_cas_n                (DRAM_CAS_N             ),
+		.new_sdram_controller_0_wire_cke                  (DRAM_CKE               ),
+
+		.new_sdram_controller_0_wire_cs_n                 (DRAM_CS_N              ),
+		.new_sdram_controller_0_wire_dq                   (DRAM_DQ                ),
+		.new_sdram_controller_0_wire_dqm                  ({DRAM_UDQM,DRAM_LDQM}  ),
+		.new_sdram_controller_0_wire_ras_n                (DRAM_RAS_N             ),
+		.new_sdram_controller_0_wire_we_n                 (DRAM_WE_N              ),
+
+		.clk_0_clk                         (clk_qsys_sdram), //                       clk_0.clk
+		.reset_0_reset_n                   (rst_n)                    //                     reset_0.reset_n
  );
+
+	 
+ 
 
  
 	
