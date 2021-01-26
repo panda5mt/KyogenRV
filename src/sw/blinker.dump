@@ -1,8 +1,8 @@
 
-src/sw/blinker.elf:     ファイル形式 elf32-littleriscv
+src/sw/blinker.elf:     file format elf32-littleriscv
 
 
-セクション .text の逆アセンブル:
+Disassembly of section .text:
 
 00000000 <_start>:
        0:	00008137          	lui	sp,0x8
