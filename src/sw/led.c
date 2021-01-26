@@ -37,28 +37,40 @@ void uart_putc(char ch) {
     return;
 }
 
+int sdram_test(void) {
+    uint32_t   data,length;
+
+    length = SDRAM_0_END - SDRAM_0_BASE;
+
+    xprintf("SDRAM write start\r\n");
+    for (int k = 0 ; k < length ; k = k + 4){
+        put32(SDRAM_0_BASE + k, k);
+    }
+
+    xprintf("SDRAM read start\r\n");
+    for (int k = 0 ; k < length ; k = k + 4){
+        data = get32(SDRAM_0_BASE + k);
+        if(data != k) {
+            xprintf("error fount at 0x%x: expecting %d but got %d\r\n",k,k,data);
+            return -1;
+        }
+    }
+    return 0;
+}
+
 // main function
 int main(int argc, char *argv[]) {
     uint64_t i;
-    uint32_t   data;
+
     xdev_out(&uart_putc);
 
-
     // SDRAM test
-    // these tests are waste in time.
-    // if you desire to test, uncomment us.
-    /*
-    for (int k=0;k<65535;k=k+4){
-        put32(SDRAM_0_BASE + k, k);
-        //dummy();
+    if(0 == sdram_test()) {
+        xprintf("SDRAM r/w test OK!\r\n");
+    } else {
+        xprintf("SDRAM r/w test fail......\r\n");
     }
 
-    for (int k=0;k<65535;k=k+4){
-        //dummy();
-        data = get32(SDRAM_0_BASE + k);
-        xprintf("data = %d\r\n",data);
-    }
-    */
 
     xprintf("KyogenRV (RV32I) Start...\r\n");
     while(1){
