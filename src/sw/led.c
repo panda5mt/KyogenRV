@@ -23,7 +23,6 @@ void wait_ms(uint64_t msec) {
         nowtime = (((uint64_t)get_timeh() * 4294967296UL) + (uint64_t)get_timel());
         if((nowtime-oldtime) > comp) break;
     }
-
 }
 
 void uart_putc(char ch) {
@@ -37,6 +36,7 @@ void uart_putc(char ch) {
     return;
 }
 
+#ifdef SDRAM_0_BASE
 int sdram_test(void) {
     uint32_t   data,length;
 
@@ -57,6 +57,7 @@ int sdram_test(void) {
     }
     return 0;
 }
+#endif //SDRAM_0_BASE
 
 // main function
 int main(int argc, char *argv[]) {
@@ -64,13 +65,13 @@ int main(int argc, char *argv[]) {
 
     xdev_out(&uart_putc);
 
-    // SDRAM test
+#ifdef SDRAM_0_BASE
     if(0 == sdram_test()) {
         xprintf("SDRAM r/w test OK!\r\n");
     } else {
         xprintf("SDRAM r/w test fail......\r\n");
     }
-
+#endif //SDRAM_0_BASE
 
     xprintf("KyogenRV (RV32I) Start...\r\n");
     while(1){
