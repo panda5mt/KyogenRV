@@ -5,7 +5,8 @@ AOPS = --warn -march=rv32i -mabi=ilp32
 COPS = -Wall -march=rv32i -mabi=ilp32 -O2 -nostartfiles -ffreestanding
 COPS2 = -Wall -march=rv32i -mabi=ilp32 -O2 -nostartfiles -ffreestanding -Xlinker -T -Xlinker $(MEMMAP)
 
-c_all : $(ASM_DIR)/blinker.hex
+c_all : c_reverse $(ASM_DIR)/blinker.hex
+
 
 c_clean :
 	rm -f $(ASM_DIR)/*.elf
