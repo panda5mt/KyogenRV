@@ -80,9 +80,6 @@ int main(int argc, char *argv[]) {
 #endif //SDRAM_0_BASE
     xprintf("KyogenRV (RV32I) Start...\r\n");
 
-    get32(0x01);  // MEMORY MISALIGN!!!!
-
-
     while(1){
         wait_ms(500);
         put32(PIO_0_BASE, 0x55);
