@@ -1,6 +1,8 @@
     .section .text.init;
     .global _start
 _start:
+    addi    x1, x0, 0x18        # <0x00>
+    csrrw   x0, mtvec, x1       # <0x04> : mtvec = <0x18>
     lui    sp, 0x08
     call main
     j .
@@ -9,6 +11,9 @@ _start:
 dummy:
     ret
 
+_expr:
+    call __expr
+    j .
     .global put32
 put32:
     sw x11,(x10)

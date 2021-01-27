@@ -11,6 +11,11 @@ void dummy (void);
 
 #define XTAL_FREQ_KHZ   70000 // 70000kHz = 70MHz
 
+void __expr(void){
+    xprintf("expr end....\r\n");
+    while(1);
+
+}
 // wait msec counter
 void wait_ms(uint64_t msec) {
     volatile uint64_t oldtime, nowtime;
