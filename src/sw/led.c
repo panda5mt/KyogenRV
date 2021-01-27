@@ -12,10 +12,11 @@ void dummy (void);
 #define XTAL_FREQ_KHZ   70000 // 70000kHz = 70MHz
 
 void __expr(void){
-    xprintf("expr end....\r\n");
+    xprintf("program exception....\r\n");
+    xprintf("cpu stop.\r\n");
     while(1);
-
 }
+
 // wait msec counter
 void wait_ms(uint64_t msec) {
     volatile uint64_t oldtime, nowtime;
@@ -77,8 +78,11 @@ int main(int argc, char *argv[]) {
         xprintf("SDRAM r/w test fail......\r\n");
     }
 #endif //SDRAM_0_BASE
-
     xprintf("KyogenRV (RV32I) Start...\r\n");
+
+    get32(0x01);  // MEMORY MISALIGN!!!!
+
+
     while(1){
         wait_ms(500);
         put32(PIO_0_BASE, 0x55);
