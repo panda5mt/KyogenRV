@@ -1,18 +1,18 @@
     .section .text.init;
     .global _start
 _start:
-    addi    x1, x0, 0x18        # <0x00>
+    li      x1, 0x18            # <0x00>
     csrrw   x0, mtvec, x1       # <0x04> : mtvec = <0x18>
-    lui    sp, 0x08
-    call main
-    j .
+    lui     sp, 0x08            # <0x08>
+    call    main                # <0x0C>
+    j .                         # <0x10>
 
     .global dummy
 dummy:
-    ret
+    ret                         # <0x14>
 
 _expr:
-    call __expr
+    call __expr                 # <0x18> : exception jump
     j .
     .global put32
 put32:
