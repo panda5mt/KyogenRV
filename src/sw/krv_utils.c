@@ -5,7 +5,7 @@
 
 
 // exception
-void __expr(void){
+void __expr(void) {
     xprintf("program exception....\r\n");
     xprintf("cpu stop.\r\n");
     while(1);

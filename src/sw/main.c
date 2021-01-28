@@ -10,12 +10,12 @@ int sdram_test(void) {
     length = SDRAM_0_END - SDRAM_0_BASE;
 
     xprintf("SDRAM write start\r\n");
-    for (int k = 0 ; k < length ; k = k + 4){
+    for (int k = 0 ; k < length ; k = k + 4) {
         put32(SDRAM_0_BASE + k, k);
     }
 
     xprintf("SDRAM read start\r\n");
-    for (int k = 0 ; k < length ; k = k + 4){
+    for (int k = 0 ; k < length ; k = k + 4) {
         data = get32(SDRAM_0_BASE + k);
         if(data != k) {
             xprintf("error fount at 0x%x: expecting %d but got %d\r\n",k,k,data);
