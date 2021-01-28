@@ -58,7 +58,7 @@ The following files will be generated in the <code>[fpga](fpga)</code> folder.
 If you use CUI, the following file will also be generated.
 - kyogenrv_fpga_top.svf
 ##### Modify the sample code(led.c as exam)
-You may find it helpful to know how does this RISC-V CPU and its project works to modify <code>[src/sw/led.c](src/sw/led.c)</code>.
+You may find it helpful to know how does this RISC-V CPU and its project works to modify <code>[src/sw/main.c](src/sw/main.c)</code>.
 If the code consists of multiple files or the file names are changed, please rewrite <code>[src/sw/common2.mk](src/sw/common2.mk)</code> to Makefile build all fixed and modified files.
 
 ##### Rebuild the project

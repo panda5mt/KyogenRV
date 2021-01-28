@@ -55,7 +55,7 @@ CUIを使用した場合は下記のファイルも生成されます．
 - kyogenrv_fpga_top.svf
 
 ##### サンプルコードの確認・変更
-<code>[src/sw/led.c](src/sw/led.c)</code>を変更，改変すると参考になると思われます．
+<code>[src/sw/main.c](src/sw/main.c)</code>を変更，改変すると参考になると思われます．
 コードが複数のファイルから構成される場合，またはファイル名が異なる場合は，変更または追加されたファイルに応じ<code>[src/sw/common2.mk](src/sw/common2.mk)</code>を書き換えてください．
 
 ##### プロジェクトのリビルド

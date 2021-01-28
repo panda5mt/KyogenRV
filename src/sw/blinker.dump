@@ -1,8 +1,8 @@
 
-src/sw/blinker.elf:     file format elf32-littleriscv
+src/sw/blinker.elf:     ファイル形式 elf32-littleriscv
 
 
-Disassembly of section .text:
+セクション .text の逆アセンブル:
 
 00000000 <_start>:
        0:	01800093          	li	ra,24
@@ -15,7 +15,7 @@ Disassembly of section .text:
       14:	00008067          	ret
 
 00000018 <_expr>:
-      18:	3c5000ef          	jal	ra,bdc <__expr>
+      18:	36d000ef          	jal	ra,b84 <__expr>
       1c:	0000006f          	j	1c <_expr+0x4>
 
 00000020 <put32>:
@@ -771,78 +771,78 @@ Disassembly of section .text:
      b7c:	04010113          	addi	sp,sp,64
      b80:	00008067          	ret
 
-00000b84 <uart_putc>:
-     b84:	fe010113          	addi	sp,sp,-32
-     b88:	01212823          	sw	s2,16(sp)
-     b8c:	00008937          	lui	s2,0x8
-     b90:	00812c23          	sw	s0,24(sp)
-     b94:	00912a23          	sw	s1,20(sp)
-     b98:	00112e23          	sw	ra,28(sp)
-     b9c:	00050493          	mv	s1,a0
-     ba0:	02890413          	addi	s0,s2,40 # 8028 <xfunc_output+0x4024>
-     ba4:	00040513          	mv	a0,s0
-     ba8:	c80ff0ef          	jal	ra,28 <get32>
-     bac:	02057513          	andi	a0,a0,32
-     bb0:	00a12623          	sw	a0,12(sp)
-     bb4:	00c12783          	lw	a5,12(sp)
-     bb8:	fe0786e3          	beqz	a5,ba4 <uart_putc+0x20>
-     bbc:	01812403          	lw	s0,24(sp)
-     bc0:	01c12083          	lw	ra,28(sp)
-     bc4:	00048593          	mv	a1,s1
-     bc8:	02490513          	addi	a0,s2,36
-     bcc:	01412483          	lw	s1,20(sp)
-     bd0:	01012903          	lw	s2,16(sp)
-     bd4:	02010113          	addi	sp,sp,32
-     bd8:	c48ff06f          	j	20 <put32>
+00000b84 <__expr>:
+     b84:	00002537          	lui	a0,0x2
+     b88:	ff010113          	addi	sp,sp,-16
+     b8c:	b5850513          	addi	a0,a0,-1192 # 1b58 <strlen+0x110>
+     b90:	00112623          	sw	ra,12(sp)
+     b94:	f05ff0ef          	jal	ra,a98 <xprintf>
+     b98:	00002537          	lui	a0,0x2
+     b9c:	b7050513          	addi	a0,a0,-1168 # 1b70 <strlen+0x128>
+     ba0:	ef9ff0ef          	jal	ra,a98 <xprintf>
+     ba4:	0000006f          	j	ba4 <__expr+0x20>
 
-00000bdc <__expr>:
-     bdc:	00002537          	lui	a0,0x2
-     be0:	ff010113          	addi	sp,sp,-16
-     be4:	b5850513          	addi	a0,a0,-1192 # 1b58 <strlen+0x110>
-     be8:	00112623          	sw	ra,12(sp)
-     bec:	eadff0ef          	jal	ra,a98 <xprintf>
-     bf0:	00002537          	lui	a0,0x2
-     bf4:	b7050513          	addi	a0,a0,-1168 # 1b70 <strlen+0x128>
-     bf8:	ea1ff0ef          	jal	ra,a98 <xprintf>
-     bfc:	0000006f          	j	bfc <__expr+0x20>
+00000ba8 <wait_ms>:
+     ba8:	00011637          	lui	a2,0x11
+     bac:	fd010113          	addi	sp,sp,-48
+     bb0:	17060613          	addi	a2,a2,368 # 11170 <xfunc_output+0xd16c>
+     bb4:	00000693          	li	a3,0
+     bb8:	02112623          	sw	ra,44(sp)
+     bbc:	02812423          	sw	s0,40(sp)
+     bc0:	545000ef          	jal	ra,1904 <__muldi3>
+     bc4:	00a12c23          	sw	a0,24(sp)
+     bc8:	00b12e23          	sw	a1,28(sp)
+     bcc:	c6cff0ef          	jal	ra,38 <get_timeh>
+     bd0:	00050413          	mv	s0,a0
+     bd4:	c5cff0ef          	jal	ra,30 <get_timel>
+     bd8:	00a12423          	sw	a0,8(sp)
+     bdc:	00812623          	sw	s0,12(sp)
+     be0:	c58ff0ef          	jal	ra,38 <get_timeh>
+     be4:	00050413          	mv	s0,a0
+     be8:	c48ff0ef          	jal	ra,30 <get_timel>
+     bec:	00a12823          	sw	a0,16(sp)
+     bf0:	00812a23          	sw	s0,20(sp)
+     bf4:	01012783          	lw	a5,16(sp)
+     bf8:	01412803          	lw	a6,20(sp)
+     bfc:	00812303          	lw	t1,8(sp)
+     c00:	00c12383          	lw	t2,12(sp)
+     c04:	01812503          	lw	a0,24(sp)
+     c08:	40678633          	sub	a2,a5,t1
+     c0c:	01c12583          	lw	a1,28(sp)
+     c10:	00c7b733          	sltu	a4,a5,a2
+     c14:	407807b3          	sub	a5,a6,t2
+     c18:	40e787b3          	sub	a5,a5,a4
+     c1c:	00f5e663          	bltu	a1,a5,c28 <wait_ms+0x80>
+     c20:	fcb790e3          	bne	a5,a1,be0 <wait_ms+0x38>
+     c24:	fac57ee3          	bgeu	a0,a2,be0 <wait_ms+0x38>
+     c28:	02c12083          	lw	ra,44(sp)
+     c2c:	02812403          	lw	s0,40(sp)
+     c30:	03010113          	addi	sp,sp,48
+     c34:	00008067          	ret
 
-00000c00 <wait_ms>:
-     c00:	00011637          	lui	a2,0x11
-     c04:	fd010113          	addi	sp,sp,-48
-     c08:	17060613          	addi	a2,a2,368 # 11170 <xfunc_output+0xd16c>
-     c0c:	00000693          	li	a3,0
-     c10:	02112623          	sw	ra,44(sp)
-     c14:	02812423          	sw	s0,40(sp)
-     c18:	4ed000ef          	jal	ra,1904 <__muldi3>
-     c1c:	00a12c23          	sw	a0,24(sp)
-     c20:	00b12e23          	sw	a1,28(sp)
-     c24:	c14ff0ef          	jal	ra,38 <get_timeh>
-     c28:	00050413          	mv	s0,a0
-     c2c:	c04ff0ef          	jal	ra,30 <get_timel>
-     c30:	00a12423          	sw	a0,8(sp)
-     c34:	00812623          	sw	s0,12(sp)
-     c38:	c00ff0ef          	jal	ra,38 <get_timeh>
-     c3c:	00050413          	mv	s0,a0
-     c40:	bf0ff0ef          	jal	ra,30 <get_timel>
-     c44:	00a12823          	sw	a0,16(sp)
-     c48:	00812a23          	sw	s0,20(sp)
-     c4c:	01012783          	lw	a5,16(sp)
-     c50:	01412803          	lw	a6,20(sp)
-     c54:	00812303          	lw	t1,8(sp)
-     c58:	00c12383          	lw	t2,12(sp)
-     c5c:	01812503          	lw	a0,24(sp)
-     c60:	40678633          	sub	a2,a5,t1
-     c64:	01c12583          	lw	a1,28(sp)
-     c68:	00c7b733          	sltu	a4,a5,a2
-     c6c:	407807b3          	sub	a5,a6,t2
-     c70:	40e787b3          	sub	a5,a5,a4
-     c74:	00f5e663          	bltu	a1,a5,c80 <wait_ms+0x80>
-     c78:	fcb790e3          	bne	a5,a1,c38 <wait_ms+0x38>
-     c7c:	fac57ee3          	bgeu	a0,a2,c38 <wait_ms+0x38>
-     c80:	02c12083          	lw	ra,44(sp)
-     c84:	02812403          	lw	s0,40(sp)
-     c88:	03010113          	addi	sp,sp,48
-     c8c:	00008067          	ret
+00000c38 <uart_putc>:
+     c38:	fe010113          	addi	sp,sp,-32
+     c3c:	01212823          	sw	s2,16(sp)
+     c40:	00008937          	lui	s2,0x8
+     c44:	00812c23          	sw	s0,24(sp)
+     c48:	00912a23          	sw	s1,20(sp)
+     c4c:	00112e23          	sw	ra,28(sp)
+     c50:	00050493          	mv	s1,a0
+     c54:	02890413          	addi	s0,s2,40 # 8028 <xfunc_output+0x4024>
+     c58:	00040513          	mv	a0,s0
+     c5c:	bccff0ef          	jal	ra,28 <get32>
+     c60:	02057513          	andi	a0,a0,32
+     c64:	00a12623          	sw	a0,12(sp)
+     c68:	00c12783          	lw	a5,12(sp)
+     c6c:	fe0786e3          	beqz	a5,c58 <uart_putc+0x20>
+     c70:	01812403          	lw	s0,24(sp)
+     c74:	01c12083          	lw	ra,28(sp)
+     c78:	00048593          	mv	a1,s1
+     c7c:	02490513          	addi	a0,s2,36
+     c80:	01412483          	lw	s1,20(sp)
+     c84:	01012903          	lw	s2,16(sp)
+     c88:	02010113          	addi	sp,sp,32
+     c8c:	b94ff06f          	j	20 <put32>
 
 00000c90 <sdram_test>:
      c90:	00002537          	lui	a0,0x2
@@ -898,7 +898,7 @@ Disassembly of section .text:
      d50:	000017b7          	lui	a5,0x1
      d54:	fe010113          	addi	sp,sp,-32
      d58:	00004737          	lui	a4,0x4
-     d5c:	b8478793          	addi	a5,a5,-1148 # b84 <uart_putc>
+     d5c:	c3878793          	addi	a5,a5,-968 # c38 <uart_putc>
      d60:	00112e23          	sw	ra,28(sp)
      d64:	00812c23          	sw	s0,24(sp)
      d68:	00912a23          	sw	s1,20(sp)
@@ -919,13 +919,13 @@ Disassembly of section .text:
      da4:	00000993          	li	s3,0
      da8:	1f400513          	li	a0,500
      dac:	00000593          	li	a1,0
-     db0:	e51ff0ef          	jal	ra,c00 <wait_ms>
+     db0:	df9ff0ef          	jal	ra,ba8 <wait_ms>
      db4:	05500593          	li	a1,85
      db8:	00008537          	lui	a0,0x8
      dbc:	a64ff0ef          	jal	ra,20 <put32>
      dc0:	1f400513          	li	a0,500
      dc4:	00000593          	li	a1,0
-     dc8:	e39ff0ef          	jal	ra,c00 <wait_ms>
+     dc8:	de1ff0ef          	jal	ra,ba8 <wait_ms>
      dcc:	0aa00593          	li	a1,170
      dd0:	00008537          	lui	a0,0x8
      dd4:	a4cff0ef          	jal	ra,20 <put32>
