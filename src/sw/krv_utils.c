@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "xprintf.h"
-#include "kyogenrv.h"
+#include "krv_utils.h"
 
 
 // exception

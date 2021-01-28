@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "kyogenrv.h"
+#include "krv_utils.h"
 #include "xprintf.h"
 
 #ifdef SDRAM_0_BASE

@@ -23,11 +23,11 @@ $(ASM_DIR)/utils.o : $(ASM_DIR)/utils.S
 
 $(ASM_DIR)/main.o : $(ASM_DIR)/main.c
 	$(RISCVGNU)-gcc $(COPS) -c $(ASM_DIR)/main.c -o $(ASM_DIR)/main.o
-	$(RISCVGNU)-gcc $(COPS) -c $(ASM_DIR)/kyogenrv.c -o $(ASM_DIR)/kyogenrv.o
+	$(RISCVGNU)-gcc $(COPS) -c $(ASM_DIR)/krv_utils.c -o $(ASM_DIR)/krv_utils.o
 	$(RISCVGNU)-gcc $(COPS) -c $(ASM_DIR)/xprintf.c -o $(ASM_DIR)/xprintf.o
 
 $(ASM_DIR)/blinker.elf : $(ASM_DIR)/linker.ld $(ASM_DIR)/utils.o $(ASM_DIR)/main.o
-	$(RISCVGNU)-gcc $(COPS2) $(ASM_DIR)/utils.o $(ASM_DIR)/xprintf.o $(ASM_DIR)/kyogenrv.o $(ASM_DIR)/main.o -lgcc -o $(ASM_DIR)/blinker.elf
+	$(RISCVGNU)-gcc $(COPS2) $(ASM_DIR)/utils.o $(ASM_DIR)/xprintf.o $(ASM_DIR)/krv_utils.o $(ASM_DIR)/main.o -lgcc -o $(ASM_DIR)/blinker.elf
 #	$(RISCVGNU)-ld $(ASM_DIR)/utils.o $(ASM_DIR)/main.o -T $(ASM_DIR)/linker.ld -o $(ASM_DIR)/blinker.elf
 
 $(ASM_DIR)/blinker.bin: $(ASM_DIR)/blinker.elf
