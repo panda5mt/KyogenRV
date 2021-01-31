@@ -1,6 +1,6 @@
 KyogenRV(響玄RV):The Simple RISC-V for intel FPGA
-=======================
-##### English README is [here](README.md)
+=
+## English README is [here](README.md)
 - アーキテクチャ:RV32I
 - 特権モード: Machine modeのみ
     - User-Level ISA Version 2.2

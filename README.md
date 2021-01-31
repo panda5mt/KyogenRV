@@ -1,7 +1,6 @@
 KyogenRV(響玄RV):The Simple RISC-V for intel FPGA
-=======================
-## 5-Stage Pipelined RV32I written in Chisel.
-##### 日本語のREADMEは[こちら](README_J.md)
+=
+## 日本語のREADMEは[こちら](README_J.md)
 - Arch:RV32I
 - Privilege : only M-mode 
     - User-Level ISA Version 2.2
