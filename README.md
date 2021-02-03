@@ -82,6 +82,9 @@ just run following to rebuild.
 ```
 Configure the FPGA using *.sof or *.svf.
 ##
+The following is the procedure for PC-based simulation; it is not necessary when using the FPGA hardware.
+##
+##
 #### 1.Simulation
 ```
 git clone http://github.com/panda5mt/KyogenRV  
