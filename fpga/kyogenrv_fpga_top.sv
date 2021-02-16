@@ -3,9 +3,24 @@ module kyogenrv_fpga_top (
 	input       		CY10_CLK_24M ,
 	input					reset,
 	output	[7:0] 	pio,
+	
+	//UART
 	output				uart_tx,
 	input					uart_rx,
+
+	//I2C
+	inout					I2C_0_SCL,
+	inout					I2C_0_SDA,
+
+	//SPI
+	/*
+	input	SPI_0_MISO,
+	output	SPI_0_MOSI,
+	output	SPI_0_SCLK,
+	output	SPI_0_SS,
+	*/
 	
+	//SDR SDRAM
 	output               [11:0]     DRAM_ADDR,
 	output                [1:0]     DRAM_BA,
 	output                          DRAM_CAS_N,
@@ -23,13 +38,17 @@ module kyogenrv_fpga_top (
 // reset and clocking logic
 logic					pll_locked;
 logic					clk_riscv;
-//logic					clk_qsys_sdram;
-//logic					clk_qsys;
 logic					rst_in;
 logic		[2:1] 	rst_in_d;
 logic					rst_n;
 logic					pwrup_rst_n;
 logic		[31:0]	ex_inst;
+
+// I2C_0  
+logic		i2c0_sda_in;   
+logic		i2c0_scl_in;
+logic		i2c0_sda_oe;
+logic		i2c0_scl_oe;
 
 
 
@@ -77,11 +96,23 @@ pll pll0(
 		.new_sdram_controller_0_wire_dq                   (DRAM_DQ                ),
 		.new_sdram_controller_0_wire_dqm                  ({DRAM_UDQM,DRAM_LDQM}  ),
 		.new_sdram_controller_0_wire_ras_n                (DRAM_RAS_N             ),
-		.new_sdram_controller_0_wire_we_n                 (DRAM_WE_N              )
- );
+		.new_sdram_controller_0_wire_we_n                 (DRAM_WE_N              ),
+		  
+		.i2c_0_i2c_serial_sda_in    (i2c0_sda_in),    //       i2c_0_i2c_serial.sda_in
+		.i2c_0_i2c_serial_scl_in    (i2c0_scl_in),    //                       .scl_in
+		.i2c_0_i2c_serial_sda_oe    (i2c0_sda_oe),    //                       .sda_oe
+		.i2c_0_i2c_serial_scl_oe    (i2c0_scl_oe),    //                       .scl_oe
+		.i2c_0_interrupt_sender_irq () //
+);
+
 
 	 
- 
+// I2C behavior
+assign i2c0_scl_in = I2C_0_SCL;
+assign I2C_0_SCL = i2c0_scl_oe ? 1'b0 : 1'bz;
+
+assign i2c0_sda_in = I2C_0_SDA;
+assign I2C_0_SDA = i2c0_sda_oe ? 1'b0 : 1'bz;
 
  
 	

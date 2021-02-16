@@ -25,6 +25,22 @@
          type = "int";
       }
    }
+   element i2c_0
+   {
+      datum _sortIndex
+      {
+         value = "6";
+         type = "int";
+      }
+   }
+   element i2c_0.csr
+   {
+      datum baseAddress
+      {
+         value = "32832";
+         type = "String";
+      }
+   }
    element kyogenrv_fpga
    {
       datum _originalDeviceFamily
@@ -172,6 +188,16 @@
  <instanceScript></instanceScript>
  <interface name="clk" internal="clk_0.clk_in" type="clock" dir="end" />
  <interface
+   name="i2c_0_i2c_serial"
+   internal="i2c_0.i2c_serial"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="i2c_0_interrupt_sender"
+   internal="i2c_0.interrupt_sender"
+   type="interrupt"
+   dir="end" />
+ <interface
    name="kyogenrv_0_conduit_end"
    internal="KyogenRV_0.conduit_end"
    type="conduit"
@@ -199,6 +225,11 @@
   <parameter name="clockFrequencyKnown" value="true" />
   <parameter name="inputClockFrequency" value="0" />
   <parameter name="resetSynchronousEdges" value="NONE" />
+ </module>
+ <module name="i2c_0" kind="altera_avalon_i2c" version="20.1" enabled="1">
+  <parameter name="FIFO_DEPTH" value="4" />
+  <parameter name="USE_AV_ST" value="0" />
+  <parameter name="clockRate" value="70000000" />
  </module>
  <module
    name="onchip_memory2_0"
@@ -295,6 +326,15 @@
    kind="avalon"
    version="20.1"
    start="KyogenRV_0.avalon_data_master"
+   end="i2c_0.csr">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x8040" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="20.1"
+   start="KyogenRV_0.avalon_data_master"
    end="uart_0.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x8020" />
@@ -345,6 +385,7 @@
    start="clk_0.clk"
    end="onchip_memory2_0.clk1" />
  <connection kind="clock" version="20.1" start="clk_0.clk" end="KyogenRV_0.clock" />
+ <connection kind="clock" version="20.1" start="clk_0.clk" end="i2c_0.clock" />
  <connection kind="reset" version="20.1" start="clk_0.clk_reset" end="pio_0.reset" />
  <connection
    kind="reset"
@@ -366,6 +407,11 @@
    version="20.1"
    start="clk_0.clk_reset"
    end="onchip_memory2_0.reset1" />
+ <connection
+   kind="reset"
+   version="20.1"
+   start="clk_0.clk_reset"
+   end="i2c_0.reset_sink" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
  <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
