@@ -100,6 +100,20 @@
 #define UART_0_USE_EOP_REGISTER 0
 
 /*
+ * Macros for device 'i2c_0', class 'altera_avalon_i2c'
+ * The macros are prefixed with 'I2C_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_0_COMPONENT_TYPE altera_avalon_i2c
+#define I2C_0_COMPONENT_NAME i2c_0
+#define I2C_0_BASE 0x8040
+#define I2C_0_SPAN 64
+#define I2C_0_END 0x807f
+#define I2C_0_FIFO_DEPTH 4
+#define I2C_0_FREQ 70000000
+#define I2C_0_USE_AV_ST 0
+
+/*
  * Macros for device 'sdram_0', class 'altera_avalon_new_sdram_controller'
  * The macros are prefixed with 'SDRAM_0_'.
  * The prefix is the slave descriptor.
