@@ -68,7 +68,7 @@ uint32_t i2c_write(uint32_t i2c_base, uint8_t data, bool send_stop_bit) {
     while(!(get32(isr) & 0x0001));  //	while(!(*(volatile uint32_t *)isr & 0x0001));
     // send Start + I2C Slave address
 
-    if(true == send_stop_bit)
+    if(1U == send_stop_bit)
         put32(tfr_cmd ,(0U << 9) + (1U << 8) + (data));
     else
         put32(tfr_cmd ,(0U << 9) + (0U << 8) + (data));
@@ -85,7 +85,7 @@ uint32_t i2c_read(uint32_t i2c_base, bool send_stop_bit) {
     // ISR[0]:TX_READY=1?(1:OK to send?)
     while(!(get32(isr) & 0x0001));
 
-    if(true == send_stop_bit)
+    if(1U == send_stop_bit)
         put32(tfr_cmd, (0U << 9) + (1U << 8) + (0x00));
     else
         put32(tfr_cmd, (0U << 9) + (0U << 8) + (0x00));
