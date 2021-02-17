@@ -1,8 +1,8 @@
 
-src/sw/blinker.elf:     file format elf32-littleriscv
+src/sw/blinker.elf:     ファイル形式 elf32-littleriscv
 
 
-Disassembly of section .text:
+セクション .text の逆アセンブル:
 
 00000000 <i2c_init>:
        0:	ff010113          	addi	sp,sp,-16
