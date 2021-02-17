@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "krv_utils.h"
 #include "xprintf.h"
-#include "qsys_i2c.h"
+//#include "qsys_i2c.h"
 
 #ifdef SDRAM_0_BASE
 int sdram_test(void) {
