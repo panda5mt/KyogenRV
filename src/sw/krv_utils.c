@@ -24,6 +24,12 @@ void wait_ms(uint64_t msec) {
         if((nowtime-oldtime) > comp) break;
     }
 }
+// get machine time (uint:msec)
+uint64_t get_time_ms(void) {
+    uint64_t i;
+    i = (((uint64_t)get_timeh() * 4294967296) + (uint64_t)get_timel()) / (XTAL_FREQ_KHZ);
+    return i;
+}
 // xprintf companion
 void uart_putc(char ch) {
     volatile uint32_t status;

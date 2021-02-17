@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
         wait_ms(500);
         put32(PIO_0_BASE, 0xAA);
 
-        i = (((uint64_t)get_timeh() * 4294967296) + (uint64_t)get_timel()) / (XTAL_FREQ_KHZ * 1000);
+        i = get_time_ms() / 1000;
         xprintf("machine time = %llu second\r\n",i);
     }
     return 0;

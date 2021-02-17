@@ -10,5 +10,6 @@ void dummy (void);                  // nop
 
 void __expr(void);          // exception
 void wait_ms(uint64_t);     // wait msec counter
+uint64_t get_time_ms(void); // get machine time in msec
 void uart_putc(char);       // xprintf companion
 
