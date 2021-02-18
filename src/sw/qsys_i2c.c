@@ -17,6 +17,9 @@
 void i2c_init(uint32_t i2c_base) {
 
     uint32_t ctrl = i2c_base + CTRL_OFFSET;
+    uint32_t scl_low = i2c_base + SCL_LOW_OFFSET;
+    uint32_t scl_high = i2c_base + SCL_HIGH_OFFSET;
+    uint32_t sda_hold = i2c_base + SDA_HOLD_OFFSET;
 
     // disable I2C
     uint32_t ctrl_param = get32(ctrl);
@@ -25,6 +28,11 @@ void i2c_init(uint32_t i2c_base) {
     put32(ctrl, ctrl_param);
 
     // 400kHz config and enable i2c core
+    uint32_t period = (uint32_t)(I2C_0_FREQ / 100000 / 2) - 1;
+    put32(scl_low, period);
+    put32(scl_high, period);
+    put32(sda_hold, period);
+
     ctrl_param = get32(ctrl);
     ctrl_param |= 0x03;
     put32(ctrl, ctrl_param);
