@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "qsys_i2c.h"
-
+#include "xprintf.h"
 
 /* offsets */
 /*
@@ -14,7 +14,7 @@
     uint32_t sda_hold = i2c_base + SDA_HOLD_OFFSET;
 */
 
-void i2c_init(uint32_t i2c_base, uint32_t i2c_freq) {
+void i2c_init(uint32_t i2c_base) {
 
     uint32_t ctrl = i2c_base + CTRL_OFFSET;
 

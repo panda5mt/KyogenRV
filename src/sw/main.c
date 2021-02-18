@@ -32,7 +32,8 @@ int main(int argc, char *argv[]) {
     uint64_t i;
     xdev_out(&uart_putc);       // override xprintf
 #ifdef I2C_0_BASE
-    xprintf("I2C OK...\r\n");
+    i2c_init(I2C_0_BASE);
+    xprintf("I2C Init OK...\r\n");
 #endif
 #ifdef SDRAM_0_BASE
     if(0 == sdram_test()) {
