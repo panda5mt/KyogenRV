@@ -28,7 +28,7 @@ void wait_ms(uint64_t msec) {
 
 uint64_t get_time_ms(void) {
     uint64_t i;
-    i = (((uint64_t)get_timeh() * 4294967296) + (uint64_t)get_timel()) / (XTAL_FREQ_KHZ);
+    i = (((uint64_t)get_timeh() * 4294967296UL) + (uint64_t)get_timel()) / (XTAL_FREQ_KHZ);
     return i;
 }
 
