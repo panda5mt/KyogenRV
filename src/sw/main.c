@@ -40,6 +40,10 @@ int main(int argc, char *argv[]) {
     VL53L1X_init();
     VL53L1X_setDistanceMode(VL53L1X_Long);
     VL53L1X_setMeasurementTimingBudget(50000);
+
+    VL53L1X_startContinuous(500);
+
+
 #endif
 
 #ifdef SDRAM_0_BASE

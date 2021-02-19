@@ -5,9 +5,44 @@
 
 static uint16_t fast_osc_frequency;
 static uint16_t osc_calibrate_val;
+static uint16_t timeout_start_ms;
+static uint16_t io_timeout = 0;
+bool did_timeout;
+bool calibrated;
+uint8_t saved_vhv_init;
+uint8_t saved_vhv_timeout;
+
+struct ResultBuffer results;
+struct RangingData ranging_data;
+// Record the current time to check an upcoming timeout against
+void VL53L1X_startTimeout(void) {
+   timeout_start_ms = get_time_ms();
+}
+
+bool VL53L1X_checkTimeoutExpired(void) {
+    return (io_timeout > 0) && ((uint16_t)(get_time_ms() - timeout_start_ms) > io_timeout);
+}
+void VL53L1X_setTimeout(uint16_t timeout) {
+    io_timeout = timeout;
+}
+
+uint16_t VL53L1X_getTimeout(void) {
+    return io_timeout;
+}
+
+// check if sensor has new reading available
+// assumes interrupt is active low (GPIO_HV_MUX__CTRL bit 4 is 1)
+bool VL53L1X_dataReady(void) {
+    return (VL53L1X_readReg(GPIO__TIO_HV_STATUS) & 0x01) == 0;
+}
+
+// Convert count rate from fixed point 9.7 format to float
+float VL53L1X_countRateFixedToFloat(uint16_t count_rate_fixed) {
+    return (float)count_rate_fixed / (1 << 7);
+}
 
 void VL53L1X_writeReg(uint16_t reg, uint8_t value) {
-    i2c_start_transmit(I2C_0_BASE,0x52>>1,0);    //bus->beginTransmission(address);
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,0);    //bus->beginTransmission(address);
     i2c_write(I2C_0_BASE, (reg >> 8) & 0xFF, 0); //bus->write((reg >> 8) & 0xFF); // reg high byte
     i2c_write(I2C_0_BASE, reg & 0xFF, 0);//bus->write( reg       & 0xFF); // reg low byte
     i2c_write(I2C_0_BASE, value, 1);//bus->write(value);
@@ -15,7 +50,7 @@ void VL53L1X_writeReg(uint16_t reg, uint8_t value) {
 }
 // Write a 16-bit register
 void VL53L1X_writeReg16Bit(uint16_t reg, uint16_t value) {
-    i2c_start_transmit(I2C_0_BASE,0x52>>1,0);//bus->beginTransmission(address);
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,0);//bus->beginTransmission(address);
     i2c_write(I2C_0_BASE, (reg >> 8) & 0xFF, 0);//bus->write((reg >> 8) & 0xFF); // reg high byte
     i2c_write(I2C_0_BASE, reg & 0xFF, 0);//bus->write( reg       & 0xFF); // reg low byte
 
@@ -26,7 +61,7 @@ void VL53L1X_writeReg16Bit(uint16_t reg, uint16_t value) {
 
 // Write a 32-bit register
 void VL53L1X_writeReg32Bit(uint16_t reg, uint32_t value) {
-    i2c_start_transmit(I2C_0_BASE,0x52>>1,0);//bus->beginTransmission(address);
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,0);//bus->beginTransmission(address);
     i2c_write(I2C_0_BASE, (reg >> 8) & 0xFF, 0);//bus->write((reg >> 8) & 0xFF); // reg high byte
     i2c_write(I2C_0_BASE, reg & 0xFF, 0);//bus->write( reg       & 0xFF); // reg low byte
     i2c_write(I2C_0_BASE, (value >> 24) & 0xFF, 0);
@@ -38,12 +73,12 @@ void VL53L1X_writeReg32Bit(uint16_t reg, uint32_t value) {
 uint8_t VL53L1X_readReg(uint16_t reg) {
     uint8_t value;
 
-    i2c_start_transmit(I2C_0_BASE,0x52>>1,0);//bus->beginTransmission(address);
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,0);//bus->beginTransmission(address);
     i2c_write(I2C_0_BASE, (reg >> 8) & 0xFF, 0);//bus->write((reg >> 8) & 0xFF); // reg high byte
     i2c_write(I2C_0_BASE, reg & 0xFF, 1);//bus->write( reg       & 0xFF); // reg low byte
     //last_status = bus->endTransmission();
 
-    i2c_start_transmit(I2C_0_BASE,0x52>>1,1);//bus->requestFrom(address, (uint8_t)1);
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,1);//bus->requestFrom(address, (uint8_t)1);
     value = i2c_read(I2C_0_BASE,1);//value = bus->read();
 
     return value;
@@ -52,11 +87,11 @@ uint8_t VL53L1X_readReg(uint16_t reg) {
 // Read a 16-bit register
 uint16_t VL53L1X_readReg16Bit(uint16_t reg) {
     uint16_t value;
-    i2c_start_transmit(I2C_0_BASE,0x52>>1,0);
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,0);
     i2c_write(I2C_0_BASE, (reg >> 8) & 0xFF, 0);
     i2c_write(I2C_0_BASE, reg & 0xFF, 1);
 
-    i2c_start_transmit(I2C_0_BASE,0x52>>1,1);   //bus->requestFrom(address, (uint8_t)2);
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,1);   //bus->requestFrom(address, (uint8_t)2);
     value = (uint16_t) (i2c_read(I2C_0_BASE,0) << 8); //value  = (uint16_t)bus->read() << 8; // value high byte
     value |= i2c_read(I2C_0_BASE,1);    // value low byte
 
@@ -67,11 +102,11 @@ uint16_t VL53L1X_readReg16Bit(uint16_t reg) {
 uint32_t VL53L1X_readReg32Bit(uint16_t reg) {
     uint32_t value;
 
-    i2c_start_transmit(I2C_0_BASE,0x52>>1,0);
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,0);
     i2c_write(I2C_0_BASE, (reg >> 8) & 0xFF, 0);
     i2c_write(I2C_0_BASE, reg & 0xFF, 1);
 
-    i2c_start_transmit(I2C_0_BASE,0x52>>1,1);
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,1);
 
     value = (uint32_t) (i2c_read(I2C_0_BASE,0) << 24);//value  = (uint32_t)bus->read() << 24; // value highest byte
     value |= (uint32_t) (i2c_read(I2C_0_BASE,0) << 16);//bus->read() << 16;
@@ -176,9 +211,6 @@ void VL53L1X_init(void) {
     VL53L1X_writeReg16Bit(ALGO__PART_TO_PART_RANGE_OFFSET_MM,
     VL53L1X_readReg16Bit(MM_CONFIG__OUTER_OFFSET_MM) * 4);
 
-
-    //uint32_t aaa = VL53L1X_readReg(FIRMWARE__SYSTEM_STATUS);
-    xprintf("I2C Init OK!\r\n...freq=%d\r\noscval=%d\r\n",fast_osc_frequency,osc_calibrate_val);
     return;
 
 }
@@ -247,58 +279,58 @@ bool VL53L1X_setDistanceMode(uint8_t mode) {
 // measurements.
 // based on VL53L1_SetMeasurementTimingBudgetMicroSeconds()
 bool VL53L1X_setMeasurementTimingBudget(uint32_t budget_us) {
-  // assumes PresetMode is LOWPOWER_AUTONOMOUS
-
-  if (budget_us <= TimingGuard) { return false; }
-
-  uint32_t range_config_timeout_us = budget_us -= TimingGuard;
-  if (range_config_timeout_us > 1100000) { return false; } // FDA_MAX_TIMING_BUDGET_US * 2
-
-  range_config_timeout_us /= 2;
-
-  // VL53L1_calc_timeout_register_values() begin
-
-  uint32_t macro_period_us;
-
-  // "Update Macro Period for Range A VCSEL Period"
-  macro_period_us =  VL53L1X_calcMacroPeriod(VL53L1X_readReg(RANGE_CONFIG__VCSEL_PERIOD_A));
-
-  // "Update Phase timeout - uses Timing A"
-  // Timeout of 1000 is tuning parm default (TIMED_PHASECAL_CONFIG_TIMEOUT_US_DEFAULT)
-  // via VL53L1_get_preset_mode_timing_cfg().
-  uint32_t phasecal_timeout_mclks =  VL53L1X_timeoutMicrosecondsToMclks(1000, macro_period_us);
-  if (phasecal_timeout_mclks > 0xFF) { phasecal_timeout_mclks = 0xFF; }
-  VL53L1X_writeReg(PHASECAL_CONFIG__TIMEOUT_MACROP, phasecal_timeout_mclks);
-
-  // "Update MM Timing A timeout"
-  // Timeout of 1 is tuning parm default (LOWPOWERAUTO_MM_CONFIG_TIMEOUT_US_DEFAULT)
-  // via VL53L1_get_preset_mode_timing_cfg(). With the API, the register
-  // actually ends up with a slightly different value because it gets assigned,
-  // retrieved, recalculated with a different macro period, and reassigned,
-  // but it probably doesn't matter because it seems like the MM ("mode
-  // mitigation"?) sequence steps are disabled in low power auto mode anyway.
-  VL53L1X_writeReg16Bit(MM_CONFIG__TIMEOUT_MACROP_A,  VL53L1X_encodeTimeout(
+    // assumes PresetMode is LOWPOWER_AUTONOMOUS
+    
+    if (budget_us <= TimingGuard) { return false; }
+    
+    uint32_t range_config_timeout_us = budget_us -= TimingGuard;
+    if (range_config_timeout_us > 1100000) { return false; } // FDA_MAX_TIMING_BUDGET_US * 2
+    
+    range_config_timeout_us /= 2;
+    
+    // VL53L1_calc_timeout_register_values() begin
+    
+    uint32_t macro_period_us;
+    
+    // "Update Macro Period for Range A VCSEL Period"
+    macro_period_us =  VL53L1X_calcMacroPeriod(VL53L1X_readReg(RANGE_CONFIG__VCSEL_PERIOD_A));
+    
+    // "Update Phase timeout - uses Timing A"
+    // Timeout of 1000 is tuning parm default (TIMED_PHASECAL_CONFIG_TIMEOUT_US_DEFAULT)
+    // via VL53L1_get_preset_mode_timing_cfg().
+    uint32_t phasecal_timeout_mclks =  VL53L1X_timeoutMicrosecondsToMclks(1000, macro_period_us);
+    if (phasecal_timeout_mclks > 0xFF) { phasecal_timeout_mclks = 0xFF; }
+    VL53L1X_writeReg(PHASECAL_CONFIG__TIMEOUT_MACROP, phasecal_timeout_mclks);
+    
+    // "Update MM Timing A timeout"
+    // Timeout of 1 is tuning parm default (LOWPOWERAUTO_MM_CONFIG_TIMEOUT_US_DEFAULT)
+    // via VL53L1_get_preset_mode_timing_cfg(). With the API, the register
+    // actually ends up with a slightly different value because it gets assigned,
+    // retrieved, recalculated with a different macro period, and reassigned,
+    // but it probably doesn't matter because it seems like the MM ("mode
+    // mitigation"?) sequence steps are disabled in low power auto mode anyway.
+    VL53L1X_writeReg16Bit(MM_CONFIG__TIMEOUT_MACROP_A,  VL53L1X_encodeTimeout(
      VL53L1X_timeoutMicrosecondsToMclks(1, macro_period_us)));
-
-  // "Update Range Timing A timeout"
-  VL53L1X_writeReg16Bit(RANGE_CONFIG__TIMEOUT_MACROP_A,  VL53L1X_encodeTimeout(
+    
+    // "Update Range Timing A timeout"
+    VL53L1X_writeReg16Bit(RANGE_CONFIG__TIMEOUT_MACROP_A,  VL53L1X_encodeTimeout(
      VL53L1X_timeoutMicrosecondsToMclks(range_config_timeout_us, macro_period_us)));
-
-  // "Update Macro Period for Range B VCSEL Period"
-  macro_period_us =  VL53L1X_calcMacroPeriod(VL53L1X_readReg(RANGE_CONFIG__VCSEL_PERIOD_B));
-
-  // "Update MM Timing B timeout"
-  // (See earlier comment about MM Timing A timeout.)
-  VL53L1X_writeReg16Bit(MM_CONFIG__TIMEOUT_MACROP_B,  VL53L1X_encodeTimeout(
+    
+    // "Update Macro Period for Range B VCSEL Period"
+    macro_period_us =  VL53L1X_calcMacroPeriod(VL53L1X_readReg(RANGE_CONFIG__VCSEL_PERIOD_B));
+    
+    // "Update MM Timing B timeout"
+    // (See earlier comment about MM Timing A timeout.)
+    VL53L1X_writeReg16Bit(MM_CONFIG__TIMEOUT_MACROP_B,  VL53L1X_encodeTimeout(
      VL53L1X_timeoutMicrosecondsToMclks(1, macro_period_us)));
-
-  // "Update Range Timing B timeout"
-  VL53L1X_writeReg16Bit(RANGE_CONFIG__TIMEOUT_MACROP_B,  VL53L1X_encodeTimeout(
+    
+    // "Update Range Timing B timeout"
+    VL53L1X_writeReg16Bit(RANGE_CONFIG__TIMEOUT_MACROP_B,  VL53L1X_encodeTimeout(
      VL53L1X_timeoutMicrosecondsToMclks(range_config_timeout_us, macro_period_us)));
-
-  // VL53L1_calc_timeout_register_values() end
-
-  return true;
+    
+    // VL53L1_calc_timeout_register_values() end
+    
+    return true;
 }
 
 // Convert sequence step timeout from microseconds to macro periods with given
@@ -311,42 +343,296 @@ uint32_t  VL53L1X_timeoutMicrosecondsToMclks(uint32_t timeout_us, uint32_t macro
 // Encode sequence step timeout register value from timeout in MCLKs
 // based on VL53L1_encode_timeout()
 uint16_t VL53L1X_encodeTimeout(uint32_t timeout_mclks) {
-  // encoded format: "(LSByte * 2^MSByte) + 1"
+    // encoded format: "(LSByte * 2^MSByte) + 1"
 
-  uint32_t ls_byte = 0;
-  uint16_t ms_byte = 0;
+    uint32_t ls_byte = 0;
+    uint16_t ms_byte = 0;
 
-  if (timeout_mclks > 0)
-  {
-    ls_byte = timeout_mclks - 1;
+    if (timeout_mclks > 0) {
+        ls_byte = timeout_mclks - 1;
+        while ((ls_byte & 0xFFFFFF00) > 0) {
+            ls_byte >>= 1;
+            ms_byte++;
+        }
 
-    while ((ls_byte & 0xFFFFFF00) > 0)
-    {
-      ls_byte >>= 1;
-      ms_byte++;
+        return (ms_byte << 8) | (ls_byte & 0xFF);
     }
 
-    return (ms_byte << 8) | (ls_byte & 0xFF);
-  }
-  else { return 0; }
+    else { return 0; }
 }
 
 // Calculate macro period in microseconds (12.12 format) with given VCSEL period
 // assumes fast_osc_frequency has been read and stored
 // based on VL53L1_calc_macro_period_us()
 uint32_t VL53L1X_calcMacroPeriod(uint8_t vcsel_period) {
-  // from VL53L1_calc_pll_period_us()
-  // fast osc frequency in 4.12 format; PLL period in 0.24 format
-  uint32_t pll_period_us = ((uint32_t)0x01 << 30) / fast_osc_frequency;
+    // from VL53L1_calc_pll_period_us()
+    // fast osc frequency in 4.12 format; PLL period in 0.24 format
+    uint32_t pll_period_us = ((uint32_t)0x01 << 30) / fast_osc_frequency;
 
-  // from VL53L1_decode_vcsel_period()
-  uint8_t vcsel_period_pclks = (vcsel_period + 1) << 1;
+    // from VL53L1_decode_vcsel_period()
+    uint8_t vcsel_period_pclks = (vcsel_period + 1) << 1;
 
-  // VL53L1_MACRO_PERIOD_VCSEL_PERIODS = 2304
-  uint32_t macro_period_us = (uint32_t)2304 * pll_period_us;
-  macro_period_us >>= 6;
-  macro_period_us *= vcsel_period_pclks;
-  macro_period_us >>= 6;
+    // VL53L1_MACRO_PERIOD_VCSEL_PERIODS = 2304
+    uint32_t macro_period_us = (uint32_t)2304 * pll_period_us;
+    macro_period_us >>= 6;
+    macro_period_us *= vcsel_period_pclks;
+    macro_period_us >>= 6;
 
-  return macro_period_us;
+    return macro_period_us;
+}
+
+// Start continuous ranging measurements, with the given inter-measurement
+// period in milliseconds determining how often the sensor takes a measurement.
+void VL53L1X_startContinuous(uint32_t period_ms) {
+    // from VL53L1_set_inter_measurement_period_ms()
+    VL53L1X_writeReg32Bit(SYSTEM__INTERMEASUREMENT_PERIOD, period_ms * osc_calibrate_val);
+
+    VL53L1X_writeReg(SYSTEM__INTERRUPT_CLEAR, 0x01); // sys_interrupt_clear_range
+    VL53L1X_writeReg(SYSTEM__MODE_START, 0x40); // mode_range__timed
+}
+
+uint16_t VL53L1X_read(bool blocking) {
+
+    if (blocking) {
+        VL53L1X_startTimeout();
+        while (!VL53L1X_dataReady()) {
+            if (VL53L1X_checkTimeoutExpired()) {
+                did_timeout = true;
+                return 0;
+            }
+        }
+    }
+
+    VL53L1X_readResults();
+
+    if (!calibrated)
+    {
+        VL53L1X_setupManualCalibration();
+        calibrated = true;
+    }
+
+    VL53L1X_updateDSS();
+
+    VL53L1X_getRangingData();
+
+    VL53L1X_writeReg(SYSTEM__INTERRUPT_CLEAR, 0x01); // sys_interrupt_clear_range
+
+    return ranging_data.range_mm;
+}
+
+void VL53L1X_readResults(void) {
+
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,0);    //bus->beginTransmission(address);
+    i2c_write(I2C_0_BASE, (RESULT__RANGE_STATUS >> 8) & 0xFF, 0); //bus->write((reg >> 8) & 0xFF); // reg high byte
+    i2c_write(I2C_0_BASE, RESULT__RANGE_STATUS & 0xFF, 1);//bus->write( reg       & 0xFF); // reg low byte
+
+    //bus->requestFrom(address, (uint8_t)17);
+    i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,1);    //bus->beginTransmission(address);
+    results.range_status = i2c_read(I2C_0_BASE,0);//results.range_status = bus->read();
+    i2c_read(I2C_0_BASE,0);     // report_status: not used
+    results.stream_count = i2c_read(I2C_0_BASE,0);//bus->read();
+
+    results.dss_actual_effective_spads_sd0  = (uint16_t)i2c_read(I2C_0_BASE,0) << 8;    // high byte
+    results.dss_actual_effective_spads_sd0 |= i2c_read(I2C_0_BASE,0);                   // low byte
+    
+    i2c_read(I2C_0_BASE,0);//bus->read(); // peak_signal_count_rate_mcps_sd0: not used
+    i2c_read(I2C_0_BASE,0);//bus->read();
+    
+    results.ambient_count_rate_mcps_sd0  = (uint16_t)i2c_read(I2C_0_BASE,0) << 8; // high byte
+    results.ambient_count_rate_mcps_sd0 |=           i2c_read(I2C_0_BASE,0);      // low byte
+    
+    i2c_read(I2C_0_BASE,0);//bus->read(); // sigma_sd0: not used
+    i2c_read(I2C_0_BASE,0);//bus->read();
+    
+    i2c_read(I2C_0_BASE,0);//bus->read(); // phase_sd0: not used
+    i2c_read(I2C_0_BASE,0);//bus->read();
+    
+    results.final_crosstalk_corrected_range_mm_sd0  = (uint16_t)i2c_read(I2C_0_BASE,0) << 8; // high byte
+    results.final_crosstalk_corrected_range_mm_sd0 |=           i2c_read(I2C_0_BASE,0);     // low byte
+    
+    results.peak_signal_count_rate_crosstalk_corrected_mcps_sd0  = (uint16_t)i2c_read(I2C_0_BASE,0) << 8; // high byte
+    results.peak_signal_count_rate_crosstalk_corrected_mcps_sd0 |=           i2c_read(I2C_0_BASE,1);     // low byte
+}
+
+void VL53L1X_setupManualCalibration(void) {
+  // "save original vhv configs"
+  saved_vhv_init = VL53L1X_readReg(VHV_CONFIG__INIT);
+  saved_vhv_timeout = VL53L1X_readReg(VHV_CONFIG__TIMEOUT_MACROP_LOOP_BOUND);
+
+  // "disable VHV init"
+  VL53L1X_writeReg(VHV_CONFIG__INIT, saved_vhv_init & 0x7F);
+
+  // "set loop bound to tuning param"
+  VL53L1X_writeReg(VHV_CONFIG__TIMEOUT_MACROP_LOOP_BOUND,
+    (saved_vhv_timeout & 0x03) + (3 << 2)); // tuning parm default (LOWPOWERAUTO_VHV_LOOP_BOUND_DEFAULT)
+
+  // "override phasecal"
+  VL53L1X_writeReg(PHASECAL_CONFIG__OVERRIDE, 0x01);
+  VL53L1X_writeReg(CAL_CONFIG__VCSEL_START, VL53L1X_readReg(PHASECAL_RESULT__VCSEL_START));
+}
+
+void VL53L1X_pdateDSS(void)
+{
+  uint16_t spadCount = results.dss_actual_effective_spads_sd0;
+
+  if (spadCount != 0)
+  {
+    // "Calc total rate per spad"
+
+    uint32_t totalRatePerSpad =
+      (uint32_t)results.peak_signal_count_rate_crosstalk_corrected_mcps_sd0 +
+      results.ambient_count_rate_mcps_sd0;
+
+    // "clip to 16 bits"
+    if (totalRatePerSpad > 0xFFFF) { totalRatePerSpad = 0xFFFF; }
+
+    // "shift up to take advantage of 32 bits"
+    totalRatePerSpad <<= 16;
+
+    totalRatePerSpad /= spadCount;
+
+    if (totalRatePerSpad != 0)
+    {
+      // "get the target rate and shift up by 16"
+      uint32_t requiredSpads = ((uint32_t)TargetRate << 16) / totalRatePerSpad;
+
+      // "clip to 16 bit"
+      if (requiredSpads > 0xFFFF) { requiredSpads = 0xFFFF; }
+
+      // "override DSS config"
+      VL53L1X_writeReg16Bit(DSS_CONFIG__MANUAL_EFFECTIVE_SPADS_SELECT, requiredSpads);
+      // DSS_CONFIG__ROI_MODE_CONTROL should already be set to REQUESTED_EFFFECTIVE_SPADS
+
+      return;
+    }
+  }
+
+  // If we reached this point, it means something above would have resulted in a
+  // divide by zero.
+  // "We want to gracefully set a spad target, not just exit with an error"
+
+   // "set target to mid point"
+   VL53L1X_writeReg16Bit(DSS_CONFIG__MANUAL_EFFECTIVE_SPADS_SELECT, 0x8000);
+}
+
+// get range, status, rates from results buffer
+// based on VL53L1_GetRangingMeasurementData()
+void VL53L1X_getRangingData(void) {
+    // VL53L1_copy_sys_and_core_results_to_range_results() begin
+
+    uint16_t range = results.final_crosstalk_corrected_range_mm_sd0;
+
+    // "apply correction gain"
+    // gain factor of 2011 is tuning parm default (VL53L1_TUNINGPARM_LITE_RANGING_GAIN_FACTOR_DEFAULT)
+    // Basically, this appears to scale the result by 2011/2048, or about 98%
+    // (with the 1024 added for proper rounding).
+    ranging_data.range_mm = ((uint32_t)range * 2011 + 0x0400) / 0x0800;
+
+    // VL53L1_copy_sys_and_core_results_to_range_results() end
+
+    // set range_status in ranging_data based on value of RESULT__RANGE_STATUS register
+    // mostly based on ConvertStatusLite()
+    switch(results.range_status) {
+        case 17: // MULTCLIPFAIL
+        case 2: // VCSELWATCHDOGTESTFAILURE
+        case 1: // VCSELCONTINUITYTESTFAILURE
+        case 3: // NOVHVVALUEFOUND
+            // from SetSimpleData()
+            ranging_data.range_status = HardwareFail;
+            break;
+
+        case 13: // USERROICLIP
+            // from SetSimpleData()
+            ranging_data.range_status = MinRangeFail;
+            break;
+
+        case 18: // GPHSTREAMCOUNT0READY
+            ranging_data.range_status = SynchronizationInt;
+            break;
+
+        case 5: // RANGEPHASECHECK
+            ranging_data.range_status =  OutOfBoundsFail;
+            break;
+
+        case 4: // MSRCNOTARGET
+            ranging_data.range_status = SignalFail;
+            break;
+
+        case 6: // SIGMATHRESHOLDCHECK
+            ranging_data.range_status = SigmaFail;
+            break;
+
+        case 7: // PHASECONSISTENCY
+            ranging_data.range_status = WrapTargetFail;
+            break;
+
+        case 12: // RANGEIGNORETHRESHOLD
+            ranging_data.range_status = XtalkSignalFail;
+            break;
+
+        case 8: // MINCLIP
+            ranging_data.range_status = RangeValidMinRangeClipped;
+            break;
+
+        case 9: // RANGECOMPLETE
+            // from VL53L1_copy_sys_and_core_results_to_range_results()
+            if (results.stream_count == 0) {
+                ranging_data.range_status = RangeValidNoWrapCheckFail;
+            } else {
+                    ranging_data.range_status = RangeValid;
+            }
+            break;
+
+        default:
+            ranging_data.range_status = None;
+    }
+
+    // from SetSimpleData()
+    ranging_data.peak_signal_count_rate_MCPS =
+    VL53L1X_countRateFixedToFloat(results.peak_signal_count_rate_crosstalk_corrected_mcps_sd0);
+    ranging_data.ambient_count_rate_MCPS =
+    VL53L1X_countRateFixedToFloat(results.ambient_count_rate_mcps_sd0);
+}
+
+// perform Dynamic SPAD Selection calculation/update
+// based on VL53L1_low_power_auto_update_DSS()
+void VL53L1X_updateDSS(void) {
+    uint16_t spadCount = results.dss_actual_effective_spads_sd0;
+
+    if (spadCount != 0) {
+        // "Calc total rate per spad"
+
+        uint32_t totalRatePerSpad =
+            (uint32_t)results.peak_signal_count_rate_crosstalk_corrected_mcps_sd0 +
+            results.ambient_count_rate_mcps_sd0;
+
+        // "clip to 16 bits"
+        if (totalRatePerSpad > 0xFFFF) { totalRatePerSpad = 0xFFFF; }
+
+        // "shift up to take advantage of 32 bits"
+        totalRatePerSpad <<= 16;
+
+        totalRatePerSpad /= spadCount;
+
+        if (totalRatePerSpad != 0) {
+            // "get the target rate and shift up by 16"
+            uint32_t requiredSpads = ((uint32_t)TargetRate << 16) / totalRatePerSpad;
+
+            // "clip to 16 bit"
+            if (requiredSpads > 0xFFFF) { requiredSpads = 0xFFFF; }
+
+            // "override DSS config"
+            VL53L1X_writeReg16Bit(DSS_CONFIG__MANUAL_EFFECTIVE_SPADS_SELECT, requiredSpads);
+            // DSS_CONFIG__ROI_MODE_CONTROL should already be set to REQUESTED_EFFFECTIVE_SPADS
+
+            return;
+        }
+    }
+
+    // If we reached this point, it means something above would have resulted in a
+    // divide by zero.
+    // "We want to gracefully set a spad target, not just exit with an error"
+
+    // "set target to mid point"
+    VL53L1X_writeReg16Bit(DSS_CONFIG__MANUAL_EFFECTIVE_SPADS_SELECT, 0x8000);
 }
