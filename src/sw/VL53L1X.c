@@ -16,6 +16,7 @@ uint8_t saved_vhv_timeout;
 
 struct ResultBuffer results;
 struct RangingData ranging_data;
+struct RangingData *r_d;
 // Record the current time to check an upcoming timeout against
 void VL53L1X_startTimeout(void) {
    timeout_start_ms = get_time_ms();
@@ -399,6 +400,7 @@ void VL53L1X_startContinuous(uint32_t period_ms) {
 
 uint16_t VL53L1X_read(bool blocking) {
 
+    r_d = &ranging_data;
     if (blocking) {
         VL53L1X_startTimeout();
         while (!VL53L1X_dataReady()) {
@@ -424,7 +426,7 @@ uint16_t VL53L1X_read(bool blocking) {
 
     VL53L1X_writeReg(SYSTEM__INTERRUPT_CLEAR, 0x01); // sys_interrupt_clear_range
 
-    uint16_t ret_value = ranging_data.range_mm;
+    uint16_t ret_value = r_d->range_mm;
     //xprintf("val=%d\r\n",ret_value);
     return ret_value;
 
