@@ -165,8 +165,8 @@ uint16_t fast_osc_frequency;
 
     // default to long range, 50 ms timing budget
     // note that this is different than what the API defaults to
-    //setDistanceMode(Long);
-    //setMeasurementTimingBudget(50000);
+    VL53L1X_setDistanceMode(VL53L1X_Long);
+    //VL53L1X_setMeasurementTimingBudget(50000);
 
     // VL53L1_StaticInit() end
 
@@ -180,4 +180,63 @@ uint16_t fast_osc_frequency;
     xprintf("I2C Init OK!\r\n...freq=%d\r\noscval=%d\r\n",fast_osc_frequency,osc_calibrate_val);
     return;
 
+}
+
+bool VL53L1X_setDistanceMode(uint8_t mode) {
+    // save existing timing budget
+    //uint32_t budget_us = getMeasurementTimingBudget();
+
+    switch (mode) {
+        case VL53L1X_Short:
+            // from VL53L1_preset_mode_standard_ranging_short_range()
+
+            // timing config
+            VL53L1X_writeReg(RANGE_CONFIG__VCSEL_PERIOD_A, 0x07);
+            VL53L1X_writeReg(RANGE_CONFIG__VCSEL_PERIOD_B, 0x05);
+            VL53L1X_writeReg(RANGE_CONFIG__VALID_PHASE_HIGH, 0x38);
+
+            // dynamic config
+            VL53L1X_writeReg(SD_CONFIG__WOI_SD0, 0x07);
+            VL53L1X_writeReg(SD_CONFIG__WOI_SD1, 0x05);
+            VL53L1X_writeReg(SD_CONFIG__INITIAL_PHASE_SD0, 6); // tuning parm default
+            VL53L1X_writeReg(SD_CONFIG__INITIAL_PHASE_SD1, 6); // tuning parm default
+
+            break;
+
+        case VL53L1X_Medium:
+            // from VL53L1_preset_mode_standard_ranging()
+
+            // timing config
+            VL53L1X_writeReg(RANGE_CONFIG__VCSEL_PERIOD_A, 0x0B);
+            VL53L1X_writeReg(RANGE_CONFIG__VCSEL_PERIOD_B, 0x09);
+            VL53L1X_writeReg(RANGE_CONFIG__VALID_PHASE_HIGH, 0x78);
+
+            // dynamic config
+            VL53L1X_writeReg(SD_CONFIG__WOI_SD0, 0x0B);
+            VL53L1X_writeReg(SD_CONFIG__WOI_SD1, 0x09);
+            VL53L1X_writeReg(SD_CONFIG__INITIAL_PHASE_SD0, 10); // tuning parm default
+            VL53L1X_writeReg(SD_CONFIG__INITIAL_PHASE_SD1, 10); // tuning parm default
+
+            break;
+
+        case VL53L1X_Long: // long
+            // from VL53L1_preset_mode_standard_ranging_long_range()
+
+            // timing config
+            VL53L1X_writeReg(RANGE_CONFIG__VCSEL_PERIOD_A, 0x0F);
+            VL53L1X_writeReg(RANGE_CONFIG__VCSEL_PERIOD_B, 0x0D);
+            VL53L1X_writeReg(RANGE_CONFIG__VALID_PHASE_HIGH, 0xB8);
+
+            // dynamic config
+            VL53L1X_writeReg(SD_CONFIG__WOI_SD0, 0x0F);
+            VL53L1X_writeReg(SD_CONFIG__WOI_SD1, 0x0D);
+            VL53L1X_writeReg(SD_CONFIG__INITIAL_PHASE_SD0, 14); // tuning parm default
+            VL53L1X_writeReg(SD_CONFIG__INITIAL_PHASE_SD1, 14); // tuning parm default
+            break;
+
+        default:
+            // unrecognized mode - do nothing
+            return false;
+    }
+    return false;
 }

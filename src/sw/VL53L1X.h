@@ -4,6 +4,12 @@
 #include "krv_utils.h"
 #include "qsys_i2c.h"
 
+
+#define    VL53L1X_Unknown  0
+#define    VL53L1X_Short    1
+#define    VL53L1X_Medium   2
+#define    VL53L1X_Long     3
+
 #define    SOFT_RESET                                                                 (0x0000)
 #define    I2C_SLAVE__DEVICE_ADDRESS                                                  (0x0001)
 #define    ANA_CONFIG__VHV_REF_SEL_VDDPIX                                             (0x0002)
@@ -1199,5 +1205,6 @@ uint8_t VL53L1X_readReg(uint16_t reg);
 uint16_t VL53L1X_readReg16Bit(uint16_t reg);
 uint32_t VL53L1X_readReg32Bit(uint16_t reg);
 void VL53L1X_init(void);
+bool VL53L1X_setDistanceMode(uint8_t mode);
 
 #endif //_VL53L1X_H_
