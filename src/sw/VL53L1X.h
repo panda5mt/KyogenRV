@@ -1197,6 +1197,17 @@
 #define    SHADOW_PHASECAL_RESULT__REFERENCE_PHASE_HI                                 (0x0FFE)
 #define    SHADOW_PHASECAL_RESULT__REFERENCE_PHASE_LO                                 (0x0FFF)
 
+// value used in measurement timing budget calculations
+// assumes PresetMode is LOWPOWER_AUTONOMOUS
+//
+// vhv = LOWPOWER_AUTO_VHV_LOOP_DURATION_US + LOWPOWERAUTO_VHV_LOOP_BOUND
+//       (tuning parm default) * LOWPOWER_AUTO_VHV_LOOP_DURATION_US
+//     = 245 + 3 * 245 = 980
+// TimingGuard = LOWPOWER_AUTO_OVERHEAD_BEFORE_A_RANGING +
+//               LOWPOWER_AUTO_OVERHEAD_BETWEEN_A_B_RANGING + vhv
+//             = 1448 + 2100 + 980 = 4528
+static const uint32_t TimingGuard = 4528;
+
 void VL53L1X_writeReg(uint16_t reg, uint8_t value);
 void VL53L1X_writeReg16Bit(uint16_t reg, uint16_t value);
 void VL53L1X_writeReg32Bit(uint16_t reg, uint32_t value);
@@ -1206,5 +1217,9 @@ uint16_t VL53L1X_readReg16Bit(uint16_t reg);
 uint32_t VL53L1X_readReg32Bit(uint16_t reg);
 void VL53L1X_init(void);
 bool VL53L1X_setDistanceMode(uint8_t mode);
+bool VL53L1X_setMeasurementTimingBudget(uint32_t budget_us);
+uint32_t VL53L1X_timeoutMicrosecondsToMclks(uint32_t timeout_us, uint32_t macro_period_us);
+uint16_t VL53L1X_encodeTimeout(uint32_t timeout_mclks);
+uint32_t VL53L1X_calcMacroPeriod(uint8_t vcsel_period);
 
 #endif //_VL53L1X_H_

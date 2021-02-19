@@ -3,6 +3,8 @@
 #include "VL53L1X.h"
 #include "xprintf.h"
 
+static uint16_t fast_osc_frequency;
+static uint16_t osc_calibrate_val;
 
 void VL53L1X_writeReg(uint16_t reg, uint8_t value) {
     i2c_start_transmit(I2C_0_BASE,0x52>>1,0);    //bus->beginTransmission(address);
@@ -81,8 +83,7 @@ uint32_t VL53L1X_readReg32Bit(uint16_t reg) {
 
 
 void VL53L1X_init(void) {
-uint16_t fast_osc_frequency;
-    uint16_t osc_calibrate_val;
+
     static const uint16_t TargetRate = 0x0A00;
 
 
@@ -166,7 +167,7 @@ uint16_t fast_osc_frequency;
     // default to long range, 50 ms timing budget
     // note that this is different than what the API defaults to
     VL53L1X_setDistanceMode(VL53L1X_Long);
-    //VL53L1X_setMeasurementTimingBudget(50000);
+    VL53L1X_setMeasurementTimingBudget(50000);
 
     // VL53L1_StaticInit() end
 
@@ -239,4 +240,113 @@ bool VL53L1X_setDistanceMode(uint8_t mode) {
             return false;
     }
     return false;
+}
+
+// Set the measurement timing budget in microseconds, which is the time allowed
+// for one measurement. A longer timing budget allows for more accurate
+// measurements.
+// based on VL53L1_SetMeasurementTimingBudgetMicroSeconds()
+bool VL53L1X_setMeasurementTimingBudget(uint32_t budget_us) {
+  // assumes PresetMode is LOWPOWER_AUTONOMOUS
+
+  if (budget_us <= TimingGuard) { return false; }
+
+  uint32_t range_config_timeout_us = budget_us -= TimingGuard;
+  if (range_config_timeout_us > 1100000) { return false; } // FDA_MAX_TIMING_BUDGET_US * 2
+
+  range_config_timeout_us /= 2;
+
+  // VL53L1_calc_timeout_register_values() begin
+
+  uint32_t macro_period_us;
+
+  // "Update Macro Period for Range A VCSEL Period"
+  macro_period_us =  VL53L1X_calcMacroPeriod(VL53L1X_readReg(RANGE_CONFIG__VCSEL_PERIOD_A));
+
+  // "Update Phase timeout - uses Timing A"
+  // Timeout of 1000 is tuning parm default (TIMED_PHASECAL_CONFIG_TIMEOUT_US_DEFAULT)
+  // via VL53L1_get_preset_mode_timing_cfg().
+  uint32_t phasecal_timeout_mclks =  VL53L1X_timeoutMicrosecondsToMclks(1000, macro_period_us);
+  if (phasecal_timeout_mclks > 0xFF) { phasecal_timeout_mclks = 0xFF; }
+  VL53L1X_writeReg(PHASECAL_CONFIG__TIMEOUT_MACROP, phasecal_timeout_mclks);
+
+  // "Update MM Timing A timeout"
+  // Timeout of 1 is tuning parm default (LOWPOWERAUTO_MM_CONFIG_TIMEOUT_US_DEFAULT)
+  // via VL53L1_get_preset_mode_timing_cfg(). With the API, the register
+  // actually ends up with a slightly different value because it gets assigned,
+  // retrieved, recalculated with a different macro period, and reassigned,
+  // but it probably doesn't matter because it seems like the MM ("mode
+  // mitigation"?) sequence steps are disabled in low power auto mode anyway.
+  VL53L1X_writeReg16Bit(MM_CONFIG__TIMEOUT_MACROP_A,  VL53L1X_encodeTimeout(
+     VL53L1X_timeoutMicrosecondsToMclks(1, macro_period_us)));
+
+  // "Update Range Timing A timeout"
+  VL53L1X_writeReg16Bit(RANGE_CONFIG__TIMEOUT_MACROP_A,  VL53L1X_encodeTimeout(
+     VL53L1X_timeoutMicrosecondsToMclks(range_config_timeout_us, macro_period_us)));
+
+  // "Update Macro Period for Range B VCSEL Period"
+  macro_period_us =  VL53L1X_calcMacroPeriod(VL53L1X_readReg(RANGE_CONFIG__VCSEL_PERIOD_B));
+
+  // "Update MM Timing B timeout"
+  // (See earlier comment about MM Timing A timeout.)
+  VL53L1X_writeReg16Bit(MM_CONFIG__TIMEOUT_MACROP_B,  VL53L1X_encodeTimeout(
+     VL53L1X_timeoutMicrosecondsToMclks(1, macro_period_us)));
+
+  // "Update Range Timing B timeout"
+  VL53L1X_writeReg16Bit(RANGE_CONFIG__TIMEOUT_MACROP_B,  VL53L1X_encodeTimeout(
+     VL53L1X_timeoutMicrosecondsToMclks(range_config_timeout_us, macro_period_us)));
+
+  // VL53L1_calc_timeout_register_values() end
+
+  return true;
+}
+
+// Convert sequence step timeout from microseconds to macro periods with given
+// macro period in microseconds (12.12 format)
+// based on VL53L1_calc_timeout_mclks()
+uint32_t  VL53L1X_timeoutMicrosecondsToMclks(uint32_t timeout_us, uint32_t macro_period_us) {
+  return (((uint32_t)timeout_us << 12) + (macro_period_us >> 1)) / macro_period_us;
+}
+
+// Encode sequence step timeout register value from timeout in MCLKs
+// based on VL53L1_encode_timeout()
+uint16_t VL53L1X_encodeTimeout(uint32_t timeout_mclks) {
+  // encoded format: "(LSByte * 2^MSByte) + 1"
+
+  uint32_t ls_byte = 0;
+  uint16_t ms_byte = 0;
+
+  if (timeout_mclks > 0)
+  {
+    ls_byte = timeout_mclks - 1;
+
+    while ((ls_byte & 0xFFFFFF00) > 0)
+    {
+      ls_byte >>= 1;
+      ms_byte++;
+    }
+
+    return (ms_byte << 8) | (ls_byte & 0xFF);
+  }
+  else { return 0; }
+}
+
+// Calculate macro period in microseconds (12.12 format) with given VCSEL period
+// assumes fast_osc_frequency has been read and stored
+// based on VL53L1_calc_macro_period_us()
+uint32_t VL53L1X_calcMacroPeriod(uint8_t vcsel_period) {
+  // from VL53L1_calc_pll_period_us()
+  // fast osc frequency in 4.12 format; PLL period in 0.24 format
+  uint32_t pll_period_us = ((uint32_t)0x01 << 30) / fast_osc_frequency;
+
+  // from VL53L1_decode_vcsel_period()
+  uint8_t vcsel_period_pclks = (vcsel_period + 1) << 1;
+
+  // VL53L1_MACRO_PERIOD_VCSEL_PERIODS = 2304
+  uint32_t macro_period_us = (uint32_t)2304 * pll_period_us;
+  macro_period_us >>= 6;
+  macro_period_us *= vcsel_period_pclks;
+  macro_period_us >>= 6;
+
+  return macro_period_us;
 }
