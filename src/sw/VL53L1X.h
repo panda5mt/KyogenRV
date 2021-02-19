@@ -1286,6 +1286,7 @@ struct RangingData {
     float peak_signal_count_rate_MCPS;
     float ambient_count_rate_MCPS;
 };
+
 void VL53L1X_writeReg(uint16_t reg, uint8_t value);
 void VL53L1X_writeReg16Bit(uint16_t reg, uint16_t value);
 void VL53L1X_writeReg32Bit(uint16_t reg, uint32_t value);

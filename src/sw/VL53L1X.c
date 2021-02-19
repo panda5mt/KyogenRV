@@ -424,7 +424,10 @@ uint16_t VL53L1X_read(bool blocking) {
 
     VL53L1X_writeReg(SYSTEM__INTERRUPT_CLEAR, 0x01); // sys_interrupt_clear_range
 
-    return ranging_data.range_mm;
+    uint16_t ret_value = ranging_data.range_mm;
+    //xprintf("val=%d\r\n",ret_value);
+    return ret_value;
+
 }
 
 void VL53L1X_readResults(void) {
