@@ -35,10 +35,12 @@ int main(int argc, char *argv[]) {
     uint64_t i;
     xdev_out(&uart_putc);       // override xprintf
 
-//#ifdef I2C_0_BASE
-//    i2c_init(I2C_0_BASE);
-//    VL53L1X_init();
-//#endif
+#ifdef I2C_0_BASE
+    i2c_init(I2C_0_BASE);
+    VL53L1X_init();
+    VL53L1X_setDistanceMode(VL53L1X_Long);
+    VL53L1X_setMeasurementTimingBudget(50000);
+#endif
 
 #ifdef SDRAM_0_BASE
     if(0 == sdram_test()) {
