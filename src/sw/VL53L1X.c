@@ -6,9 +6,11 @@
 static uint16_t fast_osc_frequency;
 static uint16_t osc_calibrate_val;
 static uint16_t timeout_start_ms;
-static uint16_t io_timeout = 0;
-bool did_timeout;
-bool calibrated;
+static uint16_t io_timeout = 1000;
+
+
+bool did_timeout = false;
+bool calibrated = false;
 uint8_t saved_vhv_init;
 uint8_t saved_vhv_timeout;
 
@@ -17,6 +19,12 @@ struct RangingData ranging_data;
 // Record the current time to check an upcoming timeout against
 void VL53L1X_startTimeout(void) {
    timeout_start_ms = get_time_ms();
+}
+bool VL53L1X_timeoutOccurred()
+{
+  bool tmp = did_timeout;
+  did_timeout = false;
+  return tmp;
 }
 
 bool VL53L1X_checkTimeoutExpired(void) {
@@ -119,15 +127,13 @@ uint32_t VL53L1X_readReg32Bit(uint16_t reg) {
 
 void VL53L1X_init(void) {
 
-    static const uint16_t TargetRate = 0x0A00;
-
-
+    if (VL53L1X_readReg16Bit(IDENTIFICATION__MODEL_ID) != 0xEACC) { xprintf("error!!!\r\n");; }
+    xprintf("id=0x%x\r\n",(VL53L1X_readReg16Bit(IDENTIFICATION__MODEL_ID)));
     VL53L1X_writeReg(SOFT_RESET, 0x00);
     wait_ms(100);
     VL53L1X_writeReg(SOFT_RESET, 0x01);
     wait_ms(1000);
     while ((VL53L1X_readReg(FIRMWARE__SYSTEM_STATUS) & 0x01) == 0);
-
     // switch to 2V8 I/O
     VL53L1X_writeReg(PAD_I2C_HV__EXTSUP_CONFIG,
     VL53L1X_readReg(PAD_I2C_HV__EXTSUP_CONFIG) | 0x01);
@@ -421,7 +427,6 @@ uint16_t VL53L1X_read(bool blocking) {
 }
 
 void VL53L1X_readResults(void) {
-
     i2c_start_transmit(I2C_0_BASE,VL53L1X_HARDWARE_ADDRESS,0);    //bus->beginTransmission(address);
     i2c_write(I2C_0_BASE, (RESULT__RANGE_STATUS >> 8) & 0xFF, 0); //bus->write((reg >> 8) & 0xFF); // reg high byte
     i2c_write(I2C_0_BASE, RESULT__RANGE_STATUS & 0xFF, 1);//bus->write( reg       & 0xFF); // reg low byte

@@ -28,8 +28,8 @@
 #define ONCHIP_MEMORY2_0_COMPONENT_TYPE altera_avalon_onchip_memory2
 #define ONCHIP_MEMORY2_0_COMPONENT_NAME onchip_memory2_0
 #define ONCHIP_MEMORY2_0_BASE 0x0
-#define ONCHIP_MEMORY2_0_SPAN 32768
-#define ONCHIP_MEMORY2_0_END 0x7fff
+#define ONCHIP_MEMORY2_0_SPAN 40960
+#define ONCHIP_MEMORY2_0_END 0x9fff
 #define ONCHIP_MEMORY2_0_ALLOW_IN_SYSTEM_MEMORY_CONTENT_EDITOR 0
 #define ONCHIP_MEMORY2_0_ALLOW_MRAM_SIM_CONTENTS_ONLY_FILE 0
 #define ONCHIP_MEMORY2_0_CONTENTS_INFO ""
@@ -43,7 +43,7 @@
 #define ONCHIP_MEMORY2_0_READ_DURING_WRITE_MODE DONT_CARE
 #define ONCHIP_MEMORY2_0_SINGLE_CLOCK_OP 1
 #define ONCHIP_MEMORY2_0_SIZE_MULTIPLE 1
-#define ONCHIP_MEMORY2_0_SIZE_VALUE 32768
+#define ONCHIP_MEMORY2_0_SIZE_VALUE 40960
 #define ONCHIP_MEMORY2_0_WRITABLE 1
 #define ONCHIP_MEMORY2_0_MEMORY_INFO_DAT_SYM_INSTALL_DIR SIM_DIR
 #define ONCHIP_MEMORY2_0_MEMORY_INFO_GENERATE_DAT_SYM 1
@@ -54,15 +54,51 @@
 #define ONCHIP_MEMORY2_0_MEMORY_INFO_MEM_INIT_FILENAME blinker_intel
 
 /*
+ * Macros for device 'i2c_0', class 'altera_avalon_i2c'
+ * The macros are prefixed with 'I2C_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define I2C_0_COMPONENT_TYPE altera_avalon_i2c
+#define I2C_0_COMPONENT_NAME i2c_0
+#define I2C_0_BASE 0x10000
+#define I2C_0_SPAN 64
+#define I2C_0_END 0x1003f
+#define I2C_0_FIFO_DEPTH 4
+#define I2C_0_FREQ 70000000
+#define I2C_0_USE_AV_ST 0
+
+/*
+ * Macros for device 'uart_0', class 'altera_avalon_uart'
+ * The macros are prefixed with 'UART_0_'.
+ * The prefix is the slave descriptor.
+ */
+#define UART_0_COMPONENT_TYPE altera_avalon_uart
+#define UART_0_COMPONENT_NAME uart_0
+#define UART_0_BASE 0x10040
+#define UART_0_SPAN 32
+#define UART_0_END 0x1005f
+#define UART_0_BAUD 115200
+#define UART_0_DATA_BITS 8
+#define UART_0_FIXED_BAUD 1
+#define UART_0_FREQ 70000000
+#define UART_0_PARITY 'N'
+#define UART_0_SIM_CHAR_STREAM ""
+#define UART_0_SIM_TRUE_BAUD 0
+#define UART_0_STOP_BITS 1
+#define UART_0_SYNC_REG_DEPTH 2
+#define UART_0_USE_CTS_RTS 0
+#define UART_0_USE_EOP_REGISTER 0
+
+/*
  * Macros for device 'pio_0', class 'altera_avalon_pio'
  * The macros are prefixed with 'PIO_0_'.
  * The prefix is the slave descriptor.
  */
 #define PIO_0_COMPONENT_TYPE altera_avalon_pio
 #define PIO_0_COMPONENT_NAME pio_0
-#define PIO_0_BASE 0x8000
+#define PIO_0_BASE 0x10060
 #define PIO_0_SPAN 16
-#define PIO_0_END 0x800f
+#define PIO_0_END 0x1006f
 #define PIO_0_BIT_CLEARING_EDGE_REGISTER 0
 #define PIO_0_BIT_MODIFYING_OUTPUT_REGISTER 0
 #define PIO_0_CAPTURE 0
@@ -78,51 +114,15 @@
 #define PIO_0_RESET_VALUE 0
 
 /*
- * Macros for device 'uart_0', class 'altera_avalon_uart'
- * The macros are prefixed with 'UART_0_'.
- * The prefix is the slave descriptor.
- */
-#define UART_0_COMPONENT_TYPE altera_avalon_uart
-#define UART_0_COMPONENT_NAME uart_0
-#define UART_0_BASE 0x8020
-#define UART_0_SPAN 32
-#define UART_0_END 0x803f
-#define UART_0_BAUD 115200
-#define UART_0_DATA_BITS 8
-#define UART_0_FIXED_BAUD 1
-#define UART_0_FREQ 70000000
-#define UART_0_PARITY 'N'
-#define UART_0_SIM_CHAR_STREAM ""
-#define UART_0_SIM_TRUE_BAUD 0
-#define UART_0_STOP_BITS 1
-#define UART_0_SYNC_REG_DEPTH 2
-#define UART_0_USE_CTS_RTS 0
-#define UART_0_USE_EOP_REGISTER 0
-
-/*
- * Macros for device 'i2c_0', class 'altera_avalon_i2c'
- * The macros are prefixed with 'I2C_0_'.
- * The prefix is the slave descriptor.
- */
-#define I2C_0_COMPONENT_TYPE altera_avalon_i2c
-#define I2C_0_COMPONENT_NAME i2c_0
-#define I2C_0_BASE 0x8040
-#define I2C_0_SPAN 64
-#define I2C_0_END 0x807f
-#define I2C_0_FIFO_DEPTH 4
-#define I2C_0_FREQ 70000000
-#define I2C_0_USE_AV_ST 0
-
-/*
  * Macros for device 'sdram_0', class 'altera_avalon_new_sdram_controller'
  * The macros are prefixed with 'SDRAM_0_'.
  * The prefix is the slave descriptor.
  */
 #define SDRAM_0_COMPONENT_TYPE altera_avalon_new_sdram_controller
 #define SDRAM_0_COMPONENT_NAME sdram_0
-#define SDRAM_0_BASE 0x1000000
+#define SDRAM_0_BASE 0x800000
 #define SDRAM_0_SPAN 8388608
-#define SDRAM_0_END 0x17fffff
+#define SDRAM_0_END 0xffffff
 #define SDRAM_0_CAS_LATENCY 3
 #define SDRAM_0_CONTENTS_INFO 
 #define SDRAM_0_INIT_NOP_DELAY 0.0

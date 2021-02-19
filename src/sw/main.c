@@ -36,16 +36,17 @@ int main(int argc, char *argv[]) {
     xdev_out(&uart_putc);       // override xprintf
 
 #ifdef I2C_0_BASE
+    xprintf("I2C init\r\n");
     i2c_init(I2C_0_BASE);
+    i2c_disable_isr(I2C_0_BASE);
     VL53L1X_init();
     VL53L1X_setDistanceMode(VL53L1X_Long);
     VL53L1X_setMeasurementTimingBudget(50000);
 
-    VL53L1X_startContinuous(500);
-
+    VL53L1X_startContinuous(50);
 
 #endif
-
+uint32_t data = 0;
 #ifdef SDRAM_0_BASE
     if(0 == sdram_test()) {
         xprintf("SDRAM r/w test OK!\r\n");
@@ -54,14 +55,13 @@ int main(int argc, char *argv[]) {
     }
 #endif //SDRAM_0_BASE
     xprintf("KyogenRV (RV32I) Start...\r\n");
-
     while(1){
         wait_ms(500);
         put32(PIO_0_BASE, 0x55);
         wait_ms(500);
         put32(PIO_0_BASE, 0xAA);
-        uint32_t dat = VL53L1X_read(true);
-        xprintf("data = %d\r\n",dat);
+        data = VL53L1X_read(true);
+        xprintf("data get");
         i = get_time_ms() / 1000;
         xprintf("machine time = %llu second\r\n",i);
     }

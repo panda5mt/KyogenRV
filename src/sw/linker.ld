@@ -2,8 +2,8 @@ OUTPUT_ARCH( "riscv" )
 
 MEMORY
 {
-    rom : ORIGIN = 0x00000000, LENGTH = 0x4000
-    ram : ORIGIN = 0x00004000, LENGTH = 0x4000
+    rom : ORIGIN = 0x00000000, LENGTH = 0x5000
+    ram : ORIGIN = 0x00005000, LENGTH = 0x5000
 }
 
 ENTRY(_start)

@@ -37,7 +37,7 @@
    {
       datum baseAddress
       {
-         value = "32832";
+         value = "65536";
          type = "String";
       }
    }
@@ -114,12 +114,12 @@
    {
       datum _lockedAddress
       {
-         value = "1";
+         value = "0";
          type = "boolean";
       }
       datum baseAddress
       {
-         value = "32768";
+         value = "65632";
          type = "String";
       }
    }
@@ -135,12 +135,12 @@
    {
       datum _lockedAddress
       {
-         value = "1";
+         value = "0";
          type = "boolean";
       }
       datum baseAddress
       {
-         value = "16777216";
+         value = "8388608";
          type = "String";
       }
    }
@@ -156,12 +156,12 @@
    {
       datum _lockedAddress
       {
-         value = "1";
+         value = "0";
          type = "boolean";
       }
       datum baseAddress
       {
-         value = "32800";
+         value = "65600";
          type = "String";
       }
    }
@@ -251,7 +251,7 @@
   <parameter name="initMemContent" value="true" />
   <parameter name="initializationFileName">./chisel_generated/blinker_intel.hex</parameter>
   <parameter name="instanceID" value="NONE" />
-  <parameter name="memorySize" value="32768" />
+  <parameter name="memorySize" value="40960" />
   <parameter name="readDuringWriteMode" value="DONT_CARE" />
   <parameter name="resetrequest_enabled" value="true" />
   <parameter name="simAllowMRAMContentsFile" value="false" />
@@ -328,7 +328,7 @@
    start="KyogenRV_0.avalon_data_master"
    end="i2c_0.csr">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x8040" />
+  <parameter name="baseAddress" value="0x00010000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -337,7 +337,7 @@
    start="KyogenRV_0.avalon_data_master"
    end="uart_0.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x8020" />
+  <parameter name="baseAddress" value="0x00010040" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -346,7 +346,7 @@
    start="KyogenRV_0.avalon_data_master"
    end="pio_0.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x8000" />
+  <parameter name="baseAddress" value="0x00010060" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -364,7 +364,7 @@
    start="KyogenRV_0.avalon_data_master"
    end="sdram_0.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x01000000" />
+  <parameter name="baseAddress" value="0x00800000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection

@@ -1208,6 +1208,8 @@
 //             = 1448 + 2100 + 980 = 4528
 static const uint32_t TimingGuard = 4528;
 static const uint16_t TargetRate = 0x0A00;
+
+
 struct ResultBuffer {
     uint8_t range_status;
     // uint8_t report_status: not used

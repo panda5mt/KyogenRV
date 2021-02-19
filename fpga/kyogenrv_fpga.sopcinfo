@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EnsembleReport name="kyogenrv_fpga" kind="kyogenrv_fpga" version="1.0" fabric="QSYS">
  <!-- Format version 20.1 720 (Future versions may contain additional information.) -->
- <!-- 2021.02.18.20:16:13 -->
+ <!-- 2021.02.19.17:10:30 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
-  <value>1613646973</value>
+  <value>1613722230</value>
   <derived>false</derived>
   <enabled>true</enabled>
   <visible>false</visible>
@@ -429,7 +429,7 @@ parameters are a RESULT of the module parameters. -->
     <moduleName>i2c_0</moduleName>
     <slaveName>csr</slaveName>
     <name>i2c_0.csr</name>
-    <baseAddress>32832</baseAddress>
+    <baseAddress>65536</baseAddress>
     <span>64</span>
    </memoryBlock>
    <memoryBlock>
@@ -437,7 +437,7 @@ parameters are a RESULT of the module parameters. -->
     <moduleName>uart_0</moduleName>
     <slaveName>s1</slaveName>
     <name>uart_0.s1</name>
-    <baseAddress>32800</baseAddress>
+    <baseAddress>65600</baseAddress>
     <span>32</span>
    </memoryBlock>
    <memoryBlock>
@@ -445,7 +445,7 @@ parameters are a RESULT of the module parameters. -->
     <moduleName>pio_0</moduleName>
     <slaveName>s1</slaveName>
     <name>pio_0.s1</name>
-    <baseAddress>32768</baseAddress>
+    <baseAddress>65632</baseAddress>
     <span>16</span>
    </memoryBlock>
    <memoryBlock>
@@ -454,14 +454,14 @@ parameters are a RESULT of the module parameters. -->
     <slaveName>s1</slaveName>
     <name>onchip_memory2_0.s1</name>
     <baseAddress>0</baseAddress>
-    <span>32768</span>
+    <span>40960</span>
    </memoryBlock>
    <memoryBlock>
     <isBridge>false</isBridge>
     <moduleName>sdram_0</moduleName>
     <slaveName>s1</slaveName>
     <name>sdram_0.s1</name>
-    <baseAddress>16777216</baseAddress>
+    <baseAddress>8388608</baseAddress>
     <span>8388608</span>
    </memoryBlock>
   </interface>
@@ -769,7 +769,7 @@ parameters are a RESULT of the module parameters. -->
     <slaveName>s1</slaveName>
     <name>onchip_memory2_0.s1</name>
     <baseAddress>0</baseAddress>
-    <span>32768</span>
+    <span>40960</span>
    </memoryBlock>
   </interface>
   <interface name="clock" kind="clock_sink" version="20.1">
@@ -1980,7 +1980,7 @@ the requested settings for a module instance. -->
   </assignment>
   <assignment>
    <name>embeddedsw.CMacro.SIZE_VALUE</name>
-   <value>32768</value>
+   <value>40960</value>
   </assignment>
   <assignment>
    <name>embeddedsw.CMacro.WRITABLE</name>
@@ -2112,7 +2112,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="memorySize">
    <type>long</type>
-   <value>32768</value>
+   <value>40960</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -2251,7 +2251,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="derived_set_addr_width">
    <type>int</type>
-   <value>13</value>
+   <value>14</value>
    <derived>true</derived>
    <enabled>true</enabled>
    <visible>false</visible>
@@ -2259,7 +2259,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="derived_set_addr_width2">
    <type>int</type>
-   <value>13</value>
+   <value>14</value>
    <derived>true</derived>
    <enabled>true</enabled>
    <visible>false</visible>
@@ -2396,7 +2396,7 @@ parameters are a RESULT of the module parameters. -->
    </parameter>
    <parameter name="addressSpan">
     <type>java.math.BigInteger</type>
-    <value>32768</value>
+    <value>40960</value>
     <derived>true</derived>
     <enabled>true</enabled>
     <visible>false</visible>
@@ -2484,7 +2484,7 @@ parameters are a RESULT of the module parameters. -->
    </parameter>
    <parameter name="explicitAddressSpan">
     <type>java.math.BigInteger</type>
-    <value>32768</value>
+    <value>40960</value>
     <derived>false</derived>
     <enabled>true</enabled>
     <visible>true</visible>
@@ -2695,7 +2695,7 @@ parameters are a RESULT of the module parameters. -->
    <port>
     <name>address</name>
     <direction>Input</direction>
-    <width>13</width>
+    <width>14</width>
     <role>address</role>
    </port>
    <port>
@@ -5341,7 +5341,7 @@ parameters are a RESULT of the module parameters. -->
   </parameter>
   <parameter name="baseAddress">
    <type>java.math.BigInteger</type>
-   <value>0x8040</value>
+   <value>0x00010000</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -5392,7 +5392,7 @@ parameters are a RESULT of the module parameters. -->
   </parameter>
   <parameter name="baseAddress">
    <type>java.math.BigInteger</type>
-   <value>0x8020</value>
+   <value>0x00010040</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -5443,7 +5443,7 @@ parameters are a RESULT of the module parameters. -->
   </parameter>
   <parameter name="baseAddress">
    <type>java.math.BigInteger</type>
-   <value>0x8000</value>
+   <value>0x00010060</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -5545,7 +5545,7 @@ parameters are a RESULT of the module parameters. -->
   </parameter>
   <parameter name="baseAddress">
    <type>java.math.BigInteger</type>
-   <value>0x01000000</value>
+   <value>0x00800000</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
