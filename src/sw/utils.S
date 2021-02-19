@@ -1,3 +1,8 @@
+#
+# kyogenrv(RV32I) startup code
+# github.com/panda5mt/KyogenRV/
+#
+#
     .section .text.init;
     .global _start
 _start:

@@ -3,10 +3,13 @@
 #include "krv_utils.h"
 #include "xprintf.h"
 #include "qsys_i2c.h"
+#include "VL53L1X.h"
+
 
 #ifdef SDRAM_0_BASE
 int sdram_test(void) {
-    uint32_t   data,length;
+    uint32_t
+    data,length;
 
     length = SDRAM_0_END - SDRAM_0_BASE;
 
@@ -31,11 +34,12 @@ int sdram_test(void) {
 int main(int argc, char *argv[]) {
     uint64_t i;
     xdev_out(&uart_putc);       // override xprintf
+
 //#ifdef I2C_0_BASE
 //    i2c_init(I2C_0_BASE);
-//    i2c_start_transmit(I2C_0_BASE,0x3A,1);
-//    xprintf("I2C Init OK...\r\n");
+//    VL53L1X_init();
 //#endif
+
 #ifdef SDRAM_0_BASE
     if(0 == sdram_test()) {
         xprintf("SDRAM r/w test OK!\r\n");

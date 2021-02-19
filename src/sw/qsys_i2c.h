@@ -3,10 +3,8 @@
 
 #include "krv_utils.h"
 
-
 #include <stdint.h>
 #include <stdbool.h>
-
 
 // define I2C_0_BASE 0xxxxxx
 // See "ug_embedded_ip" p.172"
