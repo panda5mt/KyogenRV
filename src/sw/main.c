@@ -60,7 +60,8 @@ int main(int argc, char *argv[]) {
         put32(PIO_0_BASE, 0x55);
         wait_ms(500);
         put32(PIO_0_BASE, 0xAA);
-
+        uint32_t dat = VL53L1X_read(true);
+        xprintf("data = %d\r\n",dat);
         i = get_time_ms() / 1000;
         xprintf("machine time = %llu second\r\n",i);
     }

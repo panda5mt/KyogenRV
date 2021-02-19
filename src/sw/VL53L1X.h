@@ -1303,6 +1303,7 @@ void VL53L1X_updateDSS(void);
 void VL53L1X_getRangingData(void);
 float VL53L1X_countRateFixedToFloat(uint16_t count_rate_fixed);
 void VL53L1X_startContinuous(uint32_t period_ms);
+uint16_t VL53L1X_read(bool blocking);
 
 
 
