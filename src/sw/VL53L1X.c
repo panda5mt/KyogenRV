@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "VL53L1X.h"
-#include "xprintf.h"
 
 static uint16_t fast_osc_frequency;
 static uint16_t osc_calibrate_val;
 static uint16_t timeout_start_ms;
 static uint16_t io_timeout = 1000;
-
 
 bool did_timeout = false;
 bool calibrated = false;
@@ -128,8 +126,7 @@ uint32_t VL53L1X_readReg32Bit(uint16_t reg) {
 
 void VL53L1X_init(void) {
 
-    if (VL53L1X_readReg16Bit(IDENTIFICATION__MODEL_ID) != 0xEACC) { xprintf("error!!!\r\n");; }
-    xprintf("id=0x%x\r\n",(VL53L1X_readReg16Bit(IDENTIFICATION__MODEL_ID)));
+    if (VL53L1X_readReg16Bit(IDENTIFICATION__MODEL_ID) != 0xEACC) { return; } // error
     VL53L1X_writeReg(SOFT_RESET, 0x00);
     wait_ms(100);
     VL53L1X_writeReg(SOFT_RESET, 0x01);
@@ -405,7 +402,6 @@ uint16_t VL53L1X_read(bool blocking) {
         VL53L1X_startTimeout();
         while (!VL53L1X_dataReady()) {
             if (VL53L1X_checkTimeoutExpired()) {
-                xprintf("timeout!");
                 did_timeout = true;
                 return 0;
             }
@@ -421,13 +417,11 @@ uint16_t VL53L1X_read(bool blocking) {
     }
 
     VL53L1X_updateDSS();
-
     VL53L1X_getRangingData();
 
     VL53L1X_writeReg(SYSTEM__INTERRUPT_CLEAR, 0x01); // sys_interrupt_clear_range
-
     uint16_t ret_value = r_d->range_mm;
-    //xprintf("val=%d\r\n",ret_value);
+
     return ret_value;
 
 }

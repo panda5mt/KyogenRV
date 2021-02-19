@@ -2,11 +2,16 @@
 #include <stdint.h>
 #include "krv_utils.h"
 #include "xprintf.h"
-#include "qsys_i2c.h"
-#include "VL53L1X.h"
 
+#define USE_VL53L1X (1)
+#define USE_SDRAM   (1)
 
-#ifdef SDRAM_0_BASE
+#ifdef USE_VL53L1X
+    #include "qsys_i2c.h"
+    #include "VL53L1X.h"
+#endif //USE_VL53L1X
+
+#ifdef USE_SDRAM
 int sdram_test(void) {
     uint32_t
     data,length;
@@ -28,14 +33,14 @@ int sdram_test(void) {
     }
     return 0;
 }
-#endif //SDRAM_0_BASE
+#endif // USE_SDRAM
 
 // main function
 int main(int argc, char *argv[]) {
     uint64_t i;
     xdev_out(&uart_putc);       // override xprintf
 
-#ifdef I2C_0_BASE
+#ifdef USE_VL53L1X
     xprintf("I2C init\r\n");
     i2c_init(I2C_0_BASE);
     i2c_disable_isr(I2C_0_BASE);
@@ -44,24 +49,30 @@ int main(int argc, char *argv[]) {
     VL53L1X_setMeasurementTimingBudget(50000);
 
     VL53L1X_startContinuous(50);
+#endif //USE_VL53L1X
 
-#endif
 uint32_t data = 0;
-#ifdef SDRAM_0_BASE
+
+#ifdef USE_SDRAM
     if(0 == sdram_test()) {
         xprintf("SDRAM r/w test OK!\r\n");
     } else {
         xprintf("SDRAM r/w test fail......\r\n");
     }
-#endif //SDRAM_0_BASE
+#endif //USE_SDRAM
+
     xprintf("KyogenRV (RV32I) Start...\r\n");
     while(1){
         wait_ms(500);
         put32(PIO_0_BASE, 0x55);
         wait_ms(500);
         put32(PIO_0_BASE, 0xAA);
+
+#ifdef USE_VL53L1X
         data = VL53L1X_read(true);
         xprintf("value = %d\r\n",data);
+#endif //USE_VL53L1X
+
         i = get_time_ms() / 1000;
         xprintf("machine time = %llu second\r\n",i);
     }
