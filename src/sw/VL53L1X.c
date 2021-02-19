@@ -403,6 +403,7 @@ uint16_t VL53L1X_read(bool blocking) {
         VL53L1X_startTimeout();
         while (!VL53L1X_dataReady()) {
             if (VL53L1X_checkTimeoutExpired()) {
+                xprintf("timeout!");
                 did_timeout = true;
                 return 0;
             }
