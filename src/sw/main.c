@@ -76,10 +76,10 @@ uint32_t data = 0;
 #ifdef USE_VL53L1X
         data = VL53L1X_read(true);
         xprintf("value = %d\r\n",data);
-#endif //USE_VL53L1X
-
+#else
         i = get_time_ms() / 1000;
         xprintf("machine time = %llu second\r\n",i);
+#endif //USE_VL53L1X
     }
     return 0;
 }
