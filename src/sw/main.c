@@ -12,7 +12,7 @@
 #endif //USE_VL53L1X
 
 #ifdef USE_SDRAM
-int sdram_test(void) {
+int32_t sdram_test(void) {
     uint32_t
     data,length;
 
@@ -36,7 +36,7 @@ int sdram_test(void) {
 #endif // USE_SDRAM
 
 // main function
-int main(int argc, char *argv[]) {
+int32_t main(int argc, char *argv[]) {
     uint64_t i;
     xdev_out(&uart_putc);       // override xprintf
 
@@ -44,11 +44,16 @@ int main(int argc, char *argv[]) {
     xprintf("I2C init\r\n");
     i2c_init(I2C_0_BASE);
     i2c_disable_isr(I2C_0_BASE);
-    VL53L1X_init();
-    VL53L1X_setDistanceMode(VL53L1X_Long);
-    VL53L1X_setMeasurementTimingBudget(50000);
 
-    VL53L1X_startContinuous(50);
+    if(true == VL53L1X_init()) {
+        xprintf("VL5351X init OK.\r\n");
+        VL53L1X_setDistanceMode(VL53L1X_Long);
+        VL53L1X_setMeasurementTimingBudget(50000);
+
+        VL53L1X_startContinuous(50);
+    } else {
+        xprintf("VL5351X init failed.\r\n");
+    }
 #endif //USE_VL53L1X
 
 uint32_t data = 0;

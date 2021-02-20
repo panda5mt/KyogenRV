@@ -124,9 +124,9 @@ uint32_t VL53L1X_readReg32Bit(uint16_t reg) {
 }
 
 
-void VL53L1X_init(void) {
+bool VL53L1X_init(void) {
 
-    if (VL53L1X_readReg16Bit(IDENTIFICATION__MODEL_ID) != 0xEACC) { return; } // error
+    if (VL53L1X_readReg16Bit(IDENTIFICATION__MODEL_ID) != 0xEACC) { return false; } // error
     VL53L1X_writeReg(SOFT_RESET, 0x00);
     wait_ms(100);
     VL53L1X_writeReg(SOFT_RESET, 0x01);
@@ -215,7 +215,7 @@ void VL53L1X_init(void) {
     VL53L1X_writeReg16Bit(ALGO__PART_TO_PART_RANGE_OFFSET_MM,
     VL53L1X_readReg16Bit(MM_CONFIG__OUTER_OFFSET_MM) * 4);
 
-    return;
+    return true;
 
 }
 
