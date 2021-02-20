@@ -476,50 +476,6 @@ void VL53L1X_setupManualCalibration(void) {
   VL53L1X_writeReg(CAL_CONFIG__VCSEL_START, VL53L1X_readReg(PHASECAL_RESULT__VCSEL_START));
 }
 
-void VL53L1X_pdateDSS(void)
-{
-  uint16_t spadCount = results.dss_actual_effective_spads_sd0;
-
-  if (spadCount != 0)
-  {
-    // "Calc total rate per spad"
-
-    uint32_t totalRatePerSpad =
-      (uint32_t)results.peak_signal_count_rate_crosstalk_corrected_mcps_sd0 +
-      results.ambient_count_rate_mcps_sd0;
-
-    // "clip to 16 bits"
-    if (totalRatePerSpad > 0xFFFF) { totalRatePerSpad = 0xFFFF; }
-
-    // "shift up to take advantage of 32 bits"
-    totalRatePerSpad <<= 16;
-
-    totalRatePerSpad /= spadCount;
-
-    if (totalRatePerSpad != 0)
-    {
-      // "get the target rate and shift up by 16"
-      uint32_t requiredSpads = ((uint32_t)TargetRate << 16) / totalRatePerSpad;
-
-      // "clip to 16 bit"
-      if (requiredSpads > 0xFFFF) { requiredSpads = 0xFFFF; }
-
-      // "override DSS config"
-      VL53L1X_writeReg16Bit(DSS_CONFIG__MANUAL_EFFECTIVE_SPADS_SELECT, requiredSpads);
-      // DSS_CONFIG__ROI_MODE_CONTROL should already be set to REQUESTED_EFFFECTIVE_SPADS
-
-      return;
-    }
-  }
-
-  // If we reached this point, it means something above would have resulted in a
-  // divide by zero.
-  // "We want to gracefully set a spad target, not just exit with an error"
-
-   // "set target to mid point"
-   VL53L1X_writeReg16Bit(DSS_CONFIG__MANUAL_EFFECTIVE_SPADS_SELECT, 0x8000);
-}
-
 // get range, status, rates from results buffer
 // based on VL53L1_GetRangingMeasurementData()
 void VL53L1X_getRangingData(void) {
