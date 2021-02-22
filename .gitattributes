@@ -1,1 +1,3 @@
 *.v linguist-generated=true
+*.c linguist-generated=true
+*.h linguist-generated=true
