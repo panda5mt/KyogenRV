@@ -97,7 +97,11 @@ pll pll0(
 		.new_sdram_controller_0_wire_dqm                  ({DRAM_UDQM,DRAM_LDQM}  ),
 		.new_sdram_controller_0_wire_ras_n                (DRAM_RAS_N             ),
 		.new_sdram_controller_0_wire_we_n                 (DRAM_WE_N              ),
-		  
+		
+		.msgdma_0_csr_irq_irq              (),              //            msgdma_0_csr_irq.irq
+		.msgdma_0_st_sink_data             (),             //            msgdma_0_st_sink.data
+		.msgdma_0_st_sink_valid            (),            //                            .valid
+		.msgdma_0_st_sink_ready            (),    
 		.i2c_0_i2c_serial_sda_in    (i2c0_sda_in),    //       i2c_0_i2c_serial.sda_in
 		.i2c_0_i2c_serial_scl_in    (i2c0_scl_in),    //                       .scl_in
 		.i2c_0_i2c_serial_sda_oe    (i2c0_sda_oe),    //                       .sda_oe

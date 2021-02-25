@@ -81,6 +81,30 @@
          type = "String";
       }
    }
+   element msgdma_0
+   {
+      datum _sortIndex
+      {
+         value = "7";
+         type = "int";
+      }
+   }
+   element msgdma_0.csr
+   {
+      datum baseAddress
+      {
+         value = "65632";
+         type = "String";
+      }
+   }
+   element msgdma_0.descriptor_slave
+   {
+      datum baseAddress
+      {
+         value = "65680";
+         type = "String";
+      }
+   }
    element onchip_memory2_0
    {
       datum _sortIndex
@@ -119,7 +143,7 @@
       }
       datum baseAddress
       {
-         value = "65632";
+         value = "65664";
          type = "String";
       }
    }
@@ -203,6 +227,16 @@
    type="conduit"
    dir="end" />
  <interface
+   name="msgdma_0_csr_irq"
+   internal="msgdma_0.csr_irq"
+   type="interrupt"
+   dir="end" />
+ <interface
+   name="msgdma_0_st_sink"
+   internal="msgdma_0.st_sink"
+   type="avalon_streaming"
+   dir="end" />
+ <interface
    name="new_sdram_controller_0_wire"
    internal="sdram_0.wire"
    type="conduit"
@@ -231,6 +265,49 @@
   <parameter name="USE_AV_ST" value="0" />
   <parameter name="clockRate" value="70000000" />
  </module>
+ <module name="msgdma_0" kind="altera_msgdma" version="20.1" enabled="1">
+  <parameter name="AUTO_DESCRIPTOR_READ_MASTER_ADDRESS_MAP" value="" />
+  <parameter
+     name="AUTO_DESCRIPTOR_READ_MASTER_ADDRESS_WIDTH"
+     value="AddressWidth = -1" />
+  <parameter name="AUTO_DESCRIPTOR_WRITE_MASTER_ADDRESS_MAP" value="" />
+  <parameter
+     name="AUTO_DESCRIPTOR_WRITE_MASTER_ADDRESS_WIDTH"
+     value="AddressWidth = -1" />
+  <parameter name="AUTO_DEVICE" value="10CL025YU256C8G" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone 10 LP" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="8" />
+  <parameter name="AUTO_MM_READ_ADDRESS_MAP" value="" />
+  <parameter name="AUTO_MM_READ_ADDRESS_WIDTH" value="AddressWidth = -1" />
+  <parameter name="AUTO_MM_WRITE_ADDRESS_MAP"><![CDATA[<address-map><slave name='sdram_0.s1' start='0x800000' end='0x1000000' /></address-map>]]></parameter>
+  <parameter name="AUTO_MM_WRITE_ADDRESS_WIDTH" value="AddressWidth = 24" />
+  <parameter name="BURST_ENABLE" value="0" />
+  <parameter name="BURST_WRAPPING_SUPPORT" value="0" />
+  <parameter name="CHANNEL_ENABLE" value="0" />
+  <parameter name="CHANNEL_WIDTH" value="8" />
+  <parameter name="DATA_FIFO_DEPTH" value="32" />
+  <parameter name="DATA_WIDTH" value="32" />
+  <parameter name="DESCRIPTOR_FIFO_DEPTH" value="128" />
+  <parameter name="ENHANCED_FEATURES" value="0" />
+  <parameter name="ERROR_ENABLE" value="0" />
+  <parameter name="ERROR_WIDTH" value="8" />
+  <parameter name="EXPOSE_ST_PORT" value="0" />
+  <parameter name="FIX_ADDRESS_WIDTH" value="32" />
+  <parameter name="MAX_BURST_COUNT" value="2" />
+  <parameter name="MAX_BYTE" value="1024" />
+  <parameter name="MAX_STRIDE" value="1" />
+  <parameter name="MODE" value="2" />
+  <parameter name="PACKET_ENABLE" value="0" />
+  <parameter name="PREFETCHER_DATA_WIDTH" value="32" />
+  <parameter name="PREFETCHER_ENABLE" value="0" />
+  <parameter name="PREFETCHER_MAX_READ_BURST_COUNT" value="2" />
+  <parameter name="PREFETCHER_READ_BURST_ENABLE" value="0" />
+  <parameter name="PROGRAMMABLE_BURST_ENABLE" value="0" />
+  <parameter name="RESPONSE_PORT" value="2" />
+  <parameter name="STRIDE_ENABLE" value="0" />
+  <parameter name="TRANSFER_TYPE" value="Aligned Accesses" />
+  <parameter name="USE_FIX_ADDRESS_WIDTH" value="0" />
+ </module>
  <module
    name="onchip_memory2_0"
    kind="altera_avalon_onchip_memory2"
@@ -251,7 +328,7 @@
   <parameter name="initMemContent" value="true" />
   <parameter name="initializationFileName">./chisel_generated/blinker_intel.hex</parameter>
   <parameter name="instanceID" value="NONE" />
-  <parameter name="memorySize" value="40960" />
+  <parameter name="memorySize" value="36864" />
   <parameter name="readDuringWriteMode" value="DONT_CARE" />
   <parameter name="resetrequest_enabled" value="true" />
   <parameter name="simAllowMRAMContentsFile" value="false" />
@@ -335,6 +412,24 @@
    kind="avalon"
    version="20.1"
    start="KyogenRV_0.avalon_data_master"
+   end="msgdma_0.csr">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x00010060" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="20.1"
+   start="KyogenRV_0.avalon_data_master"
+   end="msgdma_0.descriptor_slave">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x00010090" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="20.1"
+   start="KyogenRV_0.avalon_data_master"
    end="uart_0.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x00010040" />
@@ -346,7 +441,7 @@
    start="KyogenRV_0.avalon_data_master"
    end="pio_0.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x00010060" />
+  <parameter name="baseAddress" value="0x00010080" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -376,6 +471,15 @@
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
+ <connection
+   kind="avalon"
+   version="20.1"
+   start="msgdma_0.mm_write"
+   end="sdram_0.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x00800000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
  <connection kind="clock" version="20.1" start="clk_0.clk" end="pio_0.clk" />
  <connection kind="clock" version="20.1" start="clk_0.clk" end="uart_0.clk" />
  <connection kind="clock" version="20.1" start="clk_0.clk" end="sdram_0.clk" />
@@ -386,6 +490,7 @@
    end="onchip_memory2_0.clk1" />
  <connection kind="clock" version="20.1" start="clk_0.clk" end="KyogenRV_0.clock" />
  <connection kind="clock" version="20.1" start="clk_0.clk" end="i2c_0.clock" />
+ <connection kind="clock" version="20.1" start="clk_0.clk" end="msgdma_0.clock" />
  <connection kind="reset" version="20.1" start="clk_0.clk_reset" end="pio_0.reset" />
  <connection
    kind="reset"
@@ -407,6 +512,11 @@
    version="20.1"
    start="clk_0.clk_reset"
    end="onchip_memory2_0.reset1" />
+ <connection
+   kind="reset"
+   version="20.1"
+   start="clk_0.clk_reset"
+   end="msgdma_0.reset_n" />
  <connection
    kind="reset"
    version="20.1"
