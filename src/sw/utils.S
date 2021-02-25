@@ -1,7 +1,7 @@
 #
 # kyogenrv(RV32I) startup code
 # github.com/panda5mt/KyogenRV/
-#
+# RAM:18K,ROM:18K
 #
     .section .text.init;
     .global _start
