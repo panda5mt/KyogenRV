@@ -21,7 +21,7 @@ riscv-tests:
 tester-gen:
 	python3 build_riscv_tests.py
 
-sdk: clean c_all tester-gen hdl
+sdk: clean c_all hdl #tester-gen
 	python3 build_asm.py
 	python3 mk_intel_hex.py
 

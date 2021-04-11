@@ -1,4 +1,4 @@
-;buildInfoPackage: chisel3, version: 3.4.1, scalaVersion: 2.12.12, sbtVersion: 1.3.10
+;buildInfoPackage: chisel3, version: 3.4.3, scalaVersion: 2.12.12, sbtVersion: 1.3.10
 circuit KyogenRVCpu : 
   module IDModule : 
     input clock : Clock
